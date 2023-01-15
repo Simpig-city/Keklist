@@ -1,9 +1,0 @@
-blacklisted:
-  - "<red><bold>Du kek"
-  - "Nochmal du kek"
-whitelisted:
-  - "Du gut"
-  - "Nochmal du gut"
-default:
-  - "Du normal"
-  - "Du normal aber 2"
