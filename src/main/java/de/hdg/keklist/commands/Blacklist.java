@@ -1,5 +1,6 @@
 package de.hdg.keklist.commands;
 
+import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -13,17 +14,13 @@ import java.sql.Statement;
 public class Blacklist implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length == 0) {
-            sender.sendMessage(ChatColor.RED + "Invalider Syntax!");
-            sender.sendMessage(ChatColor.RED + "Benutze: /blacklist <add/remove> <Spieler>");
-            return true;
-        }else if (args.length == 1) {
-            sender.sendMessage(ChatColor.RED + "Invalider Syntax!");
-            sender.sendMessage(ChatColor.RED + "Benutze: /blacklist <add/remove> <Spieler>");
+        if (args.length != 2) {
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /blacklist <add/remove> <Spieler>"));
             return true;
         }
 
-        String player = args[2];
+        String player = args[1];
         String senderName = sender.getName();
         long timestamp = System.currentTimeMillis() / 1000L;
 
@@ -31,19 +28,24 @@ public class Blacklist implements CommandExecutor {
         Statement statement = null;
 
         try {
-            if(args[1].equalsIgnoreCase("add")) {
-                statement = conn.createStatement();
-                statement.executeUpdate("INSERT INTO blacklist (player, by, unix) VALUES ('" + player + "', '" + senderName + "', '" + timestamp + "')");
-                sender.sendMessage(ChatColor.GREEN + "Der Spieler " + player + " wurde erfolgreich zur Blacklist hinzugefügt!");
-            }else if (args[1].equalsIgnoreCase("remove")) {
-                statement = conn.createStatement();
-                statement.executeUpdate("DELETE FROM blacklist WHERE player = '" + player + "'");
-                sender.sendMessage(ChatColor.GREEN + "Der Spieler " + player + " wurde erfolgreich von der Blacklist entfernt!");
-            }else {
-                sender.sendMessage(ChatColor.RED + "Invalider Syntax!");
-                sender.sendMessage(ChatColor.RED + "Benutze: /blacklist <add/remove> <Spieler>");
+            switch (args[0]) {
+                case "add" -> {
+                    statement = conn.createStatement();
+                    statement.executeUpdate("INSERT INTO blacklist (player, sender, timestamp) VALUES ('" + player + "', '" + senderName + "', '" + timestamp + "')");
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + player + " wurde erfolgreich zur Blacklist hinzugefügt!"));
+                }
+                case "remove" -> {
+                    statement = conn.createStatement();
+                    statement.executeUpdate("DELETE FROM blacklist WHERE player = '" + player + "'");
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + player + " wurde erfolgreich von der Blacklist entfernt!"));
+                }
+                default -> {
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /blacklist <add/remove> <Spieler>"));
+                }
             }
-        }catch (Exception e) {
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

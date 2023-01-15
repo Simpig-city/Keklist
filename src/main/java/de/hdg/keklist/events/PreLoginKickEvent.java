@@ -9,11 +9,7 @@ public class PreLoginKickEvent implements Listener {
     
     @EventHandler(ignoreCancelled = true)
     public void onPreLogin(AsyncPlayerPreLoginEvent event){
-        System.out.println("Player tried to join the server!");
-
-        //Jonas?
-        //SAGE HALLO BIN DA
-
+        //TODO : Manage white and black list
     }
 
 }

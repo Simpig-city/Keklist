@@ -2,6 +2,12 @@ name: Keklist
 version: '${project.version}'
 main: de.hdg.keklist.Keklist
 api-version: 1.19
+database: true
+softdepend:
+  - floodgate
+website: https://swc.sasp.gq
+authors: ["hdgamer1404Jonas", "SageSphinx63920"]
+
 commands:
   whitelist:
     description: Whitelist commands

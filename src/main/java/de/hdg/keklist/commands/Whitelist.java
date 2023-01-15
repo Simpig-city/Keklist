@@ -1,5 +1,6 @@
 package de.hdg.keklist.commands;
 
+import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -13,17 +14,12 @@ import java.sql.Statement;
 public class Whitelist implements CommandExecutor {
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-        if (args.length == 0) {
-            sender.sendMessage(ChatColor.RED + "Invalider Syntax!");
-            sender.sendMessage(ChatColor.RED + "Benutze: /whitelist <add/remove> <Spieler>");
-            return true;
-        }else if (args.length == 1) {
-            sender.sendMessage(ChatColor.RED + "Invalider Syntax!");
-            sender.sendMessage(ChatColor.RED + "Benutze: /whitelist <add/remove> <Spieler>");
-            return true;
+        if (args.length != 2) {
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /whitelist <add/remove> <Spieler>"));
         }
 
-        String player = args[2];
+        String player = args[1];
         String senderName = sender.getName();
         long timestamp = System.currentTimeMillis() / 1000L;
 
@@ -31,19 +27,25 @@ public class Whitelist implements CommandExecutor {
         Statement statement = null;
 
         try {
-            if(args[1].equalsIgnoreCase("add")) {
-                statement = conn.createStatement();
-                statement.executeUpdate("INSERT INTO whitelist (player, by, unix) VALUES ('" + player + "', '" + senderName + "', '" + timestamp + "')");
-                sender.sendMessage(ChatColor.GREEN + "Der Spieler " + player + " wurde erfolgreich zur Whitelist hinzugefügt!");
-            }else if (args[1].equalsIgnoreCase("remove")) {
-                statement = conn.createStatement();
-                statement.executeUpdate("DELETE FROM whitelist WHERE player = '" + player + "'");
-                sender.sendMessage(ChatColor.GREEN + "Der Spieler " + player + " wurde erfolgreich von der Whitelist entfernt!");
-            }else {
-                sender.sendMessage(ChatColor.RED + "Invalider Syntax!");
-                sender.sendMessage(ChatColor.RED + "Benutze: /whitelist <add/remove> <Spieler>");
+            switch (args[0]) {
+                case "add" -> {
+                    statement = conn.createStatement();
+                    statement.executeUpdate("INSERT INTO whitelist (player, sender, timestamp) VALUES ('" + player + "', '" + senderName + "', '" + timestamp + "')");
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + player + " wurde erfolgreich zur Whitelist hinzugefügt!"));
+                }
+
+                case "remove" -> {
+                    statement = conn.createStatement();
+                    statement.executeUpdate("DELETE FROM whitelist WHERE player = '" + player + "'");
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + player + " wurde erfolgreich von der Whitelist entfernt!"));
+                }
+
+                default -> {
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /whitelist <add/remove> <Spieler>"));
+                }
             }
-        }catch (Exception e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

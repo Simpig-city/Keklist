@@ -5,6 +5,7 @@ import de.hdg.keklist.commandCompletions.WhitelistCompletor;
 import de.hdg.keklist.commands.Blacklist;
 import de.hdg.keklist.commands.Whitelist;
 import de.hdg.keklist.database.DB;
+import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
@@ -15,9 +16,9 @@ import java.util.Random;
 
 public final class Keklist extends JavaPlugin {
 
-    private static Keklist instance;
+    private static @Getter Keklist instance;
     private static final Random random = new Random();
-    public final MiniMessage miniMessage = MiniMessage.builder().tags(
+    private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
             TagResolver.builder()
                     .resolver(StandardTags.color())
                     .resolver(StandardTags.decorations())
@@ -58,19 +59,19 @@ public final class Keklist extends JavaPlugin {
     @NotNull
     public String getRandomizedMessage(@NotNull RandomType type) {
        switch (type) {
-           case BLACKLISTED:
+           case BLACKLISTED -> {
                return getConfig().getStringList("blacklisted").get(random.nextInt(getConfig().getStringList("blacklisted").size()));
-           case WHITELISTED:
+           }
+           case WHITELISTED -> {
                return getConfig().getStringList("whitelisted").get(random.nextInt(getConfig().getStringList("whitelisted").size()));
-           case NORMAL:
+           }
+           case NORMAL -> {
                return getConfig().getStringList("default").get(random.nextInt(getConfig().getStringList("default").size()));
-           default:
+           }
+           default -> {
                return "null";
+           }
        }
-    }
-
-    public static Keklist getInstance() {
-        return instance;
     }
 
 

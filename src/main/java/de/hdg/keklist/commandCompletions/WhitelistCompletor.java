@@ -11,7 +11,7 @@ import java.sql.Connection;
 import java.sql.Statement;
 import java.util.List;
 
-public class WhitelistCompletor implements @Nullable TabCompleter {
+public class WhitelistCompletor implements TabCompleter {
     @Override
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length == 1) {
