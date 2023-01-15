@@ -1,0 +1,15 @@
+name: Keklist
+version: '1.0-SNAPSHOT'
+main: de.hdg.keklist.Keklist
+api-version: 1.19
+commands:
+  whitelist:
+    description: Whitelist commands
+    usage: /whitelist <add|remove>
+    aliases: [wl]
+    permission: keklist.whitelist
+  blacklist:
+    description: Blacklist commands
+    usage: /blacklist <add|remove>
+    aliases: [bl]
+    permission: keklist.blacklist
