@@ -8,7 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.List;
 
 public class BlacklistCompletor implements TabCompleter {
@@ -17,11 +19,21 @@ public class BlacklistCompletor implements TabCompleter {
         if (args.length == 1) {
             return List.of("add", "remove");
         } else if (args.length == 2) {
-            Connection conn = DB.getDB();
-            Statement statement = null;
+
             try {
-                statement = conn.createStatement();
-                return List.of(statement.executeQuery("SELECT player FROM blacklist").toString());
+                List<String> list = new ArrayList<String>();
+
+                ResultSet rsUser = DB.onQuery("SELECT name FROM blacklist");
+                while(rsUser.next()){
+                    list.add(rsUser.getString("name"));
+                }
+
+                ResultSet rsIp = DB.onQuery("SELECT ip FROM blacklistIp");
+                while(rsIp.next()){
+                    list.add(rsIp.getString("ip"));
+                }
+
+                return list;
             } catch (Exception e) {
                 e.printStackTrace();
             }

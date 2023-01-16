@@ -23,8 +23,8 @@ public class ListPingEvent implements Listener {
         PlayerProfile playerProfile = Bukkit.createProfile(UUID.randomUUID(), "Sage testet das");
         event.setPlayerSample(List.of(playerProfile));
 
-        Connection conn = DB.getDB();
-        Statement statement = null;
+      /*  Connection conn = DB.getDB();
+        Statement statement = null;*/
 
         boolean isBlacklisted = false;
 

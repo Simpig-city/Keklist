@@ -33,7 +33,7 @@ public final class Keklist extends JavaPlugin {
     public void onLoad() {
        instance = this;
 
-
+        DB.connect();
        //save config for custom messages
        this.saveDefaultConfig();
     }
@@ -54,6 +54,7 @@ public final class Keklist extends JavaPlugin {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
+        DB.disconnect();
     }
 
     @NotNull
