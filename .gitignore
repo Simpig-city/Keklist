@@ -1,3 +1,11 @@
 /target
 /.idea
 *.iml
+
+*.db
+*.log
+*.log.*
+/testserver
+
+/out
+/META-INF

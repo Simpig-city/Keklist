@@ -1,8 +1,9 @@
 name: Keklist
-version: '${project.version}'
+version: 1.0.0
 main: de.hdg.keklist.Keklist
 api-version: 1.19
 database: true
+description: Block all the Keks and accept the nice people
 softdepend:
   - floodgate
 website: https://swc.sasp.gq

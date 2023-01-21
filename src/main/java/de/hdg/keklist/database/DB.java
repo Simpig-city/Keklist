@@ -106,6 +106,7 @@ public class DB {
 
         DB.onUpdate("CREATE TABLE IF NOT EXISTS blacklist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ", reason VARCHAR DEFAULT 'No reason given')");
         DB.onUpdate("CREATE TABLE IF NOT EXISTS blacklistIp (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ", reason VARCHAR DEFAULT 'No reason given')");
+        DB.onUpdate("CREATE TABLE IF NOT EXISTS blacklistMotd (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
     }
 
 }

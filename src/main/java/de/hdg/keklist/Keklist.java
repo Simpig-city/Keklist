@@ -5,10 +5,14 @@ import de.hdg.keklist.commandCompletions.WhitelistCompletor;
 import de.hdg.keklist.commands.Blacklist;
 import de.hdg.keklist.commands.Whitelist;
 import de.hdg.keklist.database.DB;
+import de.hdg.keklist.events.BlacklistRemoveMotd;
+import de.hdg.keklist.events.ListPingEvent;
+import de.hdg.keklist.events.PreLoginKickEvent;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
@@ -33,9 +37,9 @@ public final class Keklist extends JavaPlugin {
     public void onLoad() {
        instance = this;
 
-        DB.connect();
        //save config for custom messages
        this.saveDefaultConfig();
+        DB.connect();
     }
 
     @Override
@@ -49,6 +53,11 @@ public final class Keklist extends JavaPlugin {
 
         getCommand("whitelist").setTabCompleter(new WhitelistCompletor());
         getCommand("blacklist").setTabCompleter(new BlacklistCompletor());
+
+        PluginManager pm = getServer().getPluginManager();
+        pm.registerEvents(new ListPingEvent(), this);
+        pm.registerEvents(new PreLoginKickEvent(), this);
+        pm.registerEvents(new BlacklistRemoveMotd(), this);
     }
 
     @Override
@@ -58,21 +67,37 @@ public final class Keklist extends JavaPlugin {
     }
 
     @NotNull
-    public String getRandomizedMessage(@NotNull RandomType type) {
+    public String getRandomizedMotd(@NotNull RandomType type) {
        switch (type) {
            case BLACKLISTED -> {
-               return getConfig().getStringList("blacklisted").get(random.nextInt(getConfig().getStringList("blacklisted").size()));
+               return getConfig().getStringList("messages.motd.blacklisted").get(random.nextInt(getConfig().getStringList("messages.motd.blacklisted").size()));
            }
            case WHITELISTED -> {
-               return getConfig().getStringList("whitelisted").get(random.nextInt(getConfig().getStringList("whitelisted").size()));
+               return getConfig().getStringList("messages.motd.whitelisted").get(random.nextInt(getConfig().getStringList("messages.motd.whitelisted").size()));
            }
            case NORMAL -> {
-               return getConfig().getStringList("default").get(random.nextInt(getConfig().getStringList("default").size()));
+               return getConfig().getStringList("messages.motd.default").get(random.nextInt(getConfig().getStringList("messages.motd.default").size()));
            }
            default -> {
                return "null";
            }
        }
+    }
+
+    public String getRandomizedKickMessage(@NotNull RandomType type) {
+        switch (type) {
+            case BLACKLISTED -> {
+                System.out.println(getConfig().getStringList("messages.kick.blacklisted"));
+                System.out.println(getConfig().getStringList("messages.kick.blacklisted").get(random.nextInt(getConfig().getStringList("messages.kick.blacklisted").size())));
+                return getConfig().getStringList("messages.kick.blacklisted").get(random.nextInt(getConfig().getStringList("messages.kick.blacklisted").size()));
+            }
+            case WHITELISTED -> {
+                return getConfig().getStringList("messages.kick.whitelisted").get(random.nextInt(getConfig().getStringList("messages.kick.whitelisted").size()));
+            }
+            default -> {
+                return "null";
+            }
+        }
     }
 
 

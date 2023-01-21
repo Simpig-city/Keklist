@@ -8,7 +8,6 @@ import okhttp3.OkHttp;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -29,7 +28,7 @@ public class Whitelist implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         if (args.length < 2) {
             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
-            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /whitelist <add/remove/list> [Spieler/IP]"));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /whitelist <add/remove> <Spieler/IP>"));
             return true;
         }
 
@@ -41,14 +40,6 @@ public class Whitelist implements CommandExecutor {
 
             if (args[1].matches("^[a-zA-Z0-9_]{2,16}$")) {
                 type = WhiteListType.USERNAME;
-
-                ResultSet rs = DB.onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
-
-                // User is already whitelisted
-                if (rs.next()) {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist bereits gewhitelistet!"));
-                    return true;
-                }
 
                 Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
                 try (Response response = client.newCall(request).execute()) {
@@ -69,13 +60,6 @@ public class Whitelist implements CommandExecutor {
             } else if (args[1].matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
                 type = WhiteListType.IPv4;
 
-                ResultSet rs = DB.onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
-
-                // IP is already whitelisted
-                if (rs.next()) {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist bereits gewhitelistet!"));
-                    return true;
-                }
             } else if (args[1].matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) {
                 //type = WhitelistType.IPv6;
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>IPv6 ist noch nicht unterstützt!"));
@@ -91,12 +75,27 @@ public class Whitelist implements CommandExecutor {
             switch (args[0]) {
                 case "add" -> {
                     if (type.equals(WhiteListType.USERNAME)) {
-                        DB.onUpdate("INSERT INTO whitelist (, name, by) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName);
+                        ResultSet rs = DB.onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
+
+                        if(!rs.next()){
+                            DB.onUpdate("INSERT INTO whitelist (uuid, name, by) VALUES (?, ?, ?)", uuid.toString(), args[1], senderName);
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
+
+                        }else
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist bereits gewhitelistet!"));
+
                     } else if (type.equals(WhiteListType.IPv4)) {
-                        DB.onUpdate("INSERT INTO whitelistIp (ip, by) VALUES (?, ?)", args[1], senderName);
+                        ResultSet rs = DB.onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
+
+                        if(!rs.next()) {
+                            DB.onUpdate("INSERT INTO whitelistIp (ip, by) VALUES (?, ?)", args[1], senderName);
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
+                        }else
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist bereits gewhitelistet!"));
+
                     } else {/*TODO : May add IPv6*/ }
 
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
+                    return true;
                 }
 
                 case "remove" -> {
@@ -104,6 +103,7 @@ public class Whitelist implements CommandExecutor {
                         ResultSet rs = DB.onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
                         if (rs.next()) {
                             DB.onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
                         } else {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist nicht gewhitelistet!"));
                             return true;
@@ -112,14 +112,16 @@ public class Whitelist implements CommandExecutor {
                         ResultSet rs = DB.onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
                         if (rs.next()) {
                             DB.onUpdate("DELETE FROM whitelistIp WHERE ip = ?", args[1]);
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
                         } else {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist nicht gewhitelistet!"));
                             return true;
                         }
                     } else {/*TODO : May add IPv6*/ }
 
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
+                    return true;
                 }
+
 
                 default -> {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
