@@ -4,6 +4,7 @@ import de.hdg.keklist.velocity.KeklistVelocity;
 import lombok.Getter;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
+import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.DumperOptions;
 
 import java.io.IOException;
@@ -11,9 +12,9 @@ import java.nio.file.Path;
 
 public class VeloConfigUtil {
 
-    private @Getter YAMLConfigurationLoader configLoader = null;
+    private @Getter YAMLConfigurationLoader configLoader;
 
-    public VeloConfigUtil(Path directory, String fileName) {
+    public VeloConfigUtil(@NotNull Path directory, @NotNull String fileName) {
         configLoader = YAMLConfigurationLoader.builder().setPath(directory.resolve(fileName)).build();
 
         try {

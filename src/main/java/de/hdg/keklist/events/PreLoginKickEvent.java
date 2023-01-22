@@ -2,8 +2,6 @@ package de.hdg.keklist.events;
 
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
-import net.elytrium.limboapi.api.LimboFactory;
-import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -32,6 +30,11 @@ public class PreLoginKickEvent implements Listener {
                                 return;
                             }
                         }
+                    }
+
+                    if(config.getBoolean("blacklist.limbo")){
+                        Keklist.getInstance().sendUserToLimbo(event.getUniqueId());
+                        return;
                     }
 
                     event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)));
@@ -76,6 +79,11 @@ public class PreLoginKickEvent implements Listener {
                                 return;
                             }
                         }
+                    }
+
+                    if(config.getBoolean("blacklist.limbo")){
+                        Keklist.getInstance().sendUserToLimbo(event.getPlayer());
+                        return;
                     }
 
                     event.disallow(PlayerLoginEvent.Result.KICK_BANNED, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)));

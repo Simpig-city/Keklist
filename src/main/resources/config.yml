@@ -2,7 +2,7 @@ blacklist:
   enabled: true
   allow-join-with-admin: false
   admin-permission: "blacklist.admin"
-  limbo: false # Not supported yet
+  limbo: false # Experimental
 
 whitelist: true
 

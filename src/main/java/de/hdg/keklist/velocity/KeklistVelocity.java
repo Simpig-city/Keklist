@@ -1,7 +1,5 @@
 package de.hdg.keklist.velocity;
 
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -11,16 +9,22 @@ import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
-import com.velocitypowered.api.proxy.messages.ChannelMessageSink;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+import de.hdg.keklist.velocity.command.WhereAmICommand;
 import de.hdg.keklist.velocity.util.VeloConfigUtil;
 import lombok.Getter;
+import net.elytrium.limboapi.api.Limbo;
 import net.elytrium.limboapi.api.LimboFactory;
+import net.elytrium.limboapi.api.chunk.Dimension;
+import net.elytrium.limboapi.api.chunk.VirtualWorld;
+import net.elytrium.limboapi.api.file.SchematicFile;
+import net.elytrium.limboapi.api.player.GameMode;
 import org.slf4j.Logger;
 
+import java.io.IOException;
 import java.nio.file.Path;
 
-@Plugin(id = "de.hdg.keklist.Keklist", name = "Keklist", version = "1.0.0",
+@Plugin(id = "keklist", name = "Keklist", version = "1.0.0",
         url = "https://simp.sasp.gq", description = "Block all the Keks and accept the nice people",
         authors = {
                 "hdgamer1404Jonas",
@@ -31,41 +35,61 @@ import java.nio.file.Path;
 public class KeklistVelocity {
 
     private final Path dataDirectory;
-    private final ProxyServer server;
+    private final @Getter ProxyServer server;
     private final @Getter Logger logger;
-    private @Getter VeloConfigUtil config;
+    private final @Getter VeloConfigUtil config;
+
+    private final @Getter LimboFactory limboAPI;
+    private @Getter Limbo limbo;
+
+    private final ChannelIdentifier limboChannel = MinecraftChannelIdentifier.from("keklist:data");
+
     private static KeklistVelocity instance;
-    private @Getter LimboFactory limboAPI;
-    private final ChannelIdentifier limboChannel =
-            MinecraftChannelIdentifier.from("keklist:data");
 
     @Inject
-    public KeklistVelocity(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+    public KeklistVelocity(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) throws IOException {
         this.server = server;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
         this.instance = this;
+        this.config = new VeloConfigUtil(dataDirectory, "config.yml");
 
         limboAPI = (LimboFactory) this.server.getPluginManager().getPlugin("limboapi").flatMap(PluginContainer::getInstance).orElseThrow();
-    }
+        if (!KeklistVelocity.getInstance().dataDirectory.resolve("limbo.schem").toFile().exists()) {
+            logger.error("The schemetic file for the Limbo doesn't exist! Could not load limbo.schem");
 
+        } else
+            this.limbo = createLimbo();
+    }
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) {
         //Register channel
         server.getChannelRegistrar().register(limboChannel);
-
     }
 
-    public static KeklistVelocity getInstance(){
+    public static KeklistVelocity getInstance() {
         return instance;
     }
 
-    public void sendExampleMessage(ChannelMessageSink receiver, String message) {
-        // Write whatever you want to send to a buffer
-        ByteArrayDataOutput buf = ByteStreams.newDataOutput();
-        buf.writeUTF(message);
-        // Send it
-        receiver.sendPluginMessage(limboChannel, buf.toByteArray());
+    private Limbo createLimbo() throws IOException {
+        LimboFactory factory = KeklistVelocity.getInstance().getLimboAPI();
+
+        VirtualWorld world = factory.createVirtualWorld(Dimension.OVERWORLD, 0, 0, 0, 0, 0);
+        SchematicFile schematicFile = new SchematicFile(KeklistVelocity.getInstance().dataDirectory.resolve("limbo.schem"));
+        schematicFile.toWorld(factory, world, 0, 0, 0, 7);
+
+        Limbo setupLimbo = factory.createLimbo(world);
+
+        setupLimbo.setName("Keklist Limbo");
+        setupLimbo.setGameMode(GameMode.CREATIVE);
+        setupLimbo.registerCommand(server.getCommandManager().metaBuilder("whereami").build(), new WhereAmICommand());
+        setupLimbo.setReducedDebugInfo(true);
+        setupLimbo.setShouldRespawn(true);
+        setupLimbo.setWorldTime(1000);
+        setupLimbo.setViewDistance(8);
+        setupLimbo.setSimulationDistance(1);
+
+        return setupLimbo;
     }
 }

@@ -6,6 +6,7 @@
 *.log
 *.log.*
 /testserver
+/testproxy
 
 /out
 /META-INF
