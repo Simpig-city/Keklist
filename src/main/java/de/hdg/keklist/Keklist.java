@@ -45,7 +45,7 @@ public final class Keklist extends JavaPlugin  {
     public void onLoad() {
         instance = this;
 
-        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist");
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:data");
 
         //save config for custom messages
         this.saveDefaultConfig();
@@ -115,17 +115,22 @@ public final class Keklist extends JavaPlugin  {
     }
 
     public void sendUserToLimbo(UUID uuid){
-        ByteArrayDataOutput out = ByteStreams.newDataOutput();
-        out.writeUTF("data");
+        try {
+            ByteArrayDataOutput out = ByteStreams.newDataOutput();
+           // out.writeUTF("data");
 
-        JsonObject data = new JsonObject();
-        data.add("uuid", new JsonPrimitive(uuid.toString()));
-        data.add("unix", new JsonPrimitive(System.currentTimeMillis()));
-        data.add("from", new JsonPrimitive("Keklist"));
+            JsonObject data = new JsonObject();
+            data.add("uuid", new JsonPrimitive(uuid.toString()));
+            data.add("unix", new JsonPrimitive(System.currentTimeMillis()));
+            data.add("from", new JsonPrimitive("Keklist"));
 
-        out.writeUTF(data.getAsString());
+            out.writeUTF(data.toString());
 
-        Iterables.getFirst(Bukkit.getOnlinePlayers(), null).sendPluginMessage(this, "keklist", out.toByteArray());
+            Iterables.getFirst(Bukkit.getOnlinePlayers(), null).sendPluginMessage(this, "keklist:data", out.toByteArray());
+
+        }catch (NullPointerException | IllegalArgumentException ex){
+            getLogger().warning("No Player online to limbo player! Waiting for next event...");
+        }
     }
 
     //Enum for the different messages

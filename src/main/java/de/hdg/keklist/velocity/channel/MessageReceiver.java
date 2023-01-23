@@ -14,9 +14,11 @@ import net.elytrium.limboapi.api.Limbo;
 import net.elytrium.limboapi.api.LimboSessionHandler;
 import net.elytrium.limboapi.api.material.VirtualItem;
 import net.elytrium.limboapi.api.player.LimboPlayer;
+import net.elytrium.limboapi.api.protocol.packets.data.AbilityFlags;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
+import net.kyori.adventure.text.Component;
 
-import java.awt.image.BufferedImage;
+import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.util.UUID;
 
@@ -46,18 +48,16 @@ public class MessageReceiver {
                 String fromServer = data.getAsJsonObject().get("from").getAsString();
 
                 KeklistVelocity.getInstance().getServer().getPlayer(uuid).ifPresentOrElse(player -> {
-                    Limbo limbo = KeklistVelocity.getInstance().getLimbo();
+                    if ((boolean) KeklistVelocity.getInstance().getConfig().getOption("limbo.nbt", "limbo.enabled")) {
+                        Limbo limbo = KeklistVelocity.getInstance().getLimbo();
 
-                    limbo.spawnPlayer(player, new KeklistSessionHandler());
+                        limbo.spawnPlayer(player, new KeklistSessionHandler());
 
-                    KeklistVelocity.getInstance().getLogger().info("User " + player.getUsername() + " entern the Keklist Limbo from Server " + fromServer + ". Operation took" + (System.currentTimeMillis() - unix) + "ms");
-                    }, new Runnable() {
-                    @Override
-                    public void run() {
-                        KeklistVelocity.getInstance().getLogger().error("Failed to send user with UUID: " + uuid.toString() + " to the limbo! User not found.");
+                        KeklistVelocity.getInstance().getLogger().info("User " + player.getUsername() + " entern the Keklist Limbo from Server " + fromServer + ". Operation took" + (System.currentTimeMillis() - unix) + "ms");
+                    } else {
+                        player.disconnect(Component.text("The Limbo server is disabled on proxy side! \n Kicking you instead"));
                     }
-                });
-
+                }, () -> KeklistVelocity.getInstance().getLogger().error("Failed to send user with UUID: " + uuid+ " to the limbo! User not found."));
             }
         }
     }
@@ -76,15 +76,19 @@ public class MessageReceiver {
             this.player = player;
             this.joinTime = System.currentTimeMillis();
 
+            player.sendAbilities((byte) (AbilityFlags.FLYING | AbilityFlags.ALLOW_FLYING), 0.05F, 0.1F);
 
-            player.disableFalling();
-            player.flushPackets();
-        }
-
-        @Override
-        public void onChat(String message) {
-            player.sendImage(0, new BufferedImage(1, 1, 1));
-            player.setInventory(0, getMap(), 1, 0, CompoundBinaryTag.builder().putInt("map", 0).build());
+            if ((boolean) KeklistVelocity.getInstance().getConfig().getOption(false, "limbo.map")) {
+                if (KeklistVelocity.getInstance().getConfig().getConfigDirectory().resolve("map.jpg").toFile().exists()) {
+                    try {
+                        player.sendImage(0, ImageIO.read(KeklistVelocity.getInstance().getConfig().getConfigDirectory().resolve("map.jpg").toFile()));
+                        player.setInventory(4, getMap(), 1, 0, CompoundBinaryTag.builder().putInt("map", 0).build());
+                    } catch (IOException e) {
+                        KeklistVelocity.getInstance().getLogger().error("Could not load BufferedImage from file map.jpg!");
+                    }
+                } else
+                    KeklistVelocity.getInstance().getLogger().warn("Could not load file map.jpg!");
+            }
         }
 
         @Override

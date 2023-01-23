@@ -8,8 +8,6 @@
             <entry key="BUKKIT" value="false" />
             <entry key="SPIGOT" value="false" />
             <entry key="PAPER" value="true" />
-            <entry key="VELOCITY" value="true" />
-            <entry key="ADVENTURE" value="true" />
           </map>
         </userChosenTypes>
         <autoDetectTypes>

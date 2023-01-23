@@ -4,7 +4,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
-import okhttp3.OkHttp;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -13,11 +12,7 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
-import java.sql.Connection;
 import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.UUID;
 
 public class Whitelist implements CommandExecutor {
@@ -43,13 +38,22 @@ public class Whitelist implements CommandExecutor {
 
                 Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
                 try (Response response = client.newCall(request).execute()) {
-                    JsonElement element = JsonParser.parseString(response.body().string());
 
-                    //Mojang API returned an error
-                    if (element.getAsJsonObject().get("error") != null) {
+                    String responseString = response.body().string();
+                    JsonElement element = JsonParser.parseString(responseString);
+
+                    //Mojang API returned an error or user not found
+                    if(!element.isJsonNull()){
+                        if (element.getAsJsonObject().get("error") != null) {
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Spieler existiert nicht! Mehr zum Fehler in der Konsole"));
+                            Keklist.getInstance().getLogger().warning("Der Spieler " + args[1] + " existiert nicht!");
+                            Keklist.getInstance().getLogger().warning("Details: " + element.getAsJsonObject().get("errorMessage").getAsString());
+                            return true;
+                        }
+                    }else{
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Spieler existiert nicht! Mehr zum Fehler in der Konsole"));
                         Keklist.getInstance().getLogger().warning("Der Spieler " + args[1] + " existiert nicht!");
-                        Keklist.getInstance().getLogger().warning("Details: " + element.getAsJsonObject().get("errorMessage").getAsString());
+                        Keklist.getInstance().getLogger().warning("Details: response is null");
                         return true;
                     }
 

@@ -2,6 +2,7 @@ package de.hdg.keklist.velocity.util;
 
 import de.hdg.keklist.velocity.KeklistVelocity;
 import lombok.Getter;
+import lombok.SneakyThrows;
 import ninja.leaping.configurate.ConfigurationNode;
 import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +13,8 @@ import java.nio.file.Path;
 
 public class VeloConfigUtil {
 
-    private @Getter YAMLConfigurationLoader configLoader;
+    private YAMLConfigurationLoader configLoader;
+    private @Getter Path configDirectory;
 
     public VeloConfigUtil(@NotNull Path directory, @NotNull String fileName) {
         configLoader = YAMLConfigurationLoader.builder().setPath(directory.resolve(fileName)).build();
@@ -24,6 +26,7 @@ public class VeloConfigUtil {
             }
 
             this.configLoader = YAMLConfigurationLoader.builder().setPath(directory.resolve("config.yml")).setFlowStyle(DumperOptions.FlowStyle.BLOCK).build();
+            this.configDirectory = directory;
 
             generateConfig();
         } catch (IOException exception) {
@@ -32,7 +35,8 @@ public class VeloConfigUtil {
         }
     }
 
-    public Object getOption(Object defaultValue, String... path) throws IOException {
+    @SneakyThrows(IOException.class)
+    public Object getOption(Object defaultValue, String... path){
         return configLoader.load().getNode(path).getValue()!=null?configLoader.load().getNode(path).getValue():defaultValue;
     }
 
@@ -47,7 +51,9 @@ public class VeloConfigUtil {
 
         final ConfigurationNode conf = configLoader.load();
 
-        conf.getNode("functions").getNode("enableLimbo").setValue(true);
+        conf.getNode("limbo").getNode("enabled").setValue(true);
+        conf.getNode("limbo").getNode("map").setValue(true);
+        conf.getNode("limbo").getNode("file").setValue("limbo.nbt");
         configLoader.save(conf);
 
         KeklistVelocity.getInstance().getLogger().info("Config generated!");
