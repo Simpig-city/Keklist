@@ -31,15 +31,13 @@ public class MessageReceiver {
     }
 
     @Subscribe
-    public void onPluginMessageEvent(PluginMessageEvent event) throws IOException {
+    public void onPluginMessageEvent(PluginMessageEvent event) {
         if (event.getIdentifier().equals(identifier)) {
             event.setResult(PluginMessageEvent.ForwardResult.handled());
-
 
             if (event.getSource() instanceof ServerConnection) {
                 ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
                 String message = in.readUTF();
-
 
                 JsonElement data = JsonParser.parseString(message);
 
@@ -63,8 +61,7 @@ public class MessageReceiver {
     }
 
 
-    private class KeklistSessionHandler implements LimboSessionHandler {
-
+    private static class KeklistSessionHandler implements LimboSessionHandler {
         private long joinTime;
         private LimboPlayer player;
 
