@@ -63,7 +63,7 @@ public class KeklistVelocity {
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) throws IOException {
-        if((boolean) config.getOption("limbo.nbt", "limbo.enabled")){
+        if((boolean) config.getOption(true, "limbo.enabled")){
             this.limbo = createLimbo();
         }else
             logger.warn("Velocity Limbo not enabled! Kicking player instead if message from Spigot Plugin...");
@@ -82,7 +82,7 @@ public class KeklistVelocity {
 
         VirtualWorld world = factory.createVirtualWorld(Dimension.OVERWORLD, 0, 0, 0, 0, 0);
         StructureFile schematicFile = new StructureFile(KeklistVelocity.getInstance().dataDirectory.resolve("limbo.nbt"));
-        schematicFile.toWorld(factory, world, -9, -9, 0, 7);
+        schematicFile.toWorld(factory, world, -9, 0, -9, 7);
 
         Limbo setupLimbo = factory.createLimbo(world);
 
