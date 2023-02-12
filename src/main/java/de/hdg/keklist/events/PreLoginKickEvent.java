@@ -24,7 +24,7 @@ public class PreLoginKickEvent implements Listener {
     public void onPreLogin(AsyncPlayerPreLoginEvent event) {
         if (config.getBoolean("blacklist.enabled")) {
             ResultSet rsUser = DB.onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getUniqueId().toString());
-            ResultSet rsIp = DB.onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getAddress().getHostName());
+            ResultSet rsIp = DB.onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getRawAddress().getHostName());
 
             try {
                 if (rsUser.next() || rsIp.next()) {
@@ -37,7 +37,7 @@ public class PreLoginKickEvent implements Listener {
                     }
 
                     if (config.getBoolean("blacklist.limbo")) {
-                        Keklist.getInstance().sendUserToLimbo(event.getUniqueId()); //This might fail so we need to handle this in the login event
+                        Keklist.getInstance().sendUserToLimbo(event.getUniqueId()); //This might fail, so we need to handle this in the login event
                         return;
                     }
 
@@ -67,7 +67,6 @@ public class PreLoginKickEvent implements Listener {
             }
         }
     }
-
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onLogin(PlayerLoginEvent event) {

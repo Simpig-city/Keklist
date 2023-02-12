@@ -52,7 +52,7 @@ public class KeklistVelocity {
         this.server = server;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
-        this.instance = this;
+        instance = this;
         this.config = new VeloConfigUtil(dataDirectory, "config.yml");
 
         limboAPI = (LimboFactory) this.server.getPluginManager().getPlugin("limboapi").flatMap(PluginContainer::getInstance).orElseThrow();

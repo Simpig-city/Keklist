@@ -21,7 +21,9 @@ import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Random;
 import java.util.UUID;
@@ -29,6 +31,7 @@ import java.util.UUID;
 public final class Keklist extends JavaPlugin  {
 
     private static @Getter Keklist instance;
+    private final @Getter @Nullable FloodgateApi floodgateApi = FloodgateApi.getInstance();
     private static final Random random = new Random();
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
             TagResolver.builder()
@@ -117,7 +120,6 @@ public final class Keklist extends JavaPlugin  {
     public void sendUserToLimbo(UUID uuid){
         try {
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
-           // out.writeUTF("data");
 
             JsonObject data = new JsonObject();
             data.add("uuid", new JsonPrimitive(uuid.toString()));
@@ -127,7 +129,6 @@ public final class Keklist extends JavaPlugin  {
             out.writeUTF(data.toString());
 
             Iterables.getFirst(Bukkit.getOnlinePlayers(), null).sendPluginMessage(this, "keklist:data", out.toByteArray());
-
         }catch (NullPointerException | IllegalArgumentException ex){
             getLogger().warning("No Player online to limbo player! Waiting for next event...");
         }

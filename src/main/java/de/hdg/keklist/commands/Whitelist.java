@@ -10,6 +10,7 @@ import okhttp3.Response;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
+import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
@@ -31,7 +32,6 @@ public class Whitelist implements CommandExecutor {
             String senderName = sender.getName();
             WhiteListType type;
             UUID uuid = null;
-
 
             if (args[1].matches("^[a-zA-Z0-9_]{2,16}$")) {
                 type = WhiteListType.USERNAME;
@@ -63,15 +63,21 @@ public class Whitelist implements CommandExecutor {
                 }
             } else if (args[1].matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
                 type = WhiteListType.IPv4;
-
             } else if (args[1].matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) {
-                //type = WhitelistType.IPv6;
+                type = WhiteListType.IPv6;
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>IPv6 ist noch nicht unterstützt!"));
                 return true;
             } else {
-                //TODO : Add floodgate support
+                if(Keklist.getInstance().getFloodgateApi() != null){
+                    if(args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))){
+                        FloodgateApi api = Keklist.getInstance().getFloodgateApi();
 
-                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Ungültige IP oder Username!"));
+                        uuid = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
+                        type = WhiteListType.USERNAME;
+                    }
+                }
+
+                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Ungültige IP oder Username! <grey><o>Vielleicht überprüfe den Floodgate Prefix"));
                 return true;
             }
 
@@ -88,7 +94,7 @@ public class Whitelist implements CommandExecutor {
                         }else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist bereits gewhitelistet!"));
 
-                    } else if (type.equals(WhiteListType.IPv4)) {
+                    } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
                         ResultSet rs = DB.onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
                         if(!rs.next()) {

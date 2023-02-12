@@ -3,8 +3,12 @@ blacklist:
   allow-join-with-admin: false
   admin-permission: "blacklist.admin"
   limbo: false # Experimental
-
 whitelist: true
+
+# Note: If you use a proxy you need to enable 'send-floodgate-data' on the proxy's config
+# More: https://wiki.geysermc.org/floodgate/setup/
+floodgate:
+  prefix: "." # Prefix for the floodgate player
 
 messages:
   motd:

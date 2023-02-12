@@ -12,6 +12,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
@@ -63,13 +64,19 @@ public class Blacklist implements CommandExecutor {
                 }
             } else if (args[1].matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
                 type = BlacklistType.IPv4;
-
             } else if (args[1].matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) {
-                //type = BlacklistType.IPv6;
+                type = BlacklistType.IPv6;
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>IPv6 ist noch nicht unterstützt!"));
                 return true;
             } else {
-                //TODO : Add floodgate support
+                if(Keklist.getInstance().getFloodgateApi() != null){
+                    if(args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))){
+                        FloodgateApi api = Keklist.getInstance().getFloodgateApi();
+
+                        uuid = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
+                        type = BlacklistType.USERNAME;
+                    }
+                }
 
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Ungültige IP oder Username!"));
                 return true;
@@ -107,7 +114,7 @@ public class Blacklist implements CommandExecutor {
                         }else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>" + args[1] + " ist bereits auf der Blacklist!"));
 
-                    } else if (type.equals(BlacklistType.IPv4)) {
+                    } else if (type.equals(BlacklistType.IPv4) || type.equals(BlacklistType.IPv6)) {
                         ResultSet rs = DB.onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
 
                         if (!rs.next()) {
@@ -128,8 +135,7 @@ public class Blacklist implements CommandExecutor {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist bereits geblacklistet!"));
                             return true;
                         }
-                    } else {/*TODO : May add IPv6*/ }
-
+                    }
                 }
 
                 case "remove" -> {
@@ -144,7 +150,7 @@ public class Blacklist implements CommandExecutor {
                             return true;
                         }
 
-                    } else if (type.equals(BlacklistType.IPv4)) {
+                    } else if (type.equals(BlacklistType.IPv4) || type.equals(BlacklistType.IPv6)) {
                         ResultSet rs = DB.onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
                         ResultSet rsMotd = DB.onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
                         if (rs.next() || rsMotd.next()) {
