@@ -8,21 +8,31 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
-public class Blacklist implements CommandExecutor {
+public class Blacklist extends Command {
 
     private static final OkHttpClient client = new OkHttpClient();
 
+    public Blacklist() {
+        super("blacklist");
+        setAliases(List.of("bl"));
+        setPermission("keklist.blacklist");
+        setUsage("/blacklist <add/remove/motd> [Spieler/IP] [Grund]");
+        setDescription("Blacklistet einen Spieler oder eine IP");
+    }
+
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (args.length < 2) {
             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /blacklist <add/remove/motd> [Spieler/IP] [Grund]"));
@@ -188,7 +198,6 @@ public class Blacklist implements CommandExecutor {
         return true;
     }
 
-
     /**
      * Types of blacklist entries
      * <p> USERNAME: Blacklist a player by their username
@@ -197,5 +206,61 @@ public class Blacklist implements CommandExecutor {
      */
     private enum BlacklistType {
         IPv4, IPv6, USERNAME
+    }
+
+    @Override
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        if (args.length < 2) {
+            return List.of("add", "remove", "motd");
+        } else if (args.length == 2) {
+            try {
+                switch (args[0]){
+                    case "remove" ->{
+                        List<String> list = new ArrayList<String>();
+
+                        ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM blacklist");
+                        while(rsUser.next()){
+                            list.add(rsUser.getString("name"));
+                        }
+
+                        ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistIp");
+                        while(rsIp.next()){
+                            list.add(rsIp.getString("ip"));
+                        }
+
+                        ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistMotd");
+                        while(rsMotd.next()){
+                            if(list.contains(rsMotd.getString("ip"))){
+                                continue;
+                            }
+
+                            list.add(rsMotd.getString("ip")+ "(motd)");
+                        }
+
+                        return list;
+                    }
+
+                    case "add" ->{
+                        List<String> completions = new ArrayList<String>();
+
+                        Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getName()));
+                        Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getAddress().getAddress().getHostAddress() +"(" + player.getName() + ")"));
+
+                        return completions;
+                    }
+
+                    case "motd" ->{
+                        List<String> completions = new ArrayList<String>();
+                        Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getAddress().getAddress().getHostAddress() +"(" + player.getName() + ")"));
+
+                        return completions;
+                    }
+                }
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return Collections.emptyList();
     }
 }

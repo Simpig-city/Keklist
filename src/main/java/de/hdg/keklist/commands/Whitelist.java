@@ -6,21 +6,33 @@ import de.hdg.keklist.Keklist;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
-public class Whitelist implements CommandExecutor {
+public class Whitelist extends Command {
 
     private static final OkHttpClient client = new OkHttpClient();
 
+    public Whitelist() {
+        super("whitelist");
+        setPermission("keklist.whitelist");
+        setDescription("Whitelist commands");
+        setAliases(List.of("wl"));
+        setUsage("/whitelist <add/remove> <Spieler/IP>");
+    }
+
     @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+    public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (args.length < 2) {
             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /whitelist <add/remove> <Spieler/IP>"));
@@ -139,9 +151,8 @@ public class Whitelist implements CommandExecutor {
             e.printStackTrace();
         }
 
-        return true;
+        return false;
     }
-
 
     /**
      * Types of whitelist entries
@@ -151,5 +162,45 @@ public class Whitelist implements CommandExecutor {
      */
     private enum WhiteListType {
         IPv4, IPv6, USERNAME
+    }
+
+    @Override
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        if (args.length < 2) {
+            return List.of("add", "remove");
+        } else if (args.length == 2) {
+            try {
+                switch (args[0]) {
+                    case "remove" -> {
+                        List<String> list = new ArrayList<String>();
+
+                        ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM whitelist");
+                        while (rsUser.next()){
+                            list.add(rsUser.getString("name"));
+                        }
+
+                        ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT ip FROM whitelistIp");
+                        while (rsIp.next()) {
+                            list.add(rsIp.getString("ip"));
+                        }
+
+                        return list;
+                    }
+
+                    case "add" -> {
+                        List<String> completions = new ArrayList<String>();
+
+                        Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getName()));
+                        Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getAddress().getAddress().getHostAddress() + "(" + player.getName() + ")"));
+
+                        return completions;
+                    }
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return Collections.emptyList();
     }
 }

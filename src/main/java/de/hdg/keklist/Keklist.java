@@ -5,8 +5,6 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import de.hdg.keklist.commandCompletions.BlacklistCompleter;
-import de.hdg.keklist.commandCompletions.WhitelistCompleter;
 import de.hdg.keklist.commands.Blacklist;
 import de.hdg.keklist.commands.Whitelist;
 import de.hdg.keklist.database.DB;
@@ -18,6 +16,7 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -31,7 +30,7 @@ import java.util.UUID;
 public final class Keklist extends JavaPlugin  {
 
     private static @Getter Keklist instance;
-    private final @Getter @Nullable FloodgateApi floodgateApi = FloodgateApi.getInstance();
+    private @Getter @Nullable FloodgateApi floodgateApi;
     private static @Getter DB database;
     private static final Random random = new Random();
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
@@ -48,6 +47,10 @@ public final class Keklist extends JavaPlugin  {
     @Override
     public void onLoad() {
         instance = this;
+
+        if(Bukkit.getPluginManager().getPlugin("floodgate") != null){
+            floodgateApi = FloodgateApi.getInstance();
+        }
 
         //Plugin channel for limbo connections
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:data");
@@ -68,11 +71,8 @@ public final class Keklist extends JavaPlugin  {
     public void onEnable() {
         getServer().getPluginManager().registerEvents(new de.hdg.keklist.events.ListPingEvent(), this);
 
-        getCommand("whitelist").setExecutor(new Whitelist());
-        getCommand("blacklist").setExecutor(new Blacklist());
-
-        getCommand("whitelist").setTabCompleter(new WhitelistCompleter());
-        getCommand("blacklist").setTabCompleter(new BlacklistCompleter());
+        registerCommand(new Whitelist());
+        registerCommand(new Blacklist());
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new ListPingEvent(), this);
@@ -146,4 +146,7 @@ public final class Keklist extends JavaPlugin  {
         BLACKLISTED, WHITELISTED, NORMAL
     }
 
+    private void registerCommand(Command command) {
+        getServer().getCommandMap().register("keklist", command);
+    }
 }
