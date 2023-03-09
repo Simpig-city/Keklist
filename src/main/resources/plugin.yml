@@ -2,12 +2,12 @@ name: Keklist
 version: 1.0.0
 main: de.hdg.keklist.Keklist
 api-version: 1.19
-database: true
 description: Block all the Keks and accept the nice people
+authors: ["hdgamer1404Jonas", "SageSphinx63920"]
+website: https://swc.sasp.gq
+database: true
 softdepend:
   - floodgate
-website: https://swc.sasp.gq
-authors: ["hdgamer1404Jonas", "SageSphinx63920"]
 
 commands:
   whitelist:

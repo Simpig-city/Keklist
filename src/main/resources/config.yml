@@ -14,6 +14,16 @@ whitelist:
 floodgate:
   prefix: "." # Prefix for the floodgate player
 
+mariadb:
+  enabled: false
+
+  host: localhost
+  port: 3306
+  database: keklist
+  username: root
+  password: root
+  options: "?useSSL=false&serverTimezone=MEZ"
+
 messages:
   motd:
     blacklisted:

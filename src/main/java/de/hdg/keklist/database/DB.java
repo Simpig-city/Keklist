@@ -1,6 +1,7 @@
 package de.hdg.keklist.database;
 
 import de.hdg.keklist.Keklist;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -11,24 +12,44 @@ import java.util.concurrent.FutureTask;
 
 public class DB {
 
-    private static Connection connection;
-    private static DBType type;
+    private Connection connection;
+    private final DBType type;
+    private final Keklist plugin;
 
-    public DB(DBType dbType) {
-      type = dbType;
+    public DB(DBType dbType, Keklist plugin) {
+        this.plugin = plugin;
+        type = dbType;
     }
 
     public void connect() {
-        connection = null;
         try {
-            File file = new File(Keklist.getInstance().getDataFolder(), "database.db");
-            if (!file.exists())
-                file.createNewFile();
+            if(type.equals(DBType.SQLITE)){
+                File file = new File(Keklist.getInstance().getDataFolder(), "database.db");
+                if (!file.exists())
+                    file.createNewFile();
 
-            String url = "jdbc:sqlite:" + file.getPath();
-            connection = DriverManager.getConnection(url);
+                String url = "jdbc:sqlite:" + file.getPath();
+                connection = DriverManager.getConnection(url);
 
-            createTables();
+                createTables();
+            }
+
+            if(type.equals(DBType.MARIADB)){
+                String url = "jdbc:mariadb://";
+
+                String host = plugin.getConfig().getString("mariadb.host");
+                String port = plugin.getConfig().getString("mariadb.port");
+                String database = plugin.getConfig().getString("mariadb.database");
+                String username = plugin.getConfig().getString("mariadb.username");
+                String password = plugin.getConfig().getString("mariadb.password");
+                String options = plugin.getConfig().getString("mariadb.options");
+
+                url += host + ":" + port + "/" + database + options;
+                connection = DriverManager.getConnection(url, username, password);
+
+                createTables();
+            }
+
         } catch (SQLException | java.io.IOException ex) {
             ex.printStackTrace();
         }
@@ -48,7 +69,7 @@ public class DB {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public void onUpdate(final String statement, Object... preparedArgs) {
+    public void onUpdate(@NotNull final String statement, Object... preparedArgs) {
         if(isConnected()) {
             new FutureTask(new Runnable() {
                 PreparedStatement preparedStatement;
@@ -67,7 +88,7 @@ public class DB {
                         throwable.printStackTrace();
                     }
                 }
-            }, 1).run();
+            }, null).run();
         }else {
             connect();
             onUpdate(statement, preparedArgs);
@@ -75,7 +96,7 @@ public class DB {
     }
 
     @Nullable
-    public ResultSet onQuery(final String query, Object... preparedArgs) {
+    public ResultSet onQuery(@NotNull final String query, Object... preparedArgs) {
         if (isConnected()) {
             try {
                 FutureTask<ResultSet> task = new FutureTask<>(new Callable<ResultSet>() {
@@ -91,6 +112,7 @@ public class DB {
                         return this.ps.executeQuery();
                     }
                 });
+
                 task.run();
                 return task.get();
             } catch (InterruptedException | ExecutionException e) {

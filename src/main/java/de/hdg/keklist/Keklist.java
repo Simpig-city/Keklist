@@ -56,7 +56,11 @@ public final class Keklist extends JavaPlugin  {
         this.saveDefaultConfig();
 
         //SQL
-        database = new DB(DB.DBType.SQLITE);
+        if(getConfig().getBoolean("database.enabled")){
+            database = new DB(DB.DBType.MARIADB, instance);
+        }else
+            database = new DB(DB.DBType.SQLITE, instance);
+
         database.connect();
     }
 
