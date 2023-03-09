@@ -12,9 +12,13 @@ import java.util.concurrent.FutureTask;
 public class DB {
 
     private static Connection connection;
-    private static Statement statement;
+    private static DBType type;
 
-    public static void connect() {
+    public DB(DBType dbType) {
+      type = dbType;
+    }
+
+    public void connect() {
         connection = null;
         try {
             File file = new File(Keklist.getInstance().getDataFolder(), "database.db");
@@ -23,7 +27,6 @@ public class DB {
 
             String url = "jdbc:sqlite:" + file.getPath();
             connection = DriverManager.getConnection(url);
-            statement = connection.createStatement();
 
             createTables();
         } catch (SQLException | java.io.IOException ex) {
@@ -31,11 +34,11 @@ public class DB {
         }
     }
 
-    public static boolean isConnected() {
+    public boolean isConnected() {
         return (connection != null);
     }
 
-    public static void disconnect() {
+    public void disconnect() {
         try {
             if (connection != null)
                 connection.close();
@@ -45,7 +48,7 @@ public class DB {
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
-    public static void onUpdate(final String statement, Object... preparedArgs) {
+    public void onUpdate(final String statement, Object... preparedArgs) {
         if(isConnected()) {
             new FutureTask(new Runnable() {
                 PreparedStatement preparedStatement;
@@ -72,7 +75,7 @@ public class DB {
     }
 
     @Nullable
-    public static ResultSet onQuery(final String query, Object... preparedArgs) {
+    public ResultSet onQuery(final String query, Object... preparedArgs) {
         if (isConnected()) {
             try {
                 FutureTask<ResultSet> task = new FutureTask<>(new Callable<ResultSet>() {
@@ -100,13 +103,16 @@ public class DB {
         return null;
     }
 
-    private static void createTables(){
-        DB.onUpdate("CREATE TABLE IF NOT EXISTS whitelist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
-        DB.onUpdate("CREATE TABLE IF NOT EXISTS whitelistIp (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
+    private void createTables(){
+        onUpdate("CREATE TABLE IF NOT EXISTS whitelist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
+        onUpdate("CREATE TABLE IF NOT EXISTS whitelistIp (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
 
-        DB.onUpdate("CREATE TABLE IF NOT EXISTS blacklist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ", reason VARCHAR DEFAULT 'No reason given')");
-        DB.onUpdate("CREATE TABLE IF NOT EXISTS blacklistIp (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ", reason VARCHAR DEFAULT 'No reason given')");
-        DB.onUpdate("CREATE TABLE IF NOT EXISTS blacklistMotd (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
+        onUpdate("CREATE TABLE IF NOT EXISTS blacklist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ", reason VARCHAR DEFAULT 'No reason given')");
+        onUpdate("CREATE TABLE IF NOT EXISTS blacklistIp (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ", reason VARCHAR DEFAULT 'No reason given')");
+        onUpdate("CREATE TABLE IF NOT EXISTS blacklistMotd (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
     }
 
+    public enum DBType {
+        MARIADB, SQLITE
+    }
 }

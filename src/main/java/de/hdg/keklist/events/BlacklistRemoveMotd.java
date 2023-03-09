@@ -12,7 +12,7 @@ public class BlacklistRemoveMotd implements Listener {
         String command = event.getMessage();
         String[] args = command.split(" ");
 
-        if(args[0].equals("/blacklist")){
+        if(args[0].equals("/blacklist") || args[0].equals("/whitelist") ){
             if(args[1].equalsIgnoreCase("remove") && args.length >= 3){
                 if(args[2].contains("(") && args[2].contains(")")){
                     event.setMessage(command.replace(command.substring(command.indexOf("("), command.indexOf(")") + 1), ""));

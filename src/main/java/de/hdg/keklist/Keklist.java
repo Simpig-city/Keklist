@@ -5,8 +5,8 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
-import de.hdg.keklist.commandCompletions.BlacklistCompletor;
-import de.hdg.keklist.commandCompletions.WhitelistCompletor;
+import de.hdg.keklist.commandCompletions.BlacklistCompleter;
+import de.hdg.keklist.commandCompletions.WhitelistCompleter;
 import de.hdg.keklist.commands.Blacklist;
 import de.hdg.keklist.commands.Whitelist;
 import de.hdg.keklist.database.DB;
@@ -32,6 +32,7 @@ public final class Keklist extends JavaPlugin  {
 
     private static @Getter Keklist instance;
     private final @Getter @Nullable FloodgateApi floodgateApi = FloodgateApi.getInstance();
+    private static @Getter DB database;
     private static final Random random = new Random();
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
             TagResolver.builder()
@@ -48,24 +49,26 @@ public final class Keklist extends JavaPlugin  {
     public void onLoad() {
         instance = this;
 
+        //Plugin channel for limbo connections
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:data");
 
         //save config for custom messages
         this.saveDefaultConfig();
-        DB.connect();
+
+        //SQL
+        database = new DB(DB.DBType.SQLITE);
+        database.connect();
     }
 
     @Override
     public void onEnable() {
-        DB.connect();
-
         getServer().getPluginManager().registerEvents(new de.hdg.keklist.events.ListPingEvent(), this);
 
         getCommand("whitelist").setExecutor(new Whitelist());
         getCommand("blacklist").setExecutor(new Blacklist());
 
-        getCommand("whitelist").setTabCompleter(new WhitelistCompletor());
-        getCommand("blacklist").setTabCompleter(new BlacklistCompletor());
+        getCommand("whitelist").setTabCompleter(new WhitelistCompleter());
+        getCommand("blacklist").setTabCompleter(new BlacklistCompleter());
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new ListPingEvent(), this);
@@ -76,7 +79,7 @@ public final class Keklist extends JavaPlugin  {
     @Override
     public void onDisable() {
         // Plugin shutdown logic
-        DB.disconnect();
+        database.disconnect();
     }
 
     @NotNull

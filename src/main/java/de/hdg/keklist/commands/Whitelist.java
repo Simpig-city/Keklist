@@ -3,7 +3,6 @@ package de.hdg.keklist.commands;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.hdg.keklist.Keklist;
-import de.hdg.keklist.database.DB;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -65,8 +64,6 @@ public class Whitelist implements CommandExecutor {
                 type = WhiteListType.IPv4;
             } else if (args[1].matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) {
                 type = WhiteListType.IPv6;
-                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>IPv6 ist noch nicht unterstützt!"));
-                return true;
             } else {
                 if(Keklist.getInstance().getFloodgateApi() != null){
                     if(args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))){
@@ -85,53 +82,52 @@ public class Whitelist implements CommandExecutor {
             switch (args[0]) {
                 case "add" -> {
                     if (type.equals(WhiteListType.USERNAME)) {
-                        ResultSet rs = DB.onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
 
                         if(!rs.next()){
-                            DB.onUpdate("INSERT INTO whitelist (uuid, name, by) VALUES (?, ?, ?)", uuid.toString(), args[1], senderName);
+                            Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, by) VALUES (?, ?, ?)", uuid.toString(), args[1], senderName);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
 
                         }else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist bereits gewhitelistet!"));
 
                     } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
-                        ResultSet rs = DB.onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
                         if(!rs.next()) {
-                            DB.onUpdate("INSERT INTO whitelistIp (ip, by) VALUES (?, ?)", args[1], senderName);
+                            Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, by) VALUES (?, ?)", args[1], senderName);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
                         }else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist bereits gewhitelistet!"));
 
-                    } else {/*TODO : May add IPv6*/ }
+                    }
 
                     return true;
                 }
 
                 case "remove" -> {
                     if (type.equals(WhiteListType.USERNAME)) {
-                        ResultSet rs = DB.onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
                         if (rs.next()) {
-                            DB.onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
+                            Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
                         } else {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist nicht gewhitelistet!"));
                             return true;
                         }
-                    } else if (type.equals(WhiteListType.IPv4)) {
-                        ResultSet rs = DB.onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
+                    } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
                         if (rs.next()) {
-                            DB.onUpdate("DELETE FROM whitelistIp WHERE ip = ?", args[1]);
+                            Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", args[1]);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
                         } else {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist nicht gewhitelistet!"));
                             return true;
                         }
-                    } else {/*TODO : May add IPv6*/ }
+                    }
 
                     return true;
                 }
-
 
                 default -> {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));

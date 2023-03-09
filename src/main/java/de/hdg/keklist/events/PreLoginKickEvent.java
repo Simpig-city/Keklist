@@ -1,7 +1,6 @@
 package de.hdg.keklist.events;
 
 import de.hdg.keklist.Keklist;
-import de.hdg.keklist.database.DB;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -23,8 +22,8 @@ public class PreLoginKickEvent implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPreLogin(AsyncPlayerPreLoginEvent event) {
         if (config.getBoolean("blacklist.enabled")) {
-            ResultSet rsUser = DB.onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getUniqueId().toString());
-            ResultSet rsIp = DB.onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getRawAddress().getHostName());
+            ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getUniqueId().toString());
+            ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getRawAddress().getHostName());
 
             try {
                 if (rsUser.next() || rsIp.next()) {
@@ -49,9 +48,9 @@ public class PreLoginKickEvent implements Listener {
             }
         }
 
-        if (config.getBoolean("whitelist")) {
-            ResultSet rsUser = DB.onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getUniqueId().toString());
-            ResultSet rsIp = DB.onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress());
+        if (config.getBoolean("whitelist.enabled")) {
+            ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getUniqueId().toString());
+            ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress());
 
             try {
                 if (!rsUser.next()) {
@@ -71,8 +70,8 @@ public class PreLoginKickEvent implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onLogin(PlayerLoginEvent event) {
         if (config.getBoolean("blacklist.enabled")) {
-            ResultSet rsUser = DB.onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
-            ResultSet rsIp = DB.onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getAddress().getHostAddress());
+            ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
+            ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getAddress().getHostAddress());
 
             try {
                 if (rsUser.next() || rsIp.next()) {
@@ -97,9 +96,9 @@ public class PreLoginKickEvent implements Listener {
             }
         }
 
-        if (config.getBoolean("whitelist")) {
-            ResultSet rsUser = DB.onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
-            ResultSet rsIp = DB.onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress());
+        if (config.getBoolean("whitelist.enabled")) {
+            ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
+            ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress());
 
             try {
                 if (!rsUser.next()) {
@@ -119,19 +118,16 @@ public class PreLoginKickEvent implements Listener {
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
         if (config.getBoolean("blacklist.enabled")) {
-            ResultSet rsUser = DB.onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
+            ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
 
             try {
                 if (rsUser.next()) {
                     event.joinMessage(Component.empty());
                     Keklist.getInstance().sendUserToLimbo(event.getPlayer());
 
-                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), new Runnable() {
-                        @Override
-                        public void run() {
-                            //Keklist.getInstance().sendUserToLimbo(event.getPlayer());
-                            event.getPlayer().kick(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)), PlayerKickEvent.Cause.BANNED);
-                        }
+                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> {
+                        //Keklist.getInstance().sendUserToLimbo(event.getPlayer());
+                        event.getPlayer().kick(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)), PlayerKickEvent.Cause.BANNED);
                     }, 10L);
                 }
             } catch (Exception e) {

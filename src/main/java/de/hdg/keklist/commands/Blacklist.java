@@ -3,7 +3,6 @@ package de.hdg.keklist.commands;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.hdg.keklist.Keklist;
-import de.hdg.keklist.database.DB;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -66,8 +65,6 @@ public class Blacklist implements CommandExecutor {
                 type = BlacklistType.IPv4;
             } else if (args[1].matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) {
                 type = BlacklistType.IPv6;
-                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>IPv6 ist noch nicht unterstützt!"));
-                return true;
             } else {
                 if(Keklist.getInstance().getFloodgateApi() != null){
                     if(args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))){
@@ -92,21 +89,21 @@ public class Blacklist implements CommandExecutor {
             switch (args[0]) {
                 case "add" -> {
                     if (type.equals(BlacklistType.USERNAME)) {
-                        ResultSet rs = DB.onQuery("SELECT * FROM blacklist WHERE uuid = ?", uuid.toString());
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", uuid.toString());
 
                         //User is not blacklisted
                         if(!rs.next()) {
                             if (reason == null) {
-                                DB.onUpdate("INSERT INTO blacklist (uuid, name, by, reason) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName, reason);
+                                Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, by, reason) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName, reason);
                             } else {
-                                DB.onUpdate("INSERT INTO blacklist (uuid, name, by) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName);
+                                Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, by) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName);
                             }
 
                             Player blacklisted = Bukkit.getPlayer(args[1]);
                             if(blacklisted != null){
-                                ResultSet rsMotd = DB.onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", blacklisted.getAddress().getAddress().getHostAddress());
+                                ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", blacklisted.getAddress().getAddress().getHostAddress());
                                 if (!rsMotd.next()) {
-                                    DB.onUpdate("INSERT INTO blacklistMotd (ip, by) VALUES (?, ?)", blacklisted.getAddress().getAddress().getHostAddress(), senderName);
+                                    Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, by) VALUES (?, ?)", blacklisted.getAddress().getAddress().getHostAddress(), senderName);
                                 }
                             }
 
@@ -115,20 +112,19 @@ public class Blacklist implements CommandExecutor {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>" + args[1] + " ist bereits auf der Blacklist!"));
 
                     } else if (type.equals(BlacklistType.IPv4) || type.equals(BlacklistType.IPv6)) {
-                        ResultSet rs = DB.onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
 
                         if (!rs.next()) {
                             if (reason == null) {
-                                DB.onUpdate("INSERT INTO blacklistIp (ip, by, reason) VALUES (?, ?, ?)", args[1], senderName, reason);
+                                Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, by, reason) VALUES (?, ?, ?)", args[1], senderName, reason);
                             } else {
-                                DB.onUpdate("INSERT INTO blacklistIp (ip, by) VALUES (?, ?, ?)", args[1], senderName);
+                                Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, by) VALUES (?, ?, ?)", args[1], senderName);
                             }
 
-                            ResultSet rsMotd = DB.onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
+                            ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
                             if (!rsMotd.next()) {
-                                DB.onUpdate("INSERT INTO blacklistMotd (ip, by) VALUES (?, ?)", args[1], senderName);
+                                Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, by) VALUES (?, ?)", args[1], senderName);
                             }
-
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Blacklist hinzugefügt!"));
                         } else {
@@ -140,9 +136,9 @@ public class Blacklist implements CommandExecutor {
 
                 case "remove" -> {
                     if (type.equals(BlacklistType.USERNAME)) {
-                        ResultSet rs = DB.onQuery("SELECT * FROM blacklist WHERE name = ?", args[1]);
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1]);
                         if (rs.next()) {
-                            DB.onUpdate("DELETE FROM blacklist WHERE name = ?", args[1]);
+                            Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", args[1]);
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Blacklist entfernt!"));
                         } else {
@@ -151,11 +147,11 @@ public class Blacklist implements CommandExecutor {
                         }
 
                     } else if (type.equals(BlacklistType.IPv4) || type.equals(BlacklistType.IPv6)) {
-                        ResultSet rs = DB.onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
-                        ResultSet rsMotd = DB.onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
+                        ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
                         if (rs.next() || rsMotd.next()) {
-                            DB.onUpdate("DELETE FROM blacklistIp WHERE ip = ?", args[1]);
-                            DB.onUpdate("DELETE FROM blacklistMotd WHERE ip = ?", args[1]);
+                            Keklist.getDatabase().onUpdate("DELETE FROM blacklistIp WHERE ip = ?", args[1]);
+                            Keklist.getDatabase().onUpdate("DELETE FROM blacklistMotd WHERE ip = ?", args[1]);
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der (MOTD-)Blacklist entfernt!"));
                         } else {
@@ -163,16 +159,16 @@ public class Blacklist implements CommandExecutor {
                             return true;
                         }
 
-                    } else {/*TODO : May add IPv6*/ }
+                    }
                 }
 
                 case "motd" -> {
                     if (type.equals(BlacklistType.IPv4)) {
-                        ResultSet rs = DB.onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
                         if (rs.next()) {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP wurde bereits zu der blacklist motd hinzugefügt!"));
                         } else {
-                            DB.onUpdate("INSERT INTO blacklistMotd (ip, by) VALUES (?, ?)", args[1], senderName);
+                            Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, by) VALUES (?, ?)", args[1], senderName);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Blacklist Motd hinzugefügt!"));
                         }
                     } else

@@ -3,7 +3,11 @@ blacklist:
   allow-join-with-admin: false
   admin-permission: "blacklist.admin"
   limbo: false # Experimental
-whitelist: true
+
+whitelist:
+  enabled: false
+  change-motd: true
+  hide-online-players: false # This sends fake player's AND fake player counts to the client (Currently the max players is 20-40; online 0-10; fake players cant be modified rn)
 
 # Note: If you use a proxy you need to enable 'send-floodgate-data' on the proxy's config
 # More: https://wiki.geysermc.org/floodgate/setup/
@@ -13,19 +17,19 @@ floodgate:
 messages:
   motd:
     blacklisted:
-      - "<red><bold>Du kek"
-      - "Nochmal du kek"
+      - "<red><bold>Your IP is blacklisted on this server!"
+      - "<red><bold>You are not allowed to join this server!"
     whitelisted:
-      - "Du gut"
-      - "Nochmal du gut"
+      - "<orange><bold>The server is in whitelist mode but you can join."
+      - "<orange><bold>Glad you can join us!"
     default:
-      - "Du normal"
-      - "Du normal aber 2"
+      - "This is a normal motd"
+      - "By default these are visible for everyone"
 
   kick:
     blacklisted:
-      - "<red><bold>Du kek"
-      - "Nochmal du kek"
+      - "<red><bold>You're kicked because you're on the blacklist!"
+      - "<red><bold>Sorry, but you're not allowed to join this server!"
     whitelisted:
-      - "Du gut"
-      - "Nochmal du gut"
+      - "<orange><bold>You're kicked because the server is in whitelist mode!"
+      - "<orange><bold>Sorry, but you're not on the whitelist!"
