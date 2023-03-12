@@ -35,6 +35,8 @@ public class DB {
             }
 
             if(type.equals(DBType.MARIADB)){
+                Class.forName("org.mariadb.jdbc.Driver");
+
                 String url = "jdbc:mariadb://";
 
                 String host = plugin.getConfig().getString("mariadb.host");
@@ -52,6 +54,9 @@ public class DB {
 
         } catch (SQLException | java.io.IOException ex) {
             ex.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            plugin.getLogger().severe("Could not find the MariaDB driver!");
+            throw new RuntimeException(e);
         }
     }
 
@@ -126,12 +131,12 @@ public class DB {
     }
 
     private void createTables(){
-        onUpdate("CREATE TABLE IF NOT EXISTS whitelist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
-        onUpdate("CREATE TABLE IF NOT EXISTS whitelistIp (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
+        onUpdate("CREATE TABLE IF NOT EXISTS whitelist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), byPlayer VARCHAR(16), unix BIGINT(13))");
+        onUpdate("CREATE TABLE IF NOT EXISTS whitelistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13))");
 
-        onUpdate("CREATE TABLE IF NOT EXISTS blacklist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ", reason VARCHAR DEFAULT 'No reason given')");
-        onUpdate("CREATE TABLE IF NOT EXISTS blacklistIp (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ", reason VARCHAR DEFAULT 'No reason given')");
-        onUpdate("CREATE TABLE IF NOT EXISTS blacklistMotd (ip VARCHAR PRIMARY KEY, by VARCHAR(16), unix INTEGER DEFAULT " + System.currentTimeMillis() + ")");
+        onUpdate("CREATE TABLE IF NOT EXISTS blacklist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), byPlayer VARCHAR(16), unix BIGINT(13), reason VARCHAR(1500) DEFAULT 'No reason given')");
+        onUpdate("CREATE TABLE IF NOT EXISTS blacklistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13), reason VARCHAR(1500) DEFAULT 'No reason given')");
+        onUpdate("CREATE TABLE IF NOT EXISTS blacklistMotd (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13))");
     }
 
     public enum DBType {

@@ -59,7 +59,7 @@ public final class Keklist extends JavaPlugin  {
         this.saveDefaultConfig();
 
         //SQL
-        if(getConfig().getBoolean("database.enabled")){
+        if(getConfig().getBoolean("mariadb.enabled")){
             database = new DB(DB.DBType.MARIADB, instance);
         }else
             database = new DB(DB.DBType.SQLITE, instance);
@@ -69,7 +69,7 @@ public final class Keklist extends JavaPlugin  {
 
     @Override
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(new de.hdg.keklist.events.ListPingEvent(), this);
+        getServer().getPluginManager().registerEvents(new ListPingEvent(), this);
 
         registerCommand(new Whitelist());
         registerCommand(new Blacklist());

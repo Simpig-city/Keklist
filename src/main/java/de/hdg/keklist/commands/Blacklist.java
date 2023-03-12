@@ -104,16 +104,22 @@ public class Blacklist extends Command {
                         //User is not blacklisted
                         if(!rs.next()) {
                             if (reason == null) {
-                                Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, by, reason) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName, reason);
+                                Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix, reason) VALUES (?, ?, ?, ?, ?)", uuid.toString(), args[1], senderName, System.currentTimeMillis(), reason);
                             } else {
-                                Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, by) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName);
+                                if (reason.length() <= 1500) {
+                                    Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName, System.currentTimeMillis());
+
+                                } else {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Grund darf nicht länger als 1500 Zeichen sein!"));
+                                    return true;
+                                }
                             }
 
                             Player blacklisted = Bukkit.getPlayer(args[1]);
                             if(blacklisted != null){
                                 ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", blacklisted.getAddress().getAddress().getHostAddress());
                                 if (!rsMotd.next()) {
-                                    Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, by) VALUES (?, ?)", blacklisted.getAddress().getAddress().getHostAddress(), senderName);
+                                    Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", blacklisted.getAddress().getAddress().getHostAddress(), senderName, System.currentTimeMillis());
                                 }
                             }
 
@@ -126,14 +132,20 @@ public class Blacklist extends Command {
 
                         if (!rs.next()) {
                             if (reason == null) {
-                                Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, by, reason) VALUES (?, ?, ?)", args[1], senderName, reason);
+                                Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix, reason) VALUES (?, ?, ?, ?)", args[1], senderName, System.currentTimeMillis(),  reason);
                             } else {
-                                Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, by) VALUES (?, ?, ?)", args[1], senderName);
+                                if(reason.length() <= 1500){
+                                    Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
+                                }else {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Grund ist zu lang!"));
+                                    return true;
+                                }
+
                             }
 
                             ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
                             if (!rsMotd.next()) {
-                                Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, by) VALUES (?, ?)", args[1], senderName);
+                                Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                             }
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Blacklist hinzugefügt!"));
@@ -178,7 +190,7 @@ public class Blacklist extends Command {
                         if (rs.next()) {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP wurde bereits zu der blacklist motd hinzugefügt!"));
                         } else {
-                            Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, by) VALUES (?, ?)", args[1], senderName);
+                            Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Blacklist Motd hinzugefügt!"));
                         }
                     } else

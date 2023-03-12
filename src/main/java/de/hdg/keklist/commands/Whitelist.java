@@ -97,7 +97,7 @@ public class Whitelist extends Command {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
 
                         if(!rs.next()){
-                            Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, by) VALUES (?, ?, ?)", uuid.toString(), args[1], senderName);
+                            Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName, System.currentTimeMillis());
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
 
                         }else
@@ -107,7 +107,7 @@ public class Whitelist extends Command {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
                         if(!rs.next()) {
-                            Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, by) VALUES (?, ?)", args[1], senderName);
+                            Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
                         }else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist bereits gewhitelistet!"));
