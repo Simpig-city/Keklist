@@ -10,6 +10,18 @@
     <packaging>jar</packaging>
 
     <name>Keklist</name>
+    <description>Custom made black and whitelist with many different features</description>
+    <url>https://github.com/simpig-city/keklist</url>
+
+    <developers>
+        <developer>
+            <name>SageSphinx63920</name>
+            <id>sage</id>
+            <url>https://sagesphinx63920.dev</url>
+            <email>sage@sagesphinx63920.dev</email>
+            <timezone>MEZ</timezone>
+        </developer>
+    </developers>
 
     <properties>
         <java.version>17</java.version>
@@ -23,6 +35,7 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.8.1</version>
                 <configuration>
+                    <release>${java.version}</release>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
                 </configuration>
@@ -53,11 +66,11 @@
     </build>
 
     <repositories>
-        <!-- Purpur API -->
-        <!--repository>
-            <id>purpur</id>
-            <url>https://repo.purpurmc.org/snapshots</url>
-        </repository-->
+        <!-- Paper and VelocityAPI -->
+        <repository>
+            <id>papermc</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
         <repository>
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
@@ -72,11 +85,6 @@
             <id>elytrium-repo</id>
             <url>https://maven.elytrium.net/repo/</url>
         </repository>
-        <!-- Velocity API -->
-        <repository>
-            <id>papermc</id>
-            <url>https://repo.papermc.io/repository/maven-public/</url>
-        </repository>
         <!-- Geyser/Floodgate -->
         <repository>
             <id>opencollab-snapshot</id>
@@ -86,9 +94,10 @@
 
     <dependencies>
         <dependency>
-            <groupId>de.somewhat.purpur</groupId>
-            <artifactId>somewhat-api</artifactId>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
             <version>1.19.3-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>net.kyori</groupId>
@@ -139,14 +148,6 @@
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
             <version>3.1.2</version>
-        </dependency>
-
-
-        <!-- Fix compile bug -->
-        <dependency>
-            <groupId>net.md-5</groupId>
-            <artifactId>bungeecord-chat</artifactId>
-            <version>1.16-R0.4</version>
         </dependency>
     </dependencies>
 </project>
