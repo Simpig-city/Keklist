@@ -30,7 +30,7 @@ import java.util.UUID;
 public final class Keklist extends JavaPlugin  {
 
     private static @Getter Keklist instance;
-    private @Getter @Nullable FloodgateApi floodgateApi;
+    private @Getter @Nullable FloodgateApi floodgateApi = null;
     private static @Getter DB database;
     private static final Random random = new Random();
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
@@ -107,8 +107,6 @@ public final class Keklist extends JavaPlugin  {
     public String getRandomizedKickMessage(@NotNull RandomType type) {
         switch (type) {
             case BLACKLISTED -> {
-                System.out.println(getConfig().getStringList("messages.kick.blacklisted"));
-                System.out.println(getConfig().getStringList("messages.kick.blacklisted").get(random.nextInt(getConfig().getStringList("messages.kick.blacklisted").size())));
                 return getConfig().getStringList("messages.kick.blacklisted").get(random.nextInt(getConfig().getStringList("messages.kick.blacklisted").size()));
             }
             case WHITELISTED -> {
