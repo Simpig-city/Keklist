@@ -228,7 +228,7 @@ public class Blacklist extends Command {
             try {
                 switch (args[0]){
                     case "remove" ->{
-                        List<String> list = new ArrayList<String>();
+                        List<String> list = new ArrayList<>();
 
                         ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM blacklist");
                         while(rsUser.next()){
@@ -253,7 +253,7 @@ public class Blacklist extends Command {
                     }
 
                     case "add" ->{
-                        List<String> completions = new ArrayList<String>();
+                        List<String> completions = new ArrayList<>();
 
                         Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getName()));
                         Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getAddress().getAddress().getHostAddress() +"(" + player.getName() + ")"));
@@ -262,7 +262,7 @@ public class Blacklist extends Command {
                     }
 
                     case "motd" ->{
-                        List<String> completions = new ArrayList<String>();
+                        List<String> completions = new ArrayList<>();
                         Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getAddress().getAddress().getHostAddress() +"(" + player.getName() + ")"));
 
                         return completions;

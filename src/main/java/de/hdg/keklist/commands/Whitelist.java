@@ -172,7 +172,7 @@ public class Whitelist extends Command {
             try {
                 switch (args[0]) {
                     case "remove" -> {
-                        List<String> list = new ArrayList<String>();
+                        List<String> list = new ArrayList<>();
 
                         ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM whitelist");
                         while (rsUser.next()){
@@ -188,7 +188,7 @@ public class Whitelist extends Command {
                     }
 
                     case "add" -> {
-                        List<String> completions = new ArrayList<String>();
+                        List<String> completions = new ArrayList<>();
 
                         Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getName()));
                         Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getAddress().getAddress().getHostAddress() + "(" + player.getName() + ")"));
