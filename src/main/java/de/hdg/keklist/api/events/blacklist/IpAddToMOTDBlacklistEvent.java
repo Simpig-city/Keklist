@@ -3,7 +3,6 @@ package de.hdg.keklist.api.events.blacklist;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 /**
  * This event is called when a IP is added to the MOTD blacklist.
