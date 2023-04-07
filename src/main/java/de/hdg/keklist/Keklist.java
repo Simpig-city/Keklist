@@ -5,6 +5,7 @@ import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
+import de.hdg.keklist.api.KeklistAPI;
 import de.hdg.keklist.commands.Blacklist;
 import de.hdg.keklist.commands.Whitelist;
 import de.hdg.keklist.database.DB;
@@ -29,6 +30,7 @@ import java.util.UUID;
 
 public final class Keklist extends JavaPlugin  {
 
+    private static KeklistAPI api;
     private static @Getter Keklist instance;
     private @Getter @Nullable FloodgateApi floodgateApi = null;
     private static @Getter DB database;
@@ -65,6 +67,9 @@ public final class Keklist extends JavaPlugin  {
             database = new DB(DB.DBType.SQLITE, instance);
 
         database.connect();
+
+        //Needs to be called after database
+        api = KeklistAPI.makeApi(this);
     }
 
     @Override
@@ -139,12 +144,27 @@ public final class Keklist extends JavaPlugin  {
         }
     }
 
-    //Enum for the different messages
+    /**
+     * Enum for the different messages
+     */
     public enum RandomType {
         BLACKLISTED, WHITELISTED, NORMAL
     }
 
     private void registerCommand(Command command) {
         getServer().getCommandMap().register("keklist", command);
+    }
+
+    /**
+     * Returns the API of the plugin
+     *
+     * @return The API object
+     * @throws IllegalStateException if the database is not connected, **really unlikely**
+     */
+    public static KeklistAPI getApi(){
+        if(database.isConnected()){
+            return api;
+        }else
+            throw new IllegalStateException("Database is not connected!");
     }
 }
