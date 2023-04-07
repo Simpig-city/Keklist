@@ -13,6 +13,7 @@ import de.hdg.keklist.velocity.KeklistVelocity;
 import net.elytrium.limboapi.api.Limbo;
 import net.elytrium.limboapi.api.LimboSessionHandler;
 import net.elytrium.limboapi.api.material.VirtualItem;
+import net.elytrium.limboapi.api.material.WorldVersion;
 import net.elytrium.limboapi.api.player.LimboPlayer;
 import net.elytrium.limboapi.api.protocol.packets.data.AbilityFlags;
 import net.kyori.adventure.nbt.CompoundBinaryTag;
@@ -98,6 +99,26 @@ public class MessageReceiver {
                 @Override
                 public short getID(ProtocolVersion version) {
                     return 23504;
+                }
+
+                @Override
+                public short getID(WorldVersion version) {
+                    return 23504;
+                }
+
+                @Override
+                public boolean isSupportedOn(ProtocolVersion version) {
+                    return ProtocolVersion.MINECRAFT_1_19_4.equals(version);
+                }
+
+                @Override
+                public boolean isSupportedOn(WorldVersion version) {
+                    return WorldVersion.MINECRAFT_1_19_4.equals(version);
+                }
+
+                @Override
+                public String getModernID() {
+                    return null;
                 }
             };
         }

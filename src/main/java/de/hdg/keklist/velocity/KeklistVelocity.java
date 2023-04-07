@@ -18,7 +18,8 @@ import net.elytrium.limboapi.api.Limbo;
 import net.elytrium.limboapi.api.LimboFactory;
 import net.elytrium.limboapi.api.chunk.Dimension;
 import net.elytrium.limboapi.api.chunk.VirtualWorld;
-import net.elytrium.limboapi.api.file.StructureFile;
+import net.elytrium.limboapi.api.file.BuiltInWorldFileType;
+import net.elytrium.limboapi.api.file.WorldFile;
 import net.elytrium.limboapi.api.player.GameMode;
 import org.slf4j.Logger;
 
@@ -81,8 +82,9 @@ public class KeklistVelocity {
         LimboFactory factory = KeklistVelocity.getInstance().getLimboAPI();
 
         VirtualWorld world = factory.createVirtualWorld(Dimension.OVERWORLD, 0, 0, 0, 0, 0);
-        StructureFile schematicFile = new StructureFile(KeklistVelocity.getInstance().dataDirectory.resolve("limbo.nbt"));
-        schematicFile.toWorld(factory, world, -9, 0, -9, 7);
+
+        WorldFile file = factory.openWorldFile(BuiltInWorldFileType.STRUCTURE, KeklistVelocity.getInstance().dataDirectory.resolve("limbo.nbt"));
+        file.toWorld(factory, world, -9, 0, -9, 7);
 
         Limbo setupLimbo = factory.createLimbo(world);
 
