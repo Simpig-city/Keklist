@@ -1,6 +1,11 @@
 package de.hdg.keklist.api;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.api.events.blacklist.*;
+import de.hdg.keklist.api.events.whitelist.IpAddToWhitelistEvent;
+import de.hdg.keklist.api.events.whitelist.IpRemovedFromWhitelistEvent;
+import de.hdg.keklist.api.events.whitelist.UUIDAddToWhitelistEvent;
+import de.hdg.keklist.api.events.whitelist.UUIDRemovedFromWhitelistEvent;
 import de.hdg.keklist.database.DB;
 import lombok.SneakyThrows;
 import org.bukkit.entity.Player;
@@ -160,6 +165,8 @@ public class KeklistAPI {
      */
     public void whitelist(@NotNull UUID uuid, @Nullable String playerName){
       if(isWhitelisted(uuid)) return;
+      new UUIDAddToWhitelistEvent(uuid).callEvent();
+
       Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName==null?API_INFO:playerName, API_INFO, System.currentTimeMillis());
     }
 
@@ -173,6 +180,7 @@ public class KeklistAPI {
     public void whitelist(@NotNull String ip){
         if(ip.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$") || ip.matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) throw new IllegalArgumentException("IP is not valid");
         if(isWhitelisted(ip)) return;
+        new IpAddToWhitelistEvent(ip).callEvent();
 
         Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", ip, API_INFO, System.currentTimeMillis());
     }
@@ -198,11 +206,12 @@ public class KeklistAPI {
         if (isBlacklisted(uuid)) return;
 
         if (reason == null) {
+            new UUIDAddToBlacklistEvent(uuid, null).callEvent();
             Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix, reason) VALUES (?, ?, ?, ?, ?)", uuid.toString(), playerName == null ? API_INFO : playerName, API_INFO, System.currentTimeMillis(), reason);
         } else {
             if (reason.length() <= 1500) {
+                new UUIDAddToBlacklistEvent(uuid, reason).callEvent();
                 Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName == null ? API_INFO : playerName, API_INFO, System.currentTimeMillis());
-
             } else {
                 throw new IllegalArgumentException("Reason is too long! (Max. 1500 characters)");
             }
@@ -222,9 +231,11 @@ public class KeklistAPI {
         if(isBlacklisted(ip)) return;
 
         if(reason == null){
+            new IpAddToBlacklistEvent(ip, null).callEvent();
             Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", ip, API_INFO, System.currentTimeMillis());
         } else {
             if(reason.length() <= 1500){
+                new IpAddToBlacklistEvent(ip, reason).callEvent();
                 Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix, reason) VALUES (?, ?, ?, ?)", ip, API_INFO, System.currentTimeMillis(), reason);
             } else {
                 throw new IllegalArgumentException("Reason is too long! (Max. 1500 characters)");
@@ -243,6 +254,8 @@ public class KeklistAPI {
      */
     public void blacklistMOTD(@NotNull String ip) {
         if (isMOTDBlacklisted(ip)) return;
+        new IpAddToMOTDBlacklistEvent(ip).callEvent();
+
         Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", ip, API_INFO, System.currentTimeMillis());
     }
 
@@ -262,6 +275,8 @@ public class KeklistAPI {
      */
     public void removeWhitelist(@NotNull UUID uuid){
         if(!isWhitelisted(uuid)) return;
+        new UUIDRemovedFromWhitelistEvent(uuid).callEvent();
+
         Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE uuid = ?", uuid.toString());
     }
 
@@ -276,6 +291,8 @@ public class KeklistAPI {
      */
     public void removeWhitelist(@NotNull String ip){
         if(!isWhitelisted(ip)) return;
+        new IpRemovedFromWhitelistEvent(ip).callEvent();
+
         Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", ip);
     }
 
@@ -295,6 +312,8 @@ public class KeklistAPI {
      */
     public void removeBlacklist(@NotNull UUID uuid){
         if(!isBlacklisted(uuid)) return;
+        new UUIDRemovedFromBlacklistEvent(uuid).callEvent();
+
         Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE uuid = ?", uuid.toString());
     }
 
@@ -309,6 +328,8 @@ public class KeklistAPI {
      */
     public void removeBlacklist(@NotNull String ip){
         if(!isBlacklisted(ip)) return;
+        new IpRemovedFromBlacklistEvent(ip).callEvent();
+
         Keklist.getDatabase().onUpdate("DELETE FROM blacklistIp WHERE ip = ?", ip);
     }
 
@@ -323,6 +344,8 @@ public class KeklistAPI {
      */
     public void removeBlacklistMOTD(@NotNull String ip){
         if(!isMOTDBlacklisted(ip)) return;
+        new IpRemovedFromMOTDBlacklistEvent(ip).callEvent();
+
         Keklist.getDatabase().onUpdate("DELETE FROM blacklistMotd WHERE ip = ?", ip);
     }
 
