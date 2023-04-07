@@ -6,6 +6,7 @@ import com.google.common.io.ByteStreams;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import de.hdg.keklist.api.KeklistAPI;
+import de.hdg.keklist.api.KeklistChannelListener;
 import de.hdg.keklist.commands.Blacklist;
 import de.hdg.keklist.commands.Whitelist;
 import de.hdg.keklist.database.DB;
@@ -28,7 +29,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.Random;
 import java.util.UUID;
 
-public final class Keklist extends JavaPlugin  {
+public final class Keklist extends JavaPlugin {
 
     private static KeklistAPI api;
     private static @Getter Keklist instance;
@@ -83,12 +84,18 @@ public final class Keklist extends JavaPlugin  {
         pm.registerEvents(new ListPingEvent(), this);
         pm.registerEvents(new PreLoginKickEvent(), this);
         pm.registerEvents(new BlacklistRemoveMotd(), this);
+
+        // Register plugin channel for API usage
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "keklist", new KeklistChannelListener(api));
     }
 
     @Override
     public void onDisable() {
-        // Plugin shutdown logic
+       // Disconnect from database
         database.disconnect();
+
+        // Unregister plugin channel
+        this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
     }
 
     @NotNull
