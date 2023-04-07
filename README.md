@@ -9,4 +9,4 @@ This plugin supports the following methods:
 - **Only online mode support**
 
 ## Setup
-Setup is easy. Place the jar in your plugin folder and your done. 
+Setup is easy. Place the jar in your plugin folder and youre done. 
