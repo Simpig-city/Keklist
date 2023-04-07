@@ -54,11 +54,13 @@ public class KeklistAPI {
 
     /**
      * Returns whenever if the player is blacklisted
+     * <p>
+     *     This method is a shortcut for {@link #isBlacklisted(UUID)}
+     * </p>
      *
      * @param player Player to check
      * @return true if the player is blacklisted
      */
-    @SneakyThrows({SQLException.class, NullPointerException.class})
     public boolean isBlacklisted(@NotNull Player player){
         return isBlacklisted(player.getUniqueId());
     }
@@ -109,11 +111,13 @@ public class KeklistAPI {
 
     /**
      * Returns whenever if the player is whitelisted
+     * <p>
+     *     This method is a shortcut for {@link #isWhitelisted(UUID)}
+     * </p>
      *
      * @param player Player to check
      * @return true if the player is whitelisted
      */
-    @SneakyThrows({SQLException.class, NullPointerException.class})
     public boolean isWhitelisted(@NotNull Player player){
         return isWhitelisted(player.getUniqueId());
     }
