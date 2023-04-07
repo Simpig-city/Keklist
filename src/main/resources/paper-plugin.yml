@@ -6,6 +6,7 @@ description: Block all the Keks and accept the nice people
 authors: ["hdgamer1404Jonas", "SageSphinx63920"]
 website: https://swc.sasp.gq
 database: true
+loader: de.hdg.keklist.KeklistLoader
 dependencies:
   - name: floodgate
     required: false
