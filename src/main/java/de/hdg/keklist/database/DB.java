@@ -23,7 +23,7 @@ public class DB {
 
     public void connect() {
         try {
-            if(type.equals(DBType.SQLITE)){
+            if (type.equals(DBType.SQLITE)) {
                 File file = new File(Keklist.getInstance().getDataFolder(), "database.db");
                 if (!file.exists())
                     file.createNewFile();
@@ -34,7 +34,7 @@ public class DB {
                 createTables();
             }
 
-            if(type.equals(DBType.MARIADB)){
+            if (type.equals(DBType.MARIADB)) {
                 Class.forName("org.mariadb.jdbc.Driver");
 
                 String url = "jdbc:mariadb://";
@@ -73,9 +73,9 @@ public class DB {
         }
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     public void onUpdate(@NotNull final String statement, Object... preparedArgs) {
-        if(isConnected()) {
+        if (isConnected()) {
             new FutureTask(new Runnable() {
                 PreparedStatement preparedStatement;
 
@@ -83,8 +83,8 @@ public class DB {
                     try {
                         this.preparedStatement = connection.prepareStatement(statement);
 
-                        for(int i = 0; i < preparedArgs.length; i++) {
-                            this.preparedStatement.setObject(i+1, preparedArgs[i]);
+                        for (int i = 0; i < preparedArgs.length; i++) {
+                            this.preparedStatement.setObject(i + 1, preparedArgs[i]);
                         }
 
                         this.preparedStatement.executeUpdate();
@@ -94,7 +94,7 @@ public class DB {
                     }
                 }
             }, null).run();
-        }else {
+        } else {
             connect();
             onUpdate(statement, preparedArgs);
         }
@@ -110,8 +110,8 @@ public class DB {
                     public ResultSet call() throws Exception {
                         this.ps = connection.prepareStatement(query);
 
-                        for(int i = 0; i < preparedArgs.length; i++) {
-                            this.ps.setObject(i+1, preparedArgs[i]);
+                        for (int i = 0; i < preparedArgs.length; i++) {
+                            this.ps.setObject(i + 1, preparedArgs[i]);
                         }
 
                         return this.ps.executeQuery();
@@ -130,7 +130,7 @@ public class DB {
         return null;
     }
 
-    private void createTables(){
+    private void createTables() {
         onUpdate("CREATE TABLE IF NOT EXISTS whitelist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16), byPlayer VARCHAR(16), unix BIGINT(13))");
         onUpdate("CREATE TABLE IF NOT EXISTS whitelistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13))");
 

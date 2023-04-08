@@ -58,14 +58,14 @@ public class Whitelist extends Command {
                     JsonElement element = JsonParser.parseString(responseString);
 
                     //Mojang API returned an error or user not found
-                    if(!element.isJsonNull()){
+                    if (!element.isJsonNull()) {
                         if (element.getAsJsonObject().get("error") != null) {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Spieler existiert nicht! Mehr zum Fehler in der Konsole"));
                             Keklist.getInstance().getLogger().warning("Der Spieler " + args[1] + " existiert nicht!");
                             Keklist.getInstance().getLogger().warning("Details: " + element.getAsJsonObject().get("errorMessage").getAsString());
                             return true;
                         }
-                    }else{
+                    } else {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Spieler existiert nicht! Mehr zum Fehler in der Konsole"));
                         Keklist.getInstance().getLogger().warning("Der Spieler " + args[1] + " existiert nicht!");
                         Keklist.getInstance().getLogger().warning("Details: response is null");
@@ -81,17 +81,20 @@ public class Whitelist extends Command {
             } else if (args[1].matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) {
                 type = WhiteListType.IPv6;
             } else {
-                if(Keklist.getInstance().getFloodgateApi() != null){
-                    if(args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))){
+                if (Keklist.getInstance().getFloodgateApi() != null) {
+                    if (args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))) {
                         FloodgateApi api = Keklist.getInstance().getFloodgateApi();
 
                         uuid = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
                         type = WhiteListType.USERNAME;
+                    } else {
+                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Ungültige IP oder Username! <grey><o>Vielleicht überprüfe den Floodgate Prefix"));
+                        return true;
                     }
+                } else {
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Ungültige IP oder Username! <grey><o>Vielleicht überprüfe den Floodgate Prefix"));
+                    return true;
                 }
-
-                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Ungültige IP oder Username! <grey><o>Vielleicht überprüfe den Floodgate Prefix"));
-                return true;
             }
 
 
@@ -100,22 +103,22 @@ public class Whitelist extends Command {
                     if (type.equals(WhiteListType.USERNAME)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
 
-                        if(!rs.next()){
+                        if (!rs.next()) {
                             new UUIDAddToWhitelistEvent(uuid).callEvent();
                             Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName, System.currentTimeMillis());
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
 
-                        }else
+                        } else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist bereits gewhitelistet!"));
 
                     } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
-                        if(!rs.next()) {
+                        if (!rs.next()) {
                             new IpAddToWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
-                        }else
+                        } else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist bereits gewhitelistet!"));
 
                     }
@@ -183,7 +186,7 @@ public class Whitelist extends Command {
                         List<String> list = new ArrayList<>();
 
                         ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM whitelist");
-                        while (rsUser.next()){
+                        while (rsUser.next()) {
                             list.add(rsUser.getString("name"));
                         }
 
@@ -198,8 +201,26 @@ public class Whitelist extends Command {
                     case "add" -> {
                         List<String> completions = new ArrayList<>();
 
-                        Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getName()));
-                        Bukkit.getOnlinePlayers().forEach(player -> completions.add(player.getAddress().getAddress().getHostAddress() + "(" + player.getName() + ")"));
+                        Bukkit.getOnlinePlayers().forEach(player -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", player.getUniqueId().toString());
+                            try {
+                                if (!rs.next())
+                                    completions.add(player.getName());
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }
+                        });
+
+                        Bukkit.getOnlinePlayers().forEach(player -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", player.getAddress().getAddress().getHostAddress());
+                            try {
+                                if (!rs.next())
+                                    completions.add(player.getAddress().getAddress().getHostAddress() + "(" + player.getName() + ")");
+                                ;
+                            } catch (SQLException e) {
+                                e.printStackTrace();
+                            }
+                        });
 
                         return completions;
                     }
