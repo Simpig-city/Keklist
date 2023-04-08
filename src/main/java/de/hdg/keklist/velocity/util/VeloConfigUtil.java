@@ -36,11 +36,11 @@ public class VeloConfigUtil {
     }
 
     @SneakyThrows(IOException.class)
-    public Object getOption(Object defaultValue, String... path){
+    public Object getOption(Object defaultValue, String path){
         return configLoader.load().getNode(path).getValue()!=null?configLoader.load().getNode(path).getValue():defaultValue;
     }
 
-    public void setValue(Object value, String... path) throws IOException {
+    public void setValue(Object value, String path) throws IOException {
         ConfigurationNode node = configLoader.load();
         node.getNode(path).setValue(value);
         configLoader.save(node);

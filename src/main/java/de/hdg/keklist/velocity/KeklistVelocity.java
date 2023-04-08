@@ -10,6 +10,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+import de.hdg.keklist.velocity.api.APIMessageReceiver;
 import de.hdg.keklist.velocity.channel.MessageReceiver;
 import de.hdg.keklist.velocity.command.WhereAmICommand;
 import de.hdg.keklist.velocity.util.VeloConfigUtil;
@@ -45,6 +46,7 @@ public class KeklistVelocity {
     private @Getter Limbo limbo;
 
     private final ChannelIdentifier limboChannel = MinecraftChannelIdentifier.from("keklist:data");
+    private final ChannelIdentifier apiChannel = MinecraftChannelIdentifier.from("keklist:api");
 
     private static KeklistVelocity instance;
 
@@ -58,7 +60,7 @@ public class KeklistVelocity {
 
         limboAPI = (LimboFactory) this.server.getPluginManager().getPlugin("limboapi").flatMap(PluginContainer::getInstance).orElseThrow();
         if (!KeklistVelocity.getInstance().dataDirectory.resolve((String) config.getOption("limbo.nbt", "limbo.file")).toFile().exists()) {
-            logger.error("The schemetic file for the Limbo doesn't exist! Could not load " + config.getOption("limbo.nbt", "limbo.file"));
+            logger.error("The schematic file for the Limbo doesn't exist! Could not load " + config.getOption("limbo.nbt", "limbo.file"));
         }
     }
 
@@ -69,9 +71,13 @@ public class KeklistVelocity {
         }else
             logger.warn("Velocity Limbo not enabled! Kicking player instead if message from Spigot Plugin...");
 
-        //Register channel
+        //Register Limbo channel
         server.getChannelRegistrar().register(limboChannel);
         server.getEventManager().register(this, new MessageReceiver(limboChannel));
+
+        //Register API channel
+        server.getChannelRegistrar().register(apiChannel);
+        server.getEventManager().register(this, new APIMessageReceiver(apiChannel));
     }
 
     public static KeklistVelocity getInstance() {

@@ -1,0 +1,38 @@
+package de.hdg.keklist.api.events.blacklist;
+
+import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
+import org.bukkit.event.HandlerList;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.UUID;
+
+/**
+ * This event is called when a player is added to the blacklist.
+ */
+public class UUIDRemovedFromBlacklistEvent extends Event {
+    private static final HandlerList handlerList = new HandlerList();
+    private final UUID uuid;
+
+    public UUIDRemovedFromBlacklistEvent(@NotNull UUID uuid) {
+        this.uuid = uuid;
+    }
+
+    public UUIDRemovedFromBlacklistEvent(@NotNull Player player) {
+        this.uuid = player.getUniqueId();
+    }
+
+    /**
+     * Returns the UUID that was removed from the blacklist.
+     *
+     * @return The UUID that was removed from the blacklist.
+     */
+    public @NotNull UUID getUUID() {
+        return uuid;
+    }
+
+    @Override
+    public @NotNull HandlerList getHandlers() {
+        return handlerList;
+    }
+}

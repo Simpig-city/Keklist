@@ -3,6 +3,10 @@ package de.hdg.keklist.commands;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.api.events.whitelist.IpAddToWhitelistEvent;
+import de.hdg.keklist.api.events.whitelist.IpRemovedFromWhitelistEvent;
+import de.hdg.keklist.api.events.whitelist.UUIDAddToWhitelistEvent;
+import de.hdg.keklist.api.events.whitelist.UUIDRemovedFromWhitelistEvent;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -97,6 +101,7 @@ public class Whitelist extends Command {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
 
                         if(!rs.next()){
+                            new UUIDAddToWhitelistEvent(uuid).callEvent();
                             Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName, System.currentTimeMillis());
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
 
@@ -107,6 +112,7 @@ public class Whitelist extends Command {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
                         if(!rs.next()) {
+                            new IpAddToWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
                         }else
@@ -121,6 +127,7 @@ public class Whitelist extends Command {
                     if (type.equals(WhiteListType.USERNAME)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
                         if (rs.next()) {
+                            new UUIDRemovedFromWhitelistEvent(uuid).callEvent();
                             Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
                         } else {
@@ -130,6 +137,7 @@ public class Whitelist extends Command {
                     } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
                         if (rs.next()) {
+                            new IpRemovedFromWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", args[1]);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
                         } else {
