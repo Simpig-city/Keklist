@@ -1,7 +1,10 @@
 package de.hdg.keklist.api;
 
 import com.google.common.io.ByteArrayDataInput;
+import com.google.common.io.ByteArrayDataOutput;
 import com.google.common.io.ByteStreams;
+import de.hdg.keklist.Keklist;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.messaging.PluginMessageListener;
 import org.jetbrains.annotations.NotNull;
@@ -58,5 +61,56 @@ public class KeklistChannelListener implements PluginMessageListener {
                 api.whitelist(UUID.fromString(uuid), null);
             }
         }
+
+        switch (action){
+            case "isBlacklistedUUID" -> {
+                String uuid = in.readUTF();
+                String server = in.readUTF();
+
+                sendResponse(server, "isBlacklistedUUIDResponse", uuid, api.isBlacklisted(UUID.fromString(uuid)));
+            }
+            case "isBlacklistedIP" -> {
+                String ip = in.readUTF();
+                String server = in.readUTF();
+
+                sendResponse(server, "isBlacklistedIPResponse", ip, api.isBlacklisted(ip));
+            }
+            case "isBlacklistedMOTD" -> {
+                String ip = in.readUTF();
+                String server = in.readUTF();
+
+                sendResponse(server, "isBlacklistedMOTDResponse", ip, api.isMOTDBlacklisted(ip));
+            }
+            case "isWhitelistedIP" -> {
+                String ip = in.readUTF();
+                String server = in.readUTF();
+
+                sendResponse(server, "isWhitelistedIPResponse", ip, api.isWhitelisted(ip));
+            }
+            case "isWhitelistedUUID" -> {
+                String uuid = in.readUTF();
+                String server = in.readUTF();
+
+                sendResponse(server, "isWhitelistedUUIDResponse", uuid, api.isWhitelisted(UUID.fromString(uuid)));
+            }
+        }
+    }
+
+    /**
+     * Sends a response to the isX request to the proxy
+     *
+     * @param server Server to relay the response to
+     * @param action Request action
+     * @param s Request source (IP or UUID)
+     * @param b Response
+     */
+    private void sendResponse(String server, String action, String s, boolean b) {
+        ByteArrayDataOutput out = ByteStreams.newDataOutput();
+        out.writeUTF(action);
+        out.writeUTF(server);
+        out.writeUTF(s);
+        out.writeBoolean(b);
+
+        Bukkit.getOnlinePlayers().stream().findFirst().ifPresentOrElse(player -> player.sendPluginMessage(Keklist.getInstance(), "keklist:api", out.toByteArray()), () -> Bukkit.getLogger().warning("Could not send response to proxy!"));
     }
 }

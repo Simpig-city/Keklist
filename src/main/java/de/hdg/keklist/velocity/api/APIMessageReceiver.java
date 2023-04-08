@@ -39,6 +39,23 @@ public class APIMessageReceiver {
                     out.writeUTF(blacklisted);
                     out.writeUTF(reason);
                 }else{
+                    if(action.endsWith("Response")){
+                        String requestedAction = in.readUTF().replace("Response", "");
+                        String relayServer = in.readUTF();
+                        String requested = in.readUTF();
+                        boolean result = in.readBoolean();
+
+                        out.writeUTF(requestedAction);
+                        out.writeUTF(requested);
+                        out.writeBoolean(result);
+
+                        KeklistVelocity.getInstance().getServer().getServer(relayServer).ifPresentOrElse(serverConnection -> {
+                            serverConnection.sendPluginMessage(identifier, out.toByteArray());
+                        }, () -> {
+                            KeklistVelocity.getInstance().getLogger().error("Server " + relayServer + " not found! Could not send keklist backend response to it!");
+                        });
+                        return;
+                    }
                     String parameter = in.readUTF();
 
                     out.writeUTF(parameter);

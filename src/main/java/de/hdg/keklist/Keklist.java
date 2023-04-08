@@ -87,6 +87,7 @@ public final class Keklist extends JavaPlugin {
 
         // Register plugin channel for API usage
         this.getServer().getMessenger().registerIncomingPluginChannel(this, "keklist", new KeklistChannelListener(api));
+        this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:api");
     }
 
     @Override
@@ -96,6 +97,7 @@ public final class Keklist extends JavaPlugin {
 
         // Unregister plugin channel
         this.getServer().getMessenger().unregisterIncomingPluginChannel(this);
+        this.getServer().getMessenger().unregisterOutgoingPluginChannel(this);
     }
 
     @NotNull
