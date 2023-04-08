@@ -31,3 +31,10 @@ jobs:
       run: mvn -s $GITHUB_WORKSPACE/settings.xml clean deploy  
       env:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+    
+    - name: Delete old Packages
+      uses: actions/delete-package-versions@v4.1.1
+      with:
+        package-name: "de.sage.minecraft.keklist"
+        min-versions-to-keep: 5
+
