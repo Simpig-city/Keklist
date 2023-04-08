@@ -1,0 +1,35 @@
+name: Publish Javadocs
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  javadoc:
+    runs-on: ubuntu
+    steps:
+    - name: Checkout 🙃
+      uses: actions/checkout@v3
+      
+    - name: Set up JDK 17 🛠
+      uses: actions/setup-java@v3
+      with:
+        java-version: 17
+        distribution: 'corretto'
+        
+    - name: Setup Maven 3.9.1 🔮
+      uses: stCarolas/setup-maven@v4.5
+      with:
+        maven-version: 3.9.1
+        
+    - name: Build Javadocs with Maven ⚙ 
+      run: mvn -B javadoc:javadoc --file pom.xml 
+      
+    - name: Deploy  🚀
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: javadocs
+        publish_dir: ./src/javadoc
