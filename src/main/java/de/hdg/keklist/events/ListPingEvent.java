@@ -47,8 +47,7 @@ public class ListPingEvent implements Listener {
         } else if (Keklist.getInstance().getConfig().getBoolean("whitelist.enabled") && (Keklist.getInstance().getConfig().getBoolean("whitelist.change-motd") || Keklist.getInstance().getConfig().getBoolean("whitelist.hide-online-players"))) {
             if (Keklist.getInstance().getConfig().getBoolean("whitelist.change-motd"))
                 event.motd(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedMotd(Keklist.RandomType.WHITELISTED)));
-
-            //May be customizable in the future
+                
             if (Keklist.getInstance().getConfig().getBoolean("whitelist.hide-online-players")) {
                 Random rnd = new Random();
 
