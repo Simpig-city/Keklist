@@ -11,6 +11,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
 
+/**
+ * This class is used to listen for plugin messages from other servers and sending responses.
+ *
+ * @author SageSphinx63920
+ * @since 1.0
+ */
 public class KeklistChannelListener implements PluginMessageListener {
 
     private final KeklistAPI api;

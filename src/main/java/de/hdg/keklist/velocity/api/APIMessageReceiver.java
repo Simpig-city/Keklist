@@ -9,6 +9,12 @@ import com.velocitypowered.api.proxy.ServerConnection;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import de.hdg.keklist.velocity.KeklistVelocity;
 
+/**
+ * This class is responsible for receiving messages from the backend and forwarding them to the correct server.
+ *
+ * @author SageSphinx63920
+ * @since 1.0
+ */
 public class APIMessageReceiver {
 
     private final ChannelIdentifier identifier;

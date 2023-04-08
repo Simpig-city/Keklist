@@ -51,6 +51,15 @@ public final class Keklist extends JavaPlugin {
     public void onLoad() {
         instance = this;
 
+        //Check for paper
+        try {
+            Class.forName("io.papermc.paper.plugin.loader.PluginLoader");
+        } catch (ClassNotFoundException e) {
+            getLogger().severe("This plugin requires Paper to run!");
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
         if(Bukkit.getPluginManager().getPlugin("floodgate") != null){
             floodgateApi = FloodgateApi.getInstance();
         }
@@ -143,7 +152,7 @@ public final class Keklist extends JavaPlugin {
             JsonObject data = new JsonObject();
             data.add("uuid", new JsonPrimitive(uuid.toString()));
             data.add("unix", new JsonPrimitive(System.currentTimeMillis()));
-            data.add("from", new JsonPrimitive("Keklist"));
+            data.add("from", new JsonPrimitive(getServer().getName()));
 
             out.writeUTF(data.toString());
 

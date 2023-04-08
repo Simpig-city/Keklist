@@ -139,6 +139,9 @@ public class DB {
         onUpdate("CREATE TABLE IF NOT EXISTS blacklistMotd (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13))");
     }
 
+    /**
+     * Database types supported by the plugin
+     */
     public enum DBType {
         MARIADB, SQLITE
     }
