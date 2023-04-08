@@ -22,6 +22,7 @@ jobs:
         java-version: '17'
         distribution: 'corretto'
         server-id: github
+        cache: maven
         
     - name: Git   
       run: git config --global user.email "no-reply@github.com" && git config --global user.name "Github Actions"
