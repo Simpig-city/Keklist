@@ -1,14 +1,14 @@
 name: Publish Javadocs
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  #push:
+    #branches: [ main ]
+  #pull_request:
+    #branches: [ main ]
   workflow_dispatch:
 
 jobs:
   javadoc:
-    runs-on: ubuntu
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout 🙃
       uses: actions/checkout@v3
