@@ -9,6 +9,12 @@ whitelist:
   enabled: false
   change-motd: true
   hide-online-players: false # This sends fake player's AND fake player counts to the client (Currently the max players is 20-40; online 0-10; fake players cant be modified rn)
+  fake-players: # List of fake players that are shown to the client NOTE: Can be empty
+    - SageSphinx63920
+    - hdgaymer1404Jonas
+    - LPTP1
+  fake-max-range: 20-40 # Please use the format: INTEGER-INTEGER
+  fake-online-range: 0-10 # Please use the format: INTEGER-INTEGER
 
 # Note: If you use a proxy you need to enable 'send-floodgate-data' on the proxy's config
 # More: https://wiki.geysermc.org/floodgate/setup/

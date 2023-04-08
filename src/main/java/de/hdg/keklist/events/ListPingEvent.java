@@ -13,9 +13,6 @@ import java.util.Random;
 
 public class ListPingEvent implements Listener {
 
-    //May be customizable in the future
-    private final List<String> fakePlayers = List.of("SageSphinx63920", "hdgamer1404Jonas", "SirSchoki", "Kekus", "KlexiKeks", "Oldbear200", "hlf11", "Vierkuhd", "Mommy2341", "dDdBds");
-
     @EventHandler
     public void onListPing(PaperServerListPingEvent event) {
         String playerIP = event.getAddress().getHostAddress();
@@ -38,7 +35,6 @@ public class ListPingEvent implements Listener {
 
             event.motd(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedMotd(Keklist.RandomType.BLACKLISTED)));
 
-            //set the icon to the file in ./blacklisted.png
             if (!new File(Keklist.getInstance().getConfig().getString("blacklist.icon-file")).exists()) {
                 Keklist.getInstance().getLogger().warning("Could not find the blacklisted icon file!");
             } else {
@@ -55,16 +51,23 @@ public class ListPingEvent implements Listener {
             //May be customizable in the future
             if (Keklist.getInstance().getConfig().getBoolean("whitelist.hide-online-players")) {
                 Random rnd = new Random();
-                int players = rnd.nextInt(0, 10);
 
-                event.setMaxPlayers(rnd.nextInt(20, 40));
-                event.setNumPlayers(players);
+                String onlineRange = Keklist.getInstance().getConfig().getString("whitelist.fake-online-range");
+                int fromOnline = Integer.parseInt(onlineRange.split("-")[0].replace("-", ""));
+                int toOnline = Integer.parseInt(onlineRange.split("-")[1].replace("-", ""));
+
+                int onlinePlayers = rnd.nextInt(fromOnline, toOnline);
+
+                String maxRange = Keklist.getInstance().getConfig().getString("whitelist.fake-max-range");
+                int fromMax = Integer.parseInt(maxRange.split("-")[0].replace("-", ""));
+                int toMax = Integer.parseInt(maxRange.split("-")[1].replace("-", ""));
+
+                event.setMaxPlayers(rnd.nextInt(fromMax, toMax));
+                event.setNumPlayers(onlinePlayers);
 
                 event.getPlayerSample().clear();
-                for (int i = 0; i < players; i++){
-                    event.getPlayerSample().add(Bukkit.createProfile(fakePlayers.get(rnd.nextInt(0, fakePlayers.size()))));
-                }
-
+                List<String> fakePlayers = Keklist.getInstance().getConfig().getStringList("whitelist.fake-players");
+                fakePlayers.forEach(player -> event.getPlayerSample().add(Bukkit.createProfile(player)));
             }
         } else {
             event.motd(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedMotd(Keklist.RandomType.NORMAL)));
