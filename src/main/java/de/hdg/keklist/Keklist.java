@@ -95,7 +95,7 @@ public final class Keklist extends JavaPlugin {
         pm.registerEvents(new BlacklistRemoveMotd(), this);
 
         // Register plugin channel for API usage
-        this.getServer().getMessenger().registerIncomingPluginChannel(this, "keklist", new KeklistChannelListener(api));
+        this.getServer().getMessenger().registerIncomingPluginChannel(this, "keklist:api", new KeklistChannelListener(api));
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:api");
     }
 
