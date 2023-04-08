@@ -65,7 +65,6 @@ public class VelocityConfig {
      * @param value Value to set
      * @param path  Path of the value to set
      * @throws IOException On any IO error
-     * @implNote This is not working because I don't save the config again. I won't do that cause of the same reason why config updating doesn't work rn
      */
     public void setValue(@NotNull Object value, @NotNull String path) throws IOException {
         ConfigurationNode node = configLoader.load();
