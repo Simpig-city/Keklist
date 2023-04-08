@@ -45,8 +45,8 @@ messages:
       - "<red><bold>Your IP is blacklisted on this server!"
       - "<red><bold>You are not allowed to join this server!"
     whitelisted:
-      - "<orange><bold>The server is in whitelist mode but you can join."
-      - "<orange><bold>Glad you can join us!"
+      - "<gold><bold>The server is in whitelist mode but you can join."
+      - "<gold><bold>Glad you can join us!"
     default:
       - "This is a normal motd"
       - "By default these are visible for everyone"
@@ -56,5 +56,5 @@ messages:
       - "<red><bold>You're kicked because you're on the blacklist!"
       - "<red><bold>Sorry, but you're not allowed to join this server!"
     whitelisted:
-      - "<orange><bold>You're kicked because the server is in whitelist mode!"
-      - "<orange><bold>Sorry, but you're not on the whitelist!"
+      - "<gold><bold>You're kicked because the server is in whitelist mode!"
+      - "<gold><bold>Sorry, but you're not on the whitelist!"
