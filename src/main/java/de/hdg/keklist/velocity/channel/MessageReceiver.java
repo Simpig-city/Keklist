@@ -108,12 +108,12 @@ public class MessageReceiver {
 
                 @Override
                 public boolean isSupportedOn(ProtocolVersion version) {
-                    return ProtocolVersion.MINECRAFT_1_19_4.equals(version);
+                    return version.compareTo(ProtocolVersion.MINECRAFT_1_13) >= 0;
                 }
 
                 @Override
                 public boolean isSupportedOn(WorldVersion version) {
-                    return WorldVersion.MINECRAFT_1_19_4.equals(version);
+                    return version.compareTo(WorldVersion.MINECRAFT_1_13) >= 0;
                 }
 
                 @Override
