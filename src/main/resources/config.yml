@@ -3,6 +3,7 @@ blacklist:
   allow-join-with-admin: false
   admin-permission: "blacklist.admin"
   limbo: false # Experimental
+  icon-file: "icon.png" # The icon for the server if player is blacklisted. Put the file in the same folder as the config
 
 whitelist:
   enabled: false

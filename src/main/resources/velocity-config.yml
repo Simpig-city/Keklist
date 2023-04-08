@@ -1,0 +1,19 @@
+# This is the config file for the velocity plugin
+# You need to set the "ping-passthrough" option in your velocity to
+# description: if you want to use the motd feature by the backend plugin.
+# all: if you want to use the motd and server icon feature by the backend plugin.
+# NOTE: You need to set the server with the motd/icon feature of Keklist as the default server
+
+# Settings for the limbo server
+# This section uses the limboapi plugin
+# You can find it here: https://github.com/Elytrium/LimboAPI
+limbo:
+  enabled: true # Enable the limbo but requires the limboapi plugin
+  nbt-file: "limbo.nbt"
+  offset: [0, 0, 0] # Offset for the nbt file. Offset: x,y,z; Y CAN'T BE NEGATIVE
+  enable-command: true # This adds /whereami command to the limbo, which gives some weird text
+  enable-map: true # This adds a map to the limbo with a custom image
+  map-image: "map.jpg" # The image for the map. Put the file in the same folder as the config
+
+# Settings for the API
+enable-api: true # This can disable the entire plugin-channel API. YOU DON'T WANT TO DISABLE THIS UNLESS YOU KNOW WHAT YOU ARE DOING

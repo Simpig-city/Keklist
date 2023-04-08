@@ -39,11 +39,11 @@ public class ListPingEvent implements Listener {
             event.motd(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedMotd(Keklist.RandomType.BLACKLISTED)));
 
             //set the icon to the file in ./blacklisted.png
-            if (!new File("blacklisted.jpeg").exists()) {
-                System.out.println("Blacklisted.png not found!");
+            if (!new File(Keklist.getInstance().getConfig().getString("blacklist.icon-file")).exists()) {
+                Keklist.getInstance().getLogger().warning("Could not find the blacklisted icon file!");
             } else {
                 try {
-                    event.setServerIcon(Keklist.getInstance().getServer().loadServerIcon(new File("blacklisted.jpeg")));
+                    event.setServerIcon(Keklist.getInstance().getServer().loadServerIcon(new File(Keklist.getInstance().getConfig().getString("blacklist.icon-file"))));
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -68,16 +68,6 @@ public class ListPingEvent implements Listener {
             }
         } else {
             event.motd(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedMotd(Keklist.RandomType.NORMAL)));
-
-            if (!new File("logo.png").exists()) {
-                System.out.println("logo.png not found!");
-            } else {
-                try {
-                    event.setServerIcon(Keklist.getInstance().getServer().loadServerIcon(new File("logo.png")));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
         }
     }
 }

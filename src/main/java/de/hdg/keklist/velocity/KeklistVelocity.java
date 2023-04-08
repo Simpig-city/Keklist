@@ -13,7 +13,7 @@ import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
 import de.hdg.keklist.velocity.api.APIMessageReceiver;
 import de.hdg.keklist.velocity.channel.MessageReceiver;
 import de.hdg.keklist.velocity.command.WhereAmICommand;
-import de.hdg.keklist.velocity.util.VeloConfigUtil;
+import de.hdg.keklist.velocity.util.VelocityConfig;
 import lombok.Getter;
 import net.elytrium.limboapi.api.Limbo;
 import net.elytrium.limboapi.api.LimboFactory;
@@ -33,16 +33,16 @@ import java.nio.file.Path;
                 "hdgamer1404Jonas",
                 "SageSphinx63920"},
         dependencies = {
-                @Dependency(id = "limboapi")
+                @Dependency(id = "limboapi", optional = true)
         })
 public class KeklistVelocity {
 
-    private final Path dataDirectory;
+    private final @Getter Path dataDirectory;
     private final @Getter ProxyServer server;
     private final @Getter Logger logger;
-    private final @Getter VeloConfigUtil config;
+    private final @Getter VelocityConfig config;
 
-    private final @Getter LimboFactory limboAPI;
+    private @Getter LimboFactory limboAPI;
     private @Getter Limbo limbo;
 
     private final ChannelIdentifier limboChannel = MinecraftChannelIdentifier.from("keklist:data");
@@ -56,17 +56,23 @@ public class KeklistVelocity {
         this.logger = logger;
         this.dataDirectory = dataDirectory;
         instance = this;
-        this.config = new VeloConfigUtil(dataDirectory, "config.yml");
+        this.config = new VelocityConfig(dataDirectory, "config.yml");
 
-        limboAPI = (LimboFactory) this.server.getPluginManager().getPlugin("limboapi").flatMap(PluginContainer::getInstance).orElseThrow();
-        if (!KeklistVelocity.getInstance().dataDirectory.resolve((String) config.getOption("limbo.nbt", "limbo.file")).toFile().exists()) {
-            logger.error("The schematic file for the Limbo doesn't exist! Could not load " + config.getOption("limbo.nbt", "limbo.file"));
+        if (config.getOption(false, "limbo.enabled")) {
+            if(server.getPluginManager().isLoaded("limboapi")) {
+                limboAPI = (LimboFactory) this.server.getPluginManager().getPlugin("limboapi").flatMap(PluginContainer::getInstance).orElseThrow();
+                if (!KeklistVelocity.getInstance().dataDirectory.resolve(config.getOption("limbo.nbt", "limbo.file")).toFile().exists()) {
+                    logger.error("The schematic file for the Limbo doesn't exist! Could not load " + config.getOption("limbo.nbt", "limbo.file"));
+                }
+            }else{
+                logger.error("LimboAPI not found! Please install LimboAPI to use the Limbo!");
+            }
         }
     }
 
     @Subscribe
     public void onProxyInitialization(ProxyInitializeEvent event) throws IOException {
-        if((boolean) config.getOption(true, "limbo.enabled")){
+        if(config.getOption(true, "limbo.enabled")){
             this.limbo = createLimbo();
         }else
             logger.warn("Velocity Limbo not enabled! Kicking player instead if message from Spigot Plugin...");
@@ -88,19 +94,24 @@ public class KeklistVelocity {
         LimboFactory factory = KeklistVelocity.getInstance().getLimboAPI();
 
         VirtualWorld world = factory.createVirtualWorld(Dimension.OVERWORLD, 0, 0, 0, 0, 0);
+        WorldFile file = factory.openWorldFile(BuiltInWorldFileType.STRUCTURE, dataDirectory.resolve(config.getOption("limbo.nbt", "nbt-file")));
 
-        WorldFile file = factory.openWorldFile(BuiltInWorldFileType.STRUCTURE, KeklistVelocity.getInstance().dataDirectory.resolve("limbo.nbt"));
-        file.toWorld(factory, world, -9, 0, -9, 7);
+        int[] offset = config.getOption(new int[]{0, 0, 0}, "limbo.offset");
+
+        file.toWorld(factory, world, offset[0], Math.max(offset[1], 0), offset[2], 7);
 
         Limbo setupLimbo = factory.createLimbo(world);
 
         setupLimbo.setName("Keklist Limbo");
         setupLimbo.setGameMode(GameMode.CREATIVE);
-        setupLimbo.registerCommand(server.getCommandManager().metaBuilder("whereami").build(), new WhereAmICommand());
         setupLimbo.setShouldRespawn(true);
         setupLimbo.setWorldTime(1000);
         setupLimbo.setViewDistance(8);
         setupLimbo.setSimulationDistance(1);
+
+        if(config.getOption(true, "limbo.enable-command")) {
+            setupLimbo.registerCommand(server.getCommandManager().metaBuilder("whereami").build(), new WhereAmICommand());
+        }
 
         return setupLimbo;
     }

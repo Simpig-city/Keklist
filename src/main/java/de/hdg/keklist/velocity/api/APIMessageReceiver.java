@@ -29,6 +29,11 @@ public class APIMessageReceiver {
             event.setResult(PluginMessageEvent.ForwardResult.handled());
 
             if (event.getSource() instanceof ServerConnection) {
+                if(KeklistVelocity.getInstance().getConfig().getOption(true, "enable-api")) {
+                    KeklistVelocity.getInstance().getLogger().error("Received API message from backend, but API is disabled!");
+                    return;
+                }
+
                 ByteArrayDataInput in = ByteStreams.newDataInput(event.getData());
                 ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
