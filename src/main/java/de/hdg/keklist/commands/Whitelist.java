@@ -25,7 +25,8 @@ public class Whitelist extends Command {
 
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().create();
-    private static final TypeToken<Map<String, String>> token = new TypeToken<>() {};
+    private static final TypeToken<Map<String, String>> token = new TypeToken<>() {
+    };
 
     public Whitelist() {
         super("whitelist");
@@ -113,7 +114,7 @@ public class Whitelist extends Command {
                         } else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist bereits gewhitelistet!"));
 
-                    }else if(type.equals(WhiteListType.BEDROCK)){
+                    } else if (type.equals(WhiteListType.BEDROCK)) {
                         whitelistUser(sender, bedrockUUID, senderName);
                     }
 
@@ -128,8 +129,14 @@ public class Whitelist extends Command {
                             Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
                         } else {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist nicht gewhitelistet!"));
-                            return true;
+                            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
+                            if (rsUserFix.next()) {
+                                Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " (Old Name) wurde erfolgreich von der Whitelist entfernt!"));
+
+                            } else {
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist nicht gewhitelistet!"));
+                            }
                         }
                     } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
@@ -139,7 +146,6 @@ public class Whitelist extends Command {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
                         } else {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist nicht gewhitelistet!"));
-                            return true;
                         }
                     }
 
@@ -159,11 +165,16 @@ public class Whitelist extends Command {
         return false;
     }
 
-    private void whitelistUser(CommandSender from, UUID uuid, String playerName){
+    private void whitelistUser(CommandSender from, UUID uuid, String playerName) {
         try {
             ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
+            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", playerName);
 
             if (!rs.next()) {
+                if (rsUserFix.next()) {
+                    Keklist.getDatabase().onUpdate("UPDATE whitelist SET name = ? WHERE name = ?", playerName, playerName + " (Old Name)");
+                }
+
                 new UUIDAddToWhitelistEvent(uuid).callEvent();
                 Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis());
                 from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + playerName + " wurde erfolgreich zur Whitelist hinzugefügt!"));

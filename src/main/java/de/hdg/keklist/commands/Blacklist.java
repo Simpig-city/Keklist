@@ -124,7 +124,15 @@ public class Blacklist extends Command {
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Blacklist entfernt!"));
                         } else {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist nicht geblacklistet!"));
+                            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
+                            if (rsUserFix.next()) {
+                                new PlayerRemovedFromBlacklist(args[1]).callEvent();
+                                Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
+
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " (Old Name) wurde erfolgreich von der Blacklist entfernt!"));
+                            } else {
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist nicht geblacklistet!"));
+                            }
                         }
                     } else if (type.equals(BlacklistType.IPv4) || type.equals(BlacklistType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
@@ -174,9 +182,14 @@ public class Blacklist extends Command {
     private void blacklistUser(CommandSender from, UUID uuid, String playerName, String reason) {
         try {
             ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", uuid.toString());
+            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", playerName);
 
             //User is not blacklisted
             if (!rs.next()) {
+                if(rsUserFix.next()){
+                    Keklist.getDatabase().onUpdate("UPDATE blacklist SET name = ? WHERE name = ?", playerName, playerName + " (Old Name)");
+                }
+
                 if (reason == null) {
                     new UUIDAddToBlacklistEvent(uuid, null).callEvent();
                     Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix, reason) VALUES (?, ?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis(), reason);

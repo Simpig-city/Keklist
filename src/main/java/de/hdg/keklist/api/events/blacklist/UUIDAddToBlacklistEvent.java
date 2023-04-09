@@ -1,7 +1,6 @@
 package de.hdg.keklist.api.events.blacklist;
 
 import de.hdg.keklist.Keklist;
-import de.hdg.keklist.util.PlanHook;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
