@@ -8,6 +8,7 @@ import de.hdg.keklist.api.events.whitelist.UUIDAddToWhitelistEvent;
 import de.hdg.keklist.api.events.whitelist.UUIDRemovedFromWhitelistEvent;
 import de.hdg.keklist.database.DB;
 import lombok.SneakyThrows;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +18,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 /**
  * API for the Keklist plugin
@@ -169,7 +173,7 @@ public class KeklistAPI {
      */
     public void whitelist(@NotNull UUID uuid, @Nullable String playerName){
       if(isWhitelisted(uuid)) return;
-      new UUIDAddToWhitelistEvent(uuid).callEvent();
+        awaitSync(() -> new UUIDAddToWhitelistEvent(uuid).callEvent());
 
       Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName==null?API_INFO:playerName, API_INFO, System.currentTimeMillis());
     }
@@ -184,7 +188,7 @@ public class KeklistAPI {
     public void whitelist(@NotNull String ip){
         if(ip.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$") || ip.matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) throw new IllegalArgumentException("IP is not valid");
         if(isWhitelisted(ip)) return;
-        new IpAddToWhitelistEvent(ip).callEvent();
+        awaitSync(() -> new IpAddToWhitelistEvent(ip).callEvent());
 
         Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", ip, API_INFO, System.currentTimeMillis());
     }
@@ -210,11 +214,11 @@ public class KeklistAPI {
         if (isBlacklisted(uuid)) return;
 
         if (reason == null) {
-            new UUIDAddToBlacklistEvent(uuid, null).callEvent();
+            awaitSync(() -> new UUIDAddToBlacklistEvent(uuid, null).callEvent());
             Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix, reason) VALUES (?, ?, ?, ?, ?)", uuid.toString(), playerName == null ? API_INFO : playerName, API_INFO, System.currentTimeMillis(), reason);
         } else {
             if (reason.length() <= 1500) {
-                new UUIDAddToBlacklistEvent(uuid, reason).callEvent();
+                awaitSync(() -> new UUIDAddToBlacklistEvent(uuid, reason).callEvent());
                 Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName == null ? API_INFO : playerName, API_INFO, System.currentTimeMillis());
             } else {
                 throw new IllegalArgumentException("Reason is too long! (Max. 1500 characters)");
@@ -235,11 +239,11 @@ public class KeklistAPI {
         if(isBlacklisted(ip)) return;
 
         if(reason == null){
-            new IpAddToBlacklistEvent(ip, null).callEvent();
+            awaitSync(() -> new IpAddToBlacklistEvent(ip, null).callEvent());
             Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", ip, API_INFO, System.currentTimeMillis());
         } else {
             if(reason.length() <= 1500){
-                new IpAddToBlacklistEvent(ip, reason).callEvent();
+                awaitSync(() -> new IpAddToBlacklistEvent(ip, reason).callEvent());
                 Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix, reason) VALUES (?, ?, ?, ?)", ip, API_INFO, System.currentTimeMillis(), reason);
             } else {
                 throw new IllegalArgumentException("Reason is too long! (Max. 1500 characters)");
@@ -258,7 +262,7 @@ public class KeklistAPI {
      */
     public void blacklistMOTD(@NotNull String ip) {
         if (isMOTDBlacklisted(ip)) return;
-        new IpAddToMOTDBlacklistEvent(ip).callEvent();
+        awaitSync(() -> new IpAddToMOTDBlacklistEvent(ip).callEvent());
 
         Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", ip, API_INFO, System.currentTimeMillis());
     }
@@ -279,7 +283,7 @@ public class KeklistAPI {
      */
     public void removeWhitelist(@NotNull UUID uuid){
         if(!isWhitelisted(uuid)) return;
-        new UUIDRemovedFromWhitelistEvent(uuid).callEvent();
+        awaitSync(() -> new UUIDRemovedFromWhitelistEvent(uuid).callEvent());
 
         Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE uuid = ?", uuid.toString());
     }
@@ -295,7 +299,7 @@ public class KeklistAPI {
      */
     public void removeWhitelist(@NotNull String ip){
         if(!isWhitelisted(ip)) return;
-        new IpRemovedFromWhitelistEvent(ip).callEvent();
+        awaitSync(() -> new IpRemovedFromWhitelistEvent(ip).callEvent());
 
         Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", ip);
     }
@@ -316,7 +320,7 @@ public class KeklistAPI {
      */
     public void removeBlacklist(@NotNull UUID uuid){
         if(!isBlacklisted(uuid)) return;
-        new UUIDRemovedFromBlacklistEvent(uuid).callEvent();
+        awaitSync(() -> new UUIDRemovedFromBlacklistEvent(uuid).callEvent());
 
         Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE uuid = ?", uuid.toString());
     }
@@ -332,7 +336,7 @@ public class KeklistAPI {
      */
     public void removeBlacklist(@NotNull String ip){
         if(!isBlacklisted(ip)) return;
-        new IpRemovedFromBlacklistEvent(ip).callEvent();
+        awaitSync(() -> new IpRemovedFromBlacklistEvent(ip).callEvent());
 
         Keklist.getDatabase().onUpdate("DELETE FROM blacklistIp WHERE ip = ?", ip);
     }
@@ -348,7 +352,7 @@ public class KeklistAPI {
      */
     public void removeBlacklistMOTD(@NotNull String ip){
         if(!isMOTDBlacklisted(ip)) return;
-        new IpRemovedFromMOTDBlacklistEvent(ip).callEvent();
+        awaitSync(() -> new IpRemovedFromMOTDBlacklistEvent(ip).callEvent());
 
         Keklist.getDatabase().onUpdate("DELETE FROM blacklistMotd WHERE ip = ?", ip);
     }
@@ -385,5 +389,30 @@ public class KeklistAPI {
      */
     public DB.DBType getDBType(){
         return isMariaDB() ? DB.DBType.MARIADB : DB.DBType.SQLITE;
+    }
+
+    /**
+     * This is used to execute a runnable on the main thread and await the result
+     * <p>
+     *     Mainly used for the events to be async safe
+     *
+     * @param callable The runnable to execute in the main thread
+     */
+    private <T> void awaitSync(Callable<T> callable) {
+        if (Bukkit.isPrimaryThread()) {
+            try {
+                callable.call();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            Future<T> future = Bukkit.getScheduler().callSyncMethod(plugin, callable);
+            try {
+                //Await the result for maybe adding cancelable events in the future
+                future.get();
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
