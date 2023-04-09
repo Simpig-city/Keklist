@@ -10,6 +10,7 @@ import java.util.UUID;
 
 /**
  * This event is called when a player is added to the blacklist.
+ * <b>Only called when UUID gets removed by API</b>
  */
 public class UUIDRemovedFromBlacklistEvent extends Event {
     private static final HandlerList handlerList = new HandlerList();

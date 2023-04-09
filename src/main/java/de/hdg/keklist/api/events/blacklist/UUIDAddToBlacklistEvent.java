@@ -12,6 +12,9 @@ import java.util.UUID;
 
 /**
  * This event is called when a UUID is added to the blacklist.
+ * <p>
+ *     This can be a floodgate UUID
+ * </p>
  */
 public class UUIDAddToBlacklistEvent extends Event {
     private static final HandlerList handlerList = new HandlerList();

@@ -1,31 +1,31 @@
 package de.hdg.keklist.commands;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
+import com.google.gson.reflect.TypeToken;
 import de.hdg.keklist.Keklist;
-import de.hdg.keklist.api.events.whitelist.IpAddToWhitelistEvent;
-import de.hdg.keklist.api.events.whitelist.IpRemovedFromWhitelistEvent;
-import de.hdg.keklist.api.events.whitelist.UUIDAddToWhitelistEvent;
-import de.hdg.keklist.api.events.whitelist.UUIDRemovedFromWhitelistEvent;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import de.hdg.keklist.api.events.whitelist.*;
+import net.kyori.adventure.text.Component;
+import okhttp3.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class Whitelist extends Command {
 
     private static final OkHttpClient client = new OkHttpClient();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().create();
+    private static final TypeToken<Map<String, String>> token = new TypeToken<>() {};
 
     public Whitelist() {
         super("whitelist");
@@ -46,10 +46,10 @@ public class Whitelist extends Command {
         try {
             String senderName = sender.getName();
             WhiteListType type;
-            UUID uuid = null;
+            UUID bedrockUUID = null;
 
             if (args[1].matches("^[a-zA-Z0-9_]{2,16}$")) {
-                type = WhiteListType.USERNAME;
+                type = WhiteListType.JAVA;
 
                 Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
                 try (Response response = client.newCall(request).execute()) {
@@ -72,7 +72,7 @@ public class Whitelist extends Command {
                         return true;
                     }
 
-                    uuid = UUID.fromString(element.getAsJsonObject().get("id").getAsString().replaceFirst(
+                    bedrockUUID = UUID.fromString(element.getAsJsonObject().get("id").getAsString().replaceFirst(
                             "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
                             "$1-$2-$3-$4-$5"));
                 }
@@ -85,8 +85,8 @@ public class Whitelist extends Command {
                     if (args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))) {
                         FloodgateApi api = Keklist.getInstance().getFloodgateApi();
 
-                        uuid = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
-                        type = WhiteListType.USERNAME;
+                        bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
+                        type = WhiteListType.BEDROCK;
                     } else {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Ungültige IP oder Username! <grey><o>Vielleicht überprüfe den Floodgate Prefix"));
                         return true;
@@ -100,17 +100,9 @@ public class Whitelist extends Command {
 
             switch (args[0]) {
                 case "add" -> {
-                    if (type.equals(WhiteListType.USERNAME)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
-
-                        if (!rs.next()) {
-                            new UUIDAddToWhitelistEvent(uuid).callEvent();
-                            Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), args[1], senderName, System.currentTimeMillis());
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Whitelist hinzugefügt!"));
-
-                        } else
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist bereits gewhitelistet!"));
-
+                    if (type.equals(WhiteListType.JAVA)) {
+                        Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
+                        client.newCall(request).enqueue(new Whitelist.UserWhitelistAddCallback((sender instanceof Player) ? (Player) sender : null));
                     } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
@@ -121,16 +113,18 @@ public class Whitelist extends Command {
                         } else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist bereits gewhitelistet!"));
 
+                    }else if(type.equals(WhiteListType.BEDROCK)){
+                        whitelistUser(sender, bedrockUUID, senderName);
                     }
 
                     return true;
                 }
 
                 case "remove" -> {
-                    if (type.equals(WhiteListType.USERNAME)) {
+                    if (type.equals(WhiteListType.JAVA) || type.equals(WhiteListType.BEDROCK)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
                         if (rs.next()) {
-                            new UUIDRemovedFromWhitelistEvent(uuid).callEvent();
+                            new PlayerRemovedFromWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Whitelist entfernt!"));
                         } else {
@@ -165,6 +159,68 @@ public class Whitelist extends Command {
         return false;
     }
 
+    private void whitelistUser(CommandSender from, UUID uuid, String playerName){
+        try {
+            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
+
+            if (!rs.next()) {
+                new UUIDAddToWhitelistEvent(uuid).callEvent();
+                Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis());
+                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + playerName + " wurde erfolgreich zur Whitelist hinzugefügt!"));
+
+            } else
+                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist bereits gewhitelistet!"));
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private class UserWhitelistAddCallback implements Callback {
+        private final Player player;
+
+        public UserWhitelistAddCallback(Player player) {
+            this.player = player;
+        }
+
+        @Override
+        public void onResponse(Call call, Response response) throws IOException {
+            if (player.isOnline()) {
+                if (checkForGoodResponse(response.body().string()) != null) {
+                    player.sendMessage(checkForGoodResponse(response.body().string()));
+                    return;
+                } else {
+                    Map<String, String> map = gson.fromJson(response.body().string(), token);
+                    String uuid = map.get("id");
+                    String name = map.get("name");
+
+                    whitelistUser(player, UUID.fromString(uuid), name);
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Call call, IOException e) {
+            if (player.isOnline()) {
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Etwas ist schiefgelaufen!"));
+                player.sendMessage(Component.text("Details: " + e.getMessage()));
+            }
+        }
+    }
+
+    private Component checkForGoodResponse(String response) {
+        JsonElement element = JsonParser.parseString(response);
+
+        if (!element.isJsonNull()) {
+            if (element.getAsJsonObject().get("error") != null) {
+                return Keklist.getInstance().getMiniMessage().deserialize("<red>Der Spieler existiert nicht! Mehr zum Fehler in der Konsole");
+            }
+        } else {
+            return Component.text("Response is null! Report this to the developer!");
+        }
+
+        return null;
+    }
+
     /**
      * Types of whitelist entries
      * <p> USERNAME: Whitelist a player by their username
@@ -172,7 +228,7 @@ public class Whitelist extends Command {
      * <p> IPv6: Whitelist a player by their IPv6 address
      */
     private enum WhiteListType {
-        IPv4, IPv6, USERNAME
+        IPv4, IPv6, JAVA, BEDROCK
     }
 
     @Override
