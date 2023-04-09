@@ -26,6 +26,8 @@ whitelist:
 floodgate:
   prefix: "." # Prefix for the floodgate player
 
+plan-support: false # Enable support for the Plan plugin
+
 # Settings for the database
 # This is useful to share the blacklist and whitelist between multiple servers
 mariadb:

@@ -13,6 +13,7 @@ import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.BlacklistRemoveMotd;
 import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
+import de.hdg.keklist.util.PlanHook;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -35,6 +36,7 @@ public final class Keklist extends JavaPlugin {
     private static @Getter Keklist instance;
     private @Getter @Nullable FloodgateApi floodgateApi = null;
     private static @Getter DB database;
+    private static @Getter PlanHook planHook;
     private static final Random random = new Random();
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
             TagResolver.builder()
@@ -64,6 +66,7 @@ public final class Keklist extends JavaPlugin {
             floodgateApi = FloodgateApi.getInstance();
         }
 
+
         //Plugin channel for limbo connections
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:data");
 
@@ -84,8 +87,6 @@ public final class Keklist extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        getServer().getPluginManager().registerEvents(new ListPingEvent(), this);
-
         registerCommand(new Whitelist());
         registerCommand(new Blacklist());
 
@@ -97,6 +98,14 @@ public final class Keklist extends JavaPlugin {
         // Register plugin channel for API usage
         this.getServer().getMessenger().registerIncomingPluginChannel(this, "keklist:api", new KeklistChannelListener(api));
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:api");
+
+        //Plan Hook
+        if(Bukkit.getPluginManager().getPlugin("Plan") != null){
+            if(getConfig().getBoolean("plan-support")) {
+                planHook = new PlanHook();
+                planHook.hookIntoPlan();
+            }
+        }
     }
 
     @Override

@@ -1,5 +1,7 @@
 package de.hdg.keklist.api.events.blacklist;
 
+import de.hdg.keklist.Keklist;
+import de.hdg.keklist.util.PlanHook;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -19,11 +21,21 @@ public class UUIDAddToBlacklistEvent extends Event {
     public UUIDAddToBlacklistEvent(@NotNull Player player, @Nullable String reason) {
         this.uuid = player.getUniqueId();
         this.reason = reason;
+
+        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+            caller.updatePlayerData(uuid, player.getName());
+            caller.updateServerData();
+        });
     }
 
     public UUIDAddToBlacklistEvent(@NotNull UUID uuid, @Nullable String reason) {
         this.uuid = uuid;
         this.reason = reason;
+
+        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+            caller.updatePlayerData(uuid, null);
+            caller.updateServerData();
+        });
     }
 
     /**

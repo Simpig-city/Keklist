@@ -1,5 +1,6 @@
 package de.hdg.keklist.api.events.blacklist;
 
+import de.hdg.keklist.Keklist;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -16,6 +17,11 @@ public class UUIDRemovedFromBlacklistEvent extends Event {
 
     public UUIDRemovedFromBlacklistEvent(@NotNull UUID uuid) {
         this.uuid = uuid;
+
+        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+            caller.updatePlayerData(uuid, null);
+            caller.updateServerData();
+        });
     }
 
     public UUIDRemovedFromBlacklistEvent(@NotNull Player player) {

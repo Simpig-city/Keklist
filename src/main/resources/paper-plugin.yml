@@ -11,3 +11,7 @@ dependencies:
   - name: floodgate
     required: false
     bootstrap: false
+
+  - name: Plan
+    required: false
+    bootstrap: false
