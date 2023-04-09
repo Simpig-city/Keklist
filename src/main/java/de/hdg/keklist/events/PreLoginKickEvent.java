@@ -119,9 +119,10 @@ public class PreLoginKickEvent implements Listener {
     public void onJoin(PlayerJoinEvent event) {
         if (config.getBoolean("blacklist.enabled")) {
             ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
+            ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getPlayer().getAddress().getAddress().getHostAddress());
 
             try {
-                if (rsUser.next()) {
+                if (rsUser.next() || rsIp.next()) {
                     event.joinMessage(Component.empty());
                     Keklist.getInstance().sendUserToLimbo(event.getPlayer());
 
