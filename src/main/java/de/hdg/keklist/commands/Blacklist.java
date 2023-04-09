@@ -191,11 +191,11 @@ public class Blacklist extends Command {
                 }
 
                 if (reason == null) {
-                    new UUIDAddToBlacklistEvent(uuid, null).callEvent();
+                    Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToBlacklistEvent(uuid, null).callEvent());
                     Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix, reason) VALUES (?, ?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis(), reason);
                 } else {
                     if (reason.length() <= 1500) {
-                        new UUIDAddToBlacklistEvent(uuid, reason).callEvent();
+                        Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToBlacklistEvent(uuid, reason).callEvent());
                         Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis());
                     } else {
                         from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Grund darf nicht länger als 1500 Zeichen sein!"));
@@ -207,7 +207,7 @@ public class Blacklist extends Command {
                 if (blacklisted != null) {
                     ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", blacklisted.getAddress().getAddress().getHostAddress());
                     if (!rsMotd.next()) {
-                        new IpAddToMOTDBlacklistEvent(blacklisted.getAddress().getAddress().getHostAddress()).callEvent();
+                        Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new IpAddToMOTDBlacklistEvent(blacklisted.getAddress().getAddress().getHostAddress()).callEvent());
                         Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", blacklisted.getAddress().getAddress().getHostAddress(), from.getName(), System.currentTimeMillis());
                     }
                 }
@@ -233,15 +233,17 @@ public class Blacklist extends Command {
         @Override
         public void onResponse(Call call, Response response) throws IOException {
             if (player.isOnline()) {
-                if (checkForGoodResponse(response.body().string()) != null) {
-                    player.sendMessage(checkForGoodResponse(response.body().string()));
-                    return;
+                String body = response.body().string();
+                if (checkForGoodResponse(body) != null) {
+                    player.sendMessage(checkForGoodResponse(body));
                 } else {
-                    Map<String, String> map = gson.fromJson(response.body().string(), token);
+                    Map<String, String> map = gson.fromJson(body, token);
                     String uuid = map.get("id");
                     String name = map.get("name");
 
-                    blacklistUser(player, UUID.fromString(uuid), name, reason);
+                    blacklistUser(player,  UUID.fromString(uuid.replaceFirst(
+                            "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
+                            "$1-$2-$3-$4-$5")), name, reason);
                 }
             }
         }

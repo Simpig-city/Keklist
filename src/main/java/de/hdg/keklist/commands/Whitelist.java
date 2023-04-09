@@ -175,7 +175,7 @@ public class Whitelist extends Command {
                     Keklist.getDatabase().onUpdate("UPDATE whitelist SET name = ? WHERE name = ?", playerName, playerName + " (Old Name)");
                 }
 
-                new UUIDAddToWhitelistEvent(uuid).callEvent();
+                Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToWhitelistEvent(uuid).callEvent());
                 Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis());
                 from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + playerName + " wurde erfolgreich zur Whitelist hinzugefügt!"));
 
@@ -196,15 +196,17 @@ public class Whitelist extends Command {
         @Override
         public void onResponse(Call call, Response response) throws IOException {
             if (player.isOnline()) {
-                if (checkForGoodResponse(response.body().string()) != null) {
-                    player.sendMessage(checkForGoodResponse(response.body().string()));
-                    return;
+                String body = response.body().string();
+                if (checkForGoodResponse(body) != null) {
+                    player.sendMessage(checkForGoodResponse(body));
                 } else {
-                    Map<String, String> map = gson.fromJson(response.body().string(), token);
+                    Map<String, String> map = gson.fromJson(body, token);
                     String uuid = map.get("id");
                     String name = map.get("name");
 
-                    whitelistUser(player, UUID.fromString(uuid), name);
+                    whitelistUser(player,  UUID.fromString(uuid.replaceFirst(
+                            "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
+                            "$1-$2-$3-$4-$5")), name);
                 }
             }
         }
