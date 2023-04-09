@@ -9,12 +9,14 @@ import java.sql.*;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DB {
 
     private Connection connection;
     private final DBType type;
     private final Keklist plugin;
+    private final AtomicInteger count = new AtomicInteger(0);
 
     public DB(DBType dbType, Keklist plugin) {
         this.plugin = plugin;
@@ -22,36 +24,41 @@ public class DB {
     }
 
     public void connect() {
+       if(count.get() >= 4){
+           plugin.getLogger().severe("Could not connect to database!");
+           return;
+         }
+
         try {
-            if (type.equals(DBType.SQLITE)) {
-                File file = new File(Keklist.getInstance().getDataFolder(), "database.db");
-                if (!file.exists())
-                    file.createNewFile();
+            switch (type){
+                case SQLITE -> {
+                    File file = new File(Keklist.getInstance().getDataFolder(), "database.db");
+                    if (!file.exists())
+                        file.createNewFile();
 
-                String url = "jdbc:sqlite:" + file.getPath();
-                connection = DriverManager.getConnection(url);
+                    String url = "jdbc:sqlite:" + file.getPath();
+                    connection = DriverManager.getConnection(url);
+                }
 
-                createTables();
+                case MARIADB -> {
+                    Class.forName("org.mariadb.jdbc.Driver");
+
+                    String url = "jdbc:mariadb://";
+
+                    String host = plugin.getConfig().getString("mariadb.host");
+                    String port = plugin.getConfig().getString("mariadb.port");
+                    String database = plugin.getConfig().getString("mariadb.database");
+                    String username = plugin.getConfig().getString("mariadb.username");
+                    String password = plugin.getConfig().getString("mariadb.password");
+                    String options = plugin.getConfig().getString("mariadb.options");
+
+                    url += host + ":" + port + "/" + database + options;
+                    connection = DriverManager.getConnection(url, username, password);
+                }
             }
 
-            if (type.equals(DBType.MARIADB)) {
-                Class.forName("org.mariadb.jdbc.Driver");
-
-                String url = "jdbc:mariadb://";
-
-                String host = plugin.getConfig().getString("mariadb.host");
-                String port = plugin.getConfig().getString("mariadb.port");
-                String database = plugin.getConfig().getString("mariadb.database");
-                String username = plugin.getConfig().getString("mariadb.username");
-                String password = plugin.getConfig().getString("mariadb.password");
-                String options = plugin.getConfig().getString("mariadb.options");
-
-                url += host + ":" + port + "/" + database + options;
-                connection = DriverManager.getConnection(url, username, password);
-
-                createTables();
-            }
-
+            createTables();
+            count.incrementAndGet();
         } catch (SQLException | java.io.IOException ex) {
             ex.printStackTrace();
         } catch (ClassNotFoundException e) {
