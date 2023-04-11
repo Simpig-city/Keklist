@@ -32,9 +32,9 @@ public class PlanHook {
         try {
             caller = ExtensionService.getInstance().register(new KekDataExtension());
         } catch (IllegalStateException notEnabled) {
-            Keklist.getInstance().getLogger().warning("Plan is not enabled, cannot register DataExtension.");
+            Keklist.getInstance().getLogger().warning(Keklist.getLanguage().get("plan.not-enabled"));
         } catch (IllegalArgumentException exception) {
-            Keklist.getInstance().getLogger().severe("DataExtension implementation is invalid, cannot register DataExtension.");
+            Keklist.getInstance().getLogger().severe(Keklist.getLanguage().get("plan.error"));
             exception.printStackTrace();
         }
     }

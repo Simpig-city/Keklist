@@ -1,5 +1,7 @@
 # Settings for every feature of the Keklist Paper plugin
 
+language: "en-us" # Language for the plugin
+
 # Settings for the blacklist feature
 blacklist:
   enabled: true # Enable the blacklist feature

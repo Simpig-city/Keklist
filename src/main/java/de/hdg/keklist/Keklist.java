@@ -13,6 +13,7 @@ import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.BlacklistRemoveMotd;
 import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
+import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.util.PlanHook;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -27,6 +28,7 @@ import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
 
@@ -37,6 +39,7 @@ public final class Keklist extends JavaPlugin {
     private @Getter @Nullable FloodgateApi floodgateApi = null;
     private static @Getter DB database;
     private static @Getter PlanHook planHook;
+    private static @Getter LanguageUtil language;
     private static final Random random = new Random();
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
             TagResolver.builder()
@@ -52,12 +55,13 @@ public final class Keklist extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
+        language = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")));
 
         //Check for paper
         try {
             Class.forName("io.papermc.paper.plugin.loader.PluginLoader");
         } catch (ClassNotFoundException e) {
-            getLogger().severe("This plugin requires Paper to run!");
+            getLogger().severe(language.get("paper.required"));
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -167,7 +171,7 @@ public final class Keklist extends JavaPlugin {
 
             Iterables.getFirst(Bukkit.getOnlinePlayers(), null).sendPluginMessage(this, "keklist:data", out.toByteArray());
         }catch (NullPointerException | IllegalArgumentException ex){
-            getLogger().warning("No Player online to limbo player! Waiting for next event...");
+            getLogger().warning(language.get("limbo.error"));
         }
     }
 
@@ -192,6 +196,6 @@ public final class Keklist extends JavaPlugin {
         if(database.isConnected()){
             return api;
         }else
-            throw new IllegalStateException("Database is not connected!");
+            throw new IllegalStateException(language.get("api.database-not-connected"));
     }
 }

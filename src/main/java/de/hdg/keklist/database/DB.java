@@ -1,6 +1,7 @@
 package de.hdg.keklist.database;
 
 import de.hdg.keklist.Keklist;
+import org.bukkit.Bukkit;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -26,7 +27,8 @@ public class DB {
 
     public void connect() {
        if(count.get() >= 4){
-           plugin.getLogger().severe("Could not connect to database!");
+           plugin.getLogger().severe(Keklist.getLanguage().get("database.connect-fail"));
+           Bukkit.getPluginManager().disablePlugin(plugin);
            return;
          }
 
@@ -63,8 +65,8 @@ public class DB {
         } catch (SQLException | java.io.IOException ex) {
             ex.printStackTrace();
         } catch (ClassNotFoundException e) {
-            plugin.getLogger().severe("Could not find the MariaDB driver!");
-            throw new RuntimeException(e);
+            plugin.getLogger().severe(Keklist.getLanguage().get("database.driver-missing"));
+            Bukkit.getPluginManager().disablePlugin(plugin);
         }
     }
 

@@ -31,15 +31,15 @@ public class Blacklist extends Command {
         super("blacklist");
         setAliases(List.of("bl"));
         setPermission("keklist.blacklist");
-        setUsage("/blacklist <add/remove/motd> [Spieler/IP] [Grund]");
-        setDescription("Blacklistet einen Spieler oder eine IP");
+        setUsage(Keklist.getLanguage().get("blacklist.usage"));
+        setDescription(Keklist.getLanguage().get("blacklist.description"));
     }
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
-            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /blacklist <add/remove/motd> [Spieler/IP] [Grund]"));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("invalid-syntax")));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.usage.command")));
             return true;
         }
 
@@ -62,11 +62,11 @@ public class Blacklist extends Command {
                         bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
                         type = BlacklistType.BEDROCK;
                     } else {
-                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Ungültige IP oder Username!"));
+                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.invalid-argument")));
                         return true;
                     }
                 } else {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Ungültige IP oder Username!"));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.invalid-argument")));
                     return true;
                 }
             }
@@ -93,7 +93,7 @@ public class Blacklist extends Command {
                                     new IpAddToBlacklistEvent(args[1], reason).callEvent();
                                     Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                                 } else {
-                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Grund ist zu lang!"));
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.reason-too-long")));
                                     return true;
                                 }
                             }
@@ -104,9 +104,9 @@ public class Blacklist extends Command {
                                 Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                             }
 
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Blacklist hinzugefügt!"));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.added", args[1])));
                         } else {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist bereits geblacklistet!"));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.already-blacklisted", args[1])));
                             return true;
                         }
                     } else if (type.equals(BlacklistType.BEDROCK)) {
@@ -122,16 +122,16 @@ public class Blacklist extends Command {
                             new PlayerRemovedFromBlacklist(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", args[1]);
 
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der Blacklist entfernt!"));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.removed", args[1])));
                         } else {
                             ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
                             if (rsUserFix.next()) {
                                 new PlayerRemovedFromBlacklist(args[1]).callEvent();
                                 Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
 
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " (Old Name) wurde erfolgreich von der Blacklist entfernt!"));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.removed", args[1])+ " (Old Name)"));
                             } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Dieser User ist nicht geblacklistet!"));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.not-blacklisted", args[1])));
                             }
                         }
                     } else if (type.equals(BlacklistType.IPv4) || type.equals(BlacklistType.IPv6)) {
@@ -144,9 +144,9 @@ public class Blacklist extends Command {
                             Keklist.getDatabase().onUpdate("DELETE FROM blacklistIp WHERE ip = ?", args[1]);
                             Keklist.getDatabase().onUpdate("DELETE FROM blacklistMotd WHERE ip = ?", args[1]);
 
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich von der (MOTD-)Blacklist entfernt!"));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.ip.removed", args[1])));
                         } else {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP ist nicht geblacklistet!"));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.not-blacklisted", args[1])));
                             return true;
                         }
                     }
@@ -156,19 +156,19 @@ public class Blacklist extends Command {
                     if (type.equals(BlacklistType.IPv4)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
                         if (rs.next()) {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Diese IP wurde bereits zu der blacklist motd hinzugefügt!"));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.motd.already-blacklisted", args[1])));
                         } else {
                             new IpAddToMOTDBlacklistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + args[1] + " wurde erfolgreich zur Blacklist Motd hinzugefügt!"));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.motd.added", args[1])));
                         }
                     } else
-                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Befehl /blacklist motd ist nur für IPs verfügbar!"));
+                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.motd.syntax")));
                 }
 
                 default -> {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Invalider Syntax!"));
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Benutze: /blacklist <add/remove> <Spieler/IP> <reason>"));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("invalid-syntax")));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.usage.command")));
                 }
             }
 
@@ -198,7 +198,7 @@ public class Blacklist extends Command {
                         Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToBlacklistEvent(uuid, reason).callEvent());
                         Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis());
                     } else {
-                        from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Der Grund darf nicht länger als 1500 Zeichen sein!"));
+                        from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.reason-too-long")));
                         return;
                     }
                 }
@@ -212,9 +212,9 @@ public class Blacklist extends Command {
                     }
                 }
 
-                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<green>" + playerName + " wurde erfolgreich zur Blacklist hinzugefügt!"));
+                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.added", playerName)));
             } else
-                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>" + playerName + " ist bereits auf der Blacklist!"));
+                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.already-blacklisted", playerName)));
 
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -251,8 +251,8 @@ public class Blacklist extends Command {
         @Override
         public void onFailure(Call call, IOException e) {
             if (player.isOnline()) {
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize("<red>Etwas ist schiefgelaufen!"));
-                player.sendMessage(Component.text("Details: " + e.getMessage()));
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("http.error")));
+                player.sendMessage(Component.text(Keklist.getLanguage().get("http.detail", e.getMessage())));
             }
         }
     }
@@ -262,10 +262,10 @@ public class Blacklist extends Command {
 
         if (!element.isJsonNull()) {
             if (element.getAsJsonObject().get("error") != null) {
-                return Keklist.getInstance().getMiniMessage().deserialize("<red>Der Spieler existiert nicht! Mehr zum Fehler in der Konsole");
+                return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("http.not-found", element.getAsJsonObject().get("error").getAsString()));
             }
         } else {
-            return Component.text("Response is null! Report this to the developer!");
+            return Component.text(Keklist.getLanguage().get("http.null-response"));
         }
 
         return null;

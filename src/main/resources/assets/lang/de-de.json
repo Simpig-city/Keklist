@@ -1,0 +1,44 @@
+{
+  "limbo.error": "Keiner anderen Spieler online! Warte auf das nächste Event...",
+  "paper.required": "Dieses Plugin benötigt Paper! ",
+  "invalid-syntax": "<red>Invalider syntax!",
+
+  "api.database-not-connected": "Datenbank ist nicht verbunden!",
+  "api.proxy-send-fail": "Proxy Nachricht konnte nicht gesendet werden!",
+
+  "plan.not-enabled": "Plan ist nicht aktiviert! DataExtension wird nicht geladen...",
+  "plan.error": "DataExtension konnte nicht geladen werden!",
+  "plan.registered": "DataExtension wurde registriert!",
+
+  "database.connect-fail": "Keine Verbindung zur Datenbank. Plugin wird deaktiviert...",
+  "database.driver-missing": "MariaDB Treiber wurde nicht gefunden! Plugin wird deaktiviert...",
+
+  "blacklist.icon.error": "Blacklist Icon konnte nicht geladen werden!",
+  "blacklist.description": "Blacklistet einen Spieler oder eine IP vom Server.",
+  "blacklist.usage": "/blacklist <add/remove/motd> <Spieler/IPv4/IPv6> [Grund]",
+  "blacklist.usage.command": "Bitte nutze: /blacklist <add/remove/motd> <Spieler/IPv4/IPv6> [Grund]",
+  "blacklist.invalid-argument": "<red>IP oder Nutzername ist ungültig!",
+  "blacklist.reason-too-long": "<red>Grund ist zu lang! Nutze maximal 1500 Zeichen!",
+  "blacklist.added": "<white>%s <green>wurde erfolgreich zur Blacklist hinzugefügt!",
+  "blacklist.removed": "<white>%s <green>wurde erfolgreich von der Blacklist entfernt!",
+  "blacklist.ip.removed": "<white>%s <green>wurde erfolgreich von der (motd-)Blacklist entfernt!",
+  "blacklist.motd.already-blacklisted": "<white>%s <red>ist schon auf der MOTD-Blacklist!",
+  "blacklist.motd.added": "<white>%s <green>wurde erfolgreich zur MOTD-Blacklist hinzugefügt!",
+  "blacklist.motd.syntax": "<red>Invalider syntax! Bitte nutze: /blacklist motd <IPv4>",
+  "blacklist.already-blacklisted": "<white>%s <red>ist bereits auf der Blacklist!",
+  "blacklist.not-blacklisted": "<white>%s <red>ist nicht auf der Blacklist!",
+
+  "whitelist.usage": "/whitelist <add/remove> <Spieler/IPv4/IPv6>",
+  "whitelist.usage.command": "Bitte nutze: /whitelist <add/remove> <Spieler/IPv4/IPv6>",
+  "whitelist.description": "Whitelistet einen Spieler oder eine IP auf dem Server.",
+  "whitelist.invalid-argument": "<red>IP oder Nutzername ist ungültig!",
+  "whitelist.added": "<white>%s <green>wurde erfolgreich zur Whitelist hinzugefügt!",
+  "whitelist.removed": "<white>%s <green>wurde erfolgreich von der Whitelist entfernt!",
+  "whitelist.already-whitelisted": "<white>%s <red>ist bereits auf der Whitelist!",
+  "whitelist.not-whitelisted": "<white>%s <red>ist nicht auf der Whitelist!",
+
+  "http.error": "<red>Die Mojang-API ist nicht erreichbar! Bitte versuche es später erneut!",
+  "http.not-found": "<red>Spieler wurde nicht gefunden! Mehr Informationen: %s",
+  "http.null-response": "HTTP Antwort ist null! Bitte versuche es später erneut!",
+  "http.detail": "Details: %s"
+}
