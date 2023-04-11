@@ -2,6 +2,7 @@
   "limbo.error": "No Player online to limbo player! Waiting for next event...",
   "paper.required": "This plugin requires Paper to run!",
   "invalid-syntax": "<red>Invalid syntax!",
+  "config-reloaded": "<green>Config reloaded!",
 
   "api.database-not-connected": "Database is not connected!",
   "api.proxy-send-fail": "Could not send response to proxy!",
@@ -27,6 +28,14 @@
   "blacklist.motd.syntax": "<red>Invalid syntax! Please use: /blacklist motd <IPv4>",
   "blacklist.already-blacklisted": "<white>%s <red>is already blacklisted!",
   "blacklist.not-blacklisted": "<white>%s <red>is not blacklisted!",
+  "blacklist.enabled": "<green>Blacklist is now enabled!",
+  "blacklist.already-enabled": "<red>Blacklist is already enabled!",
+  "blacklist.disabled": "<green>Blacklist is now disabled!",
+  "blacklist.already-disabled": "<red>Blacklist is already disabled!",
+  "blacklist.allow-blacklisted": "<green>Blacklisted players are now allowed to join with an admin online!",
+  "blacklist.already-allow-blacklisted": "<red>Blacklisted players are already allowed to join with an admin online!",
+  "blacklist.disallow-blacklisted": "<green>Blacklisted players are now not allowed to join with an admin online!",
+  "blacklist.already-disallow-blacklisted": "<red>Blacklisted players are already not allowed to join with an admin online!",
 
   "whitelist.usage": "/whitelist <add/remove> <Player/IPv4/IPv6>",
   "whitelist.usage.command": "Please use: /whitelist <add/remove> <Player/IPv4/IPv6>",
@@ -36,6 +45,14 @@
   "whitelist.removed": "<green>Successfully removed <white>%s <green>from the whitelist!",
   "whitelist.already-whitelisted": "<white>%s <red>is already whitelisted!",
   "whitelist.not-whitelisted": "<white>%s <red>is not whitelisted!",
+  "whitelist.enabled": "<green>Whitelist is now enabled!",
+  "whitelist.already-enabled": "<red>Whitelist is already enabled!",
+  "whitelist.disabled": "<green>Whitelist is now disabled!",
+  "whitelist.already-disabled": "<red>Whitelist is already disabled!",
+
+  "keklist.usage": "/keklist <blacklist/whitelist/reload> [feature/enable/disable]",
+  "keklist.usage.command": "Please use: /keklist <blacklist/whitelist/reload> [feature/enable/disable]",
+  "keklist.description": "Command to manage the Keklist plugin features.",
 
   "http.error": "<red>Could not connect to the Mojang-API!",
   "http.not-found": "<red>Could not find the player! More information: %s",

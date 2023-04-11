@@ -8,6 +8,7 @@ import com.google.gson.JsonPrimitive;
 import de.hdg.keklist.api.KeklistAPI;
 import de.hdg.keklist.api.KeklistChannelListener;
 import de.hdg.keklist.commands.Blacklist;
+import de.hdg.keklist.commands.KeklistCommand;
 import de.hdg.keklist.commands.Whitelist;
 import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.BlacklistRemoveMotd;
@@ -93,6 +94,11 @@ public final class Keklist extends JavaPlugin {
     public void onEnable() {
         registerCommand(new Whitelist());
         registerCommand(new Blacklist());
+
+        // Register command if enabled in config
+        if(getConfig().getBoolean("enable-manage-command")) {
+            registerCommand(new KeklistCommand());
+        }
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new ListPingEvent(), this);

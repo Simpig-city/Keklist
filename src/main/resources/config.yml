@@ -1,6 +1,8 @@
 # Settings for every feature of the Keklist Paper plugin
 
 language: "en-us" # Language for the plugin
+plan-support: false # Enable support for the Plan plugin
+enable-manage-command: false # Enable the /keklist command to enable/disable the blacklist/whitelist
 
 # Settings for the blacklist feature
 blacklist:
@@ -27,8 +29,6 @@ whitelist:
 # More: https://wiki.geysermc.org/floodgate/setup/
 floodgate:
   prefix: "." # Prefix for the floodgate player
-
-plan-support: false # Enable support for the Plan plugin
 
 # Settings for the database
 # This is useful to share the blacklist and whitelist between multiple servers
