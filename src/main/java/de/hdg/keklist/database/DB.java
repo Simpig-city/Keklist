@@ -1,6 +1,7 @@
 package de.hdg.keklist.database;
 
 import de.hdg.keklist.Keklist;
+import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -81,7 +82,7 @@ public class DB {
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void onUpdate(@NotNull final String statement, Object... preparedArgs) {
+    public void onUpdate(@NotNull @Language("SQL") final String statement, Object... preparedArgs) {
         if (isConnected()) {
             new FutureTask(new Runnable() {
                 PreparedStatement preparedStatement;
@@ -108,7 +109,7 @@ public class DB {
     }
 
     @Nullable
-    public ResultSet onQuery(@NotNull final String query, Object... preparedArgs) {
+    public ResultSet onQuery(@NotNull @Language("SQL") final String query, Object... preparedArgs) {
         if (isConnected()) {
             try {
                 FutureTask<ResultSet> task = new FutureTask<>(new Callable<ResultSet>() {
