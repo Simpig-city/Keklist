@@ -1,7 +1,6 @@
 name: Feature request
 description: >-
-  Template to request a new feature or enhanchement for the plugin(Velocity/Paper). If this doesn’t look right,
-  [choose another form](https://github.com/Simpig-city/Keklist/issues/new/choose)
+  Template to request a new feature or enhanchement for the plugin(Velocity/Paper).
 title: '[FEATURE]: '
 assignees:
   - SageSphinx63920
@@ -13,6 +12,7 @@ body:
       value: >-
         Before you are requesting a new feature or enhancement for the plugin,
         make sure you use the latest version fo the plugin!
+        If this doesn’t look right, [choose another form](https://github.com/Simpig-city/Keklist/issues/new/choose)
   - type: input
     id: plugin
     attributes:
