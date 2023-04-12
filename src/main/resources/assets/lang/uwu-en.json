@@ -1,15 +1,15 @@
 {
-  "limbo.error": "No Player online to limbo player! Waiting for next event...",
-  "paper.required": "This plugin requires Paper to run!",
-  "invalid-syntax": "<red>Invalid syntax!",
-  "config-reloaded": "<green>Config reloaded!",
+  "limbo.error": "No pwayew onwine to wimbo pwayew! OwO waiting fow next event...",
+  "paper.required": "This pwuwgin wequwiwes papew to wuwn! OwO",
+  "invalid-syntax": "<red>Invawid syntax! OwO",
+  "config-reloaded": "<green>Config wewoaded! OwO",
 
-  "api.database-not-connected": "Database is not connected!",
-  "api.proxy-send-fail": "Could not send response to proxy!",
+  "api.database-not-connected": "Database is not connected! OwO",
+  "api.proxy-send-fail": "Couwwd not send wesponse to pwoxy! OwO",
 
-  "plan.not-enabled": "Plan is not enabled, cannot register DataExtension.",
-  "plan.error": "DataExtension implementation is invalid, cannot register DataExtension.",
-  "plan.registered": "DataExtension registered successfully.",
+  "plan.not-enabled": "Pwan is not enabwed, cannot wegistew dataextension.",
+  "plan.error": "Dataextension impwementation is invawid, cannot wegistew dataextension.",
+  "plan.registered": "Dataextension wegistewed suwccessfuwwwy.",
 
   "database.connect-fail": "Could not connect to the database! Disabling plugin...",
   "database.driver-missing": "MariaDB driver not found! Disabling plugin...",
