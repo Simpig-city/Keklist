@@ -37,7 +37,7 @@ public class LanguageUtil {
     }
 
     @NotNull
-    public String get(String key) {
+    public String get(@NotNull String key) {
         if(translations.get(key) == null)
             return Objects.requireNonNull(getDefault(key), "Translation for key " + key + " not found!");
         else
@@ -45,7 +45,7 @@ public class LanguageUtil {
     }
 
     @NotNull
-    public String get(String key, Object... args) {
+    public String get(@NotNull String key, @Nullable Object... args) {
         if(translations.get(key) == null)
             return String.format(Objects.requireNonNull(getDefault(key), "Translation for key " + key + " not found!"), args);
         else
@@ -53,16 +53,17 @@ public class LanguageUtil {
     }
 
     @Nullable
-    public String getDefault(String key) {
+    public String getDefault(@NotNull String key) {
         return defaultTranslations.get(key);
     }
 
     @Nullable
-    public String getDefault(String key, Object... args) {
+    public String getDefault(@NotNull String key, @Nullable Object... args) {
         return String.format(Objects.requireNonNull(getDefault(key)), args);
     }
 
-    public String getLanguage() {
+    @NotNull
+    public String getLanguageCode() {
         return language;
     }
 
