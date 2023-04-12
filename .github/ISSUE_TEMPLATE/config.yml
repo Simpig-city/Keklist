@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Discord support
+    url: https://discord.gg/Vseq6Sqcau
+    about: Feel free to contact me on discord for support!
+  - name: Downloads
+    url: https://teamcity.lptp.systems/buildConfiguration/Keklist_Build?mode=builds
+    about: You can download the latest build from the teamcity page
