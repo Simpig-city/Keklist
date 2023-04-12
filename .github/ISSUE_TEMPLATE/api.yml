@@ -1,0 +1,65 @@
+name: API bug
+description: >-
+  Template for reporting API bugs (NOT PLUGIN)!  If this doesn’t look right,
+  [choose another form](https://github.com/Simpig-city/Keklist/issues/new/choose)
+title: '[API]: '
+labels:
+  - api
+  - bug
+assignees:
+  - SageSphinx63920
+body:
+  - type: markdown
+    attributes:
+      value: |- 
+         This form is only for reorting bugs in the API.
+         
+         Keep in mind that this isn't the place to learn Java.  
+         Please head over to [StackOverflow](https://stackoverflow.com/questions/tagged/java) for your general programming questions.
+  - type: input
+    id: version
+    attributes:
+      label: 'API Version'
+      description: The version of the API/Plugin you're using
+      placeholder: Im using API version x.x.x and plugin version x.x.x
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Do you meet the conditions?
+      options:
+        - label: Im using the latest version!
+          required: true
+        - label: I've checked the issues for similar reports!
+          required: true
+        - label: My server is supported by the plugin!
+          required: true
+  - type: textarea
+    id: code
+    attributes:
+      label: Code you're using
+      description: |-
+         The code you try to use and/or steps to reproduce the error.
+      render: java
+    validations:
+      required: true
+  - type: textarea
+    id: error
+    attributes:
+      label: Exception or Error
+      description: |-
+         Share any Exception or Error you encountered.
+         
+         Put in N/A if no exeption appears and share the 
+         false behavior in the other section!
+      placeholder: 'java.lang.NullPointerException: null'
+      render: java
+    validations:
+      required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: Other
+      description: Do you have anything else to include in this issue?
