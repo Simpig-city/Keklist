@@ -2,6 +2,7 @@
   "limbo.error": "Keiner anderen Spieler online! Warte auf das nächste Event...",
   "paper.required": "Dieses Plugin benötigt Paper! ",
   "invalid-syntax": "<red>Invalider syntax!",
+  "config-reloaded": "<green>Config wurde neu geladen!",
 
   "api.database-not-connected": "Datenbank ist nicht verbunden!",
   "api.proxy-send-fail": "Proxy Nachricht konnte nicht gesendet werden!",
