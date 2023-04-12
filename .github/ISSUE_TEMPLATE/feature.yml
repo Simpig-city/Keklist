@@ -1,0 +1,58 @@
+name: Feature request
+description: >-
+  Template to request a new feature or enhanchement for the plugin(Velocity/Paper). If this doesn’t look right,
+  [choose another form](https://github.com/Simpig-city/Keklist/issues/new/choose)
+title: '[FEATURE]: '
+assignees:
+  - SageSphinx63920
+labels:
+  - 'new function'
+body:
+  - type: markdown
+    attributes:
+      value: >-
+        Before you are requesting a new feature or enhancement for the plugin,
+        make sure you use the latest version fo the plugin!
+  - type: input
+    id: plugin
+    attributes:
+      label: Plugin version
+      description: Which plugin version do you currently use?
+      placeholder: Keklist v1.0.0-SNAPSHOT
+    validations:
+      required: true
+  - type: textarea
+    id: new-behaviour
+    attributes:
+      label: 'What should be added/changed:'
+      description: Please describe the new feature or change as detailed as possible
+      placeholder: I want the plugin to do...
+    validations:
+      required: true
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Usecase for the function
+      description: Where would this be useful
+      placeholder: Its useful when you try to...
+    validations:
+      required: true
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Agreements
+      description: You meet these conditions
+      options:
+        - label: Im using the latest version of the plugin.
+          required: true
+        - label: >-
+            I have searched for and ensured there isn't already an open issue
+            regarding this.
+          required: true
+        - label: My server is supported by the plugin!
+          required: true
+  - type: textarea
+    id: other
+    attributes:
+      label: Other
+      description: Do you have anything else to include to this issue?
