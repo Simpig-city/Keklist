@@ -11,8 +11,8 @@
   "plan.error": "Dataextension impwementation is invawid, cannot wegistew dataextension.",
   "plan.registered": "Dataextension wegistewed suwccessfuwwwy.",
 
-  "database.connect-fail": "Could not connect to the database! Disabling plugin...",
-  "database.driver-missing": "MariaDB driver not found! Disabling plugin...",
+  "database.connect-fail": "Couwwd not connect to the database! OwO disabwing pwuwgin...",
+  "database.driver-missing": "Mawiadb dwivew not fouwnd! OwO disabwing pwuwgin...",
 
   "blacklist.icon.error": "Could not find the blacklisted icon file!",
   "blacklist.description": "Blacklists a player or ip from the server.",
