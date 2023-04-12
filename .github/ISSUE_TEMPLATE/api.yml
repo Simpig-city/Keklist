@@ -1,7 +1,6 @@
 name: API bug
 description: >-
-  Template for reporting API bugs (NOT PLUGIN)!  If this doesn’t look right,
-  [choose another form](https://github.com/Simpig-city/Keklist/issues/new/choose)
+  Template for reporting API bugs (NOT PLUGIN)!
 title: '[API]: '
 labels:
   - api
@@ -16,6 +15,7 @@ body:
          
          Keep in mind that this isn't the place to learn Java.  
          Please head over to [StackOverflow](https://stackoverflow.com/questions/tagged/java) for your general programming questions.
+         If this doesn’t look right, [choose another form](https://github.com/Simpig-city/Keklist/issues/new/choose)
   - type: input
     id: version
     attributes:
