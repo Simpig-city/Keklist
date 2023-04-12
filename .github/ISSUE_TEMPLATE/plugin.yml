@@ -1,7 +1,6 @@
 name: Bug report
 description: >-
-  Template to report bugs of the plugin (NOT API). If this doesn’t look right,
-  [choose another form](https://github.com/Simpig-city/Keklist/issues/new/choose)
+  Template to report bugs of the plugin (NOT API).
 title: '[Bug]: '
 assignees:
   - SageSphinx63920
@@ -12,7 +11,7 @@ body:
     attributes:
       value: >-
         Before reporting a crash or misbehaviour here, please make sure you are using the latest
-        version of the plugin!
+        version of the plugin! If this doesn’t look right, [choose another form](https://github.com/Simpig-city/Keklist/issues/new/choose)
   - type: input
     id: server
     attributes:
