@@ -61,6 +61,7 @@
   "gui.whitelist.remove.description": "<gray><i>Remove a player from the whitelist",
   "gui.whitelist.list.entry": "<gray><i>Click to see more information about this entry",
   "gui.whitelist.sign": "<i><gray>Type in a username/IP",
+  "gui.whitelist.list.previous": "<gray><i>Click to see the previous page",
 
   "gui.blacklist.title": "<blue><b>Blacklist",
   "gui.blacklist.description": "<gray><i>Menu for the blacklist",

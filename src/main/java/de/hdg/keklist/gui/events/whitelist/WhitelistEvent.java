@@ -51,7 +51,7 @@ public class WhitelistEvent implements Listener {
                     Block block = player.getWorld().getBlockAt(new Location(player.getWorld(), 0, 0, Bukkit.getMaxWorldSize() - 1));
                     player.getWorld().setBlockData(new Location(player.getWorld(), 0, 0, Bukkit.getMaxWorldSize() - 1), Material.SPRUCE_SIGN.createBlockData());
 
-                    Sign sign = (Sign) player.getWorld().getBlockAt(new Location(player.getWorld(), 0, 0, Bukkit.getMaxWorldSize() - 1));
+                    Sign sign = (Sign) player.getWorld().getBlockAt(new Location(player.getWorld(), 0, 0, Bukkit.getMaxWorldSize() - 1)).getBlockData();
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "signTypeDataMode"), PersistentDataType.STRING, "whitelist");
                     sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.sign")));
                     player.openSign(sign);
@@ -73,7 +73,7 @@ public class WhitelistEvent implements Listener {
                         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
                         skullMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(players.getString("name")));
                         skullMeta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.list.entry"))));
-                        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(players.getString("uuid")));
+                        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(players.getString("name")));
                         skull.setItemMeta(skullMeta);
                         playerHeads.add(skull);
                     }
@@ -93,6 +93,7 @@ public class WhitelistEvent implements Listener {
                     nextPage.setItemMeta(nextPageMeta);
 
                     if(playerHeads.size() > 18) {
+                        System.out.println("CASE 1");
                         for (int i = 0; i < 18; i++) {
                             whitelist.setItem(i, playerHeads.get(i));
                         }
@@ -100,28 +101,40 @@ public class WhitelistEvent implements Listener {
                         nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "playerEntries"), PersistentDataType.INTEGER, 18);
                         nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, 0);
 
+                        nextPage.setItemMeta(nextPageMeta);
                         whitelist.setItem(26, nextPage);
                     } else if ((playerHeads.size() + ipItems.size()) > 18) {
+                        System.out.println("CASE 2");
                         int sharedI = 0;
-                        for (int i = sharedI; sharedI < playerHeads.size(); sharedI++) {
-                            whitelist.setItem(sharedI, playerHeads.get(sharedI));
-                        }
-                        for (int i = sharedI; sharedI < ipItems.size(); sharedI++) {
-                            if(sharedI == 18) break;
-                            whitelist.setItem(sharedI, ipItems.get(sharedI));
+                        for (ItemStack playerHead : playerHeads) {
+                            whitelist.setItem(sharedI, playerHead);
+                            sharedI++;
                         }
 
-                        nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "ipEntries"), PersistentDataType.INTEGER, sharedI);
+                        int ipIndex = 0;
+                        for (ItemStack ipItem : ipItems) {
+                            if (sharedI == 18) break;
+                            whitelist.setItem(sharedI, ipItem);
+                            sharedI++;
+                            ipIndex++;
+                        }
+
+                        nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "ipEntries"), PersistentDataType.INTEGER, ipIndex);
                         nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, 0);
 
+                        nextPage.setItemMeta(nextPageMeta);
                         whitelist.setItem(26, nextPage);
                     }else {
+                        System.out.println("CASE 3");
                         int sharedI = 0;
-                        for (int i = sharedI; sharedI < playerHeads.size(); sharedI++) {
-                            whitelist.setItem(sharedI, playerHeads.get(sharedI));
+                        for (ItemStack playerHead : playerHeads) {
+                            whitelist.setItem(sharedI, playerHead);
+                            sharedI++;
                         }
-                        for (int i = sharedI; sharedI < ipItems.size(); sharedI++) {
-                            whitelist.setItem(sharedI, ipItems.get(sharedI));
+
+                        for (ItemStack ipItem : ipItems) {
+                            whitelist.setItem(sharedI, ipItem);
+                            sharedI++;
                         }
                     }
 
@@ -132,7 +145,7 @@ public class WhitelistEvent implements Listener {
                     Block block = player.getWorld().getBlockAt(new Location(player.getWorld(), 0, 0, Bukkit.getMaxWorldSize() - 1));
                     player.getWorld().setBlockData(new Location(player.getWorld(), 0, 0, Bukkit.getMaxWorldSize() - 1), Material.SPRUCE_SIGN.createBlockData());
 
-                    Sign sign = (Sign) player.getWorld().getBlockAt(new Location(player.getWorld(), 0, 0, Bukkit.getMaxWorldSize() - 1));
+                    Sign sign = (Sign) player.getWorld().getBlockAt(new Location(player.getWorld(), 0, 0, Bukkit.getMaxWorldSize() - 1)).getBlockData();
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "signTypeDataMode"), PersistentDataType.STRING, "removeWhitelist");
                     sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.sign")));
                     player.openSign(sign);
@@ -214,6 +227,7 @@ public class WhitelistEvent implements Listener {
                         nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "playerEntries"), PersistentDataType.INTEGER, playerEntries+18);
                         nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex+1);
 
+                        nextPage.setItemMeta(nextPageMeta);
                         whitelist.setItem(26, nextPage);
                     } else if ((playerHeads.size() + ipItems.size()) > 18) {
                         int sharedI = 0;
@@ -228,6 +242,7 @@ public class WhitelistEvent implements Listener {
                         nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "ipEntries"), PersistentDataType.INTEGER, sharedI);
                         nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex+1);
 
+                        nextPage.setItemMeta(nextPageMeta);
                         whitelist.setItem(26, nextPage);
                     }else {
                         int sharedI = 0;
@@ -248,11 +263,13 @@ public class WhitelistEvent implements Listener {
                         previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "playerEntries"), PersistentDataType.INTEGER, playerEntries-18);
                         previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex-1);
 
+                        previousPage.setItemMeta(previousPageMeta);
                         whitelist.setItem(18, previousPage);
                     } else if (playerEntries > 0) {
                         previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "playerEntries"), PersistentDataType.INTEGER, 0);
                         previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex-1);
 
+                        previousPage.setItemMeta(previousPageMeta);
                         whitelist.setItem(18, previousPage);
                     }
 
@@ -288,6 +305,10 @@ public class WhitelistEvent implements Listener {
                         }
 
                         nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "ipEntries"), PersistentDataType.INTEGER, ipEntries+ 18);
+                        nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "playerEntries"), PersistentDataType.INTEGER, pageIndex*18);
+                        nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex+1);
+
+                        nextPage.setItemMeta(nextPageMeta);
                         whitelist.setItem(26, nextPage);
                     }else {
                         for (int i = 0; i < 18; i++) {
@@ -302,10 +323,10 @@ public class WhitelistEvent implements Listener {
                         previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex-1);
                     }else {
                         previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "ipEntries"), PersistentDataType.INTEGER, 0);
-                        nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "playerEntries"), PersistentDataType.INTEGER, pageIndex*18);
                         previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex-1);
                     }
 
+                    previousPage.setItemMeta(previousPageMeta);
                     whitelist.setItem(18, previousPage);
                 }
 
