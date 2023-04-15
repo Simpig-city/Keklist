@@ -14,6 +14,8 @@ import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.BlacklistRemoveMotd;
 import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
+import de.hdg.keklist.gui.events.MainGUIEvent;
+import de.hdg.keklist.gui.events.whitelist.WhitelistEvent;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.util.PlanHook;
 import lombok.Getter;
@@ -104,6 +106,11 @@ public final class Keklist extends JavaPlugin {
         pm.registerEvents(new ListPingEvent(), this);
         pm.registerEvents(new PreLoginKickEvent(), this);
         pm.registerEvents(new BlacklistRemoveMotd(), this);
+
+        // GUI Listener
+        pm.registerEvents(new MainGUIEvent(), this);
+        pm.registerEvents(new WhitelistEvent(), this);
+
 
         // Register plugin channel for API usage
         this.getServer().getMessenger().registerIncomingPluginChannel(this, "keklist:api", new KeklistChannelListener(api));

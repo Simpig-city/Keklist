@@ -139,7 +139,7 @@ public class Whitelist extends Command {
         return false;
     }
 
-    private void whitelistUser(CommandSender from, UUID uuid, String playerName) {
+    private static void whitelistUser(CommandSender from, UUID uuid, String playerName) {
         try {
             ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
             ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", playerName);
@@ -160,7 +160,7 @@ public class Whitelist extends Command {
         }
     }
 
-    private class UserWhitelistAddCallback implements Callback {
+    public static class UserWhitelistAddCallback implements Callback {
         private final Player player;
 
         public UserWhitelistAddCallback(Player player) {
@@ -194,7 +194,7 @@ public class Whitelist extends Command {
         }
     }
 
-    private Component checkForGoodResponse(String response) {
+    private static Component checkForGoodResponse(String response) {
         JsonElement element = JsonParser.parseString(response);
 
         if (!element.isJsonNull()) {

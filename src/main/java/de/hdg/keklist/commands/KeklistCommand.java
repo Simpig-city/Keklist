@@ -1,6 +1,7 @@
 package de.hdg.keklist.commands;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.gui.GuiManager;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -163,7 +164,10 @@ public class KeklistCommand extends Command {
                 } catch (IOException | InvalidConfigurationException e) {
                     throw new RuntimeException(e);
                 }
-            }
+            } else if (args[0].equalsIgnoreCase("gui")) {
+                GuiManager.openMainGUI((Player) sender);
+            }else
+                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("keklist.usage.command")));
         } else
             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("keklist.usage.command")));
 
@@ -173,7 +177,7 @@ public class KeklistCommand extends Command {
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length < 2) {
-            return List.of("whitelist", "blacklist", "reload");
+            return List.of("whitelist", "blacklist", "reload", "gui");
         } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("whitelist")) {
                 return List.of("enable", "disable");

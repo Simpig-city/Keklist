@@ -3,7 +3,7 @@ package de.hdg.keklist.util;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import de.hdg.keklist.velocity.KeklistVelocity;
+import de.hdg.keklist.Keklist;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,14 +23,14 @@ public class LanguageUtil {
 
     public LanguageUtil(@NotNull String language) {
         this.language = language;
-        InputStream langStream = KeklistVelocity.class.getResourceAsStream("/assets/lang/" + language + ".json");
-        InputStream defaultStream = KeklistVelocity.class.getResourceAsStream("/assets/lang/en-us.json");
+        InputStream langStream = Keklist.class.getResourceAsStream("/assets/lang/" + language + ".json");
+        InputStream defaultStream = Keklist.class.getResourceAsStream("/assets/lang/en-us.json");
 
         if (langStream == null) {
-            KeklistVelocity.getInstance().getLogger().warn("Language " + language + " not found! Using default language en-us");
-            langStream = KeklistVelocity.class.getResourceAsStream("/assets/lang/en-us.json");
+            Keklist.getInstance().getLogger().warning("Language " + language + " not found! Using default language en-us");
+            langStream = Keklist.class.getResourceAsStream("/assets/lang/en-us.json");
         }else
-            KeklistVelocity.getInstance().getLogger().info("Language " + language + " loaded!");
+            Keklist.getInstance().getLogger().info("Language " + language + " loaded!");
 
         translations = gson.fromJson(new InputStreamReader(langStream), translationTypes.getType());
         defaultTranslations = gson.fromJson(new InputStreamReader(defaultStream), translationTypes.getType());
