@@ -124,7 +124,7 @@ public class WhitelistEvent implements Listener {
         }
     }
 
-    private Inventory getPage(int pageIndex, int skipIndex, boolean onlyPlayer, boolean onlyIP) throws SQLException {
+    public static Inventory getPage(int pageIndex, int skipIndex, boolean onlyPlayer, boolean onlyIP) throws SQLException {
         Inventory whitelist = Bukkit.createInventory(null, 9 * 3, Keklist.getInstance().getMiniMessage().deserialize("<white><b>Whitelist Players"));
 
         List<ItemStack> playerHeads = new ArrayList<>();

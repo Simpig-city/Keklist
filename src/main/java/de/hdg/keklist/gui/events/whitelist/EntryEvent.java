@@ -6,17 +6,19 @@ import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.Skull;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
+import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
@@ -32,7 +34,7 @@ public class EntryEvent implements Listener {
             event.setCancelled(true);
 
             if (event.getCurrentItem() == null) return;
-            if(!(event.getWhoClicked() instanceof Player player)) return;
+            if (!(event.getWhoClicked() instanceof Player player)) return;
 
             PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
             LanguageUtil lang = Keklist.getLanguage();
@@ -61,7 +63,8 @@ public class EntryEvent implements Listener {
                                 meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.infoitem")));
                                 meta.lore(List.of(
                                         Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.name", username)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.uuid", uuid.toString())),
+                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.uuid")),
+                                        Keklist.getInstance().getMiniMessage().deserialize("<white>" + uuid.toString()),
                                         Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.by", byPlayer)),
                                         Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.date", sdf.format(new Date(unix))))
                                 ));
@@ -72,11 +75,13 @@ public class EntryEvent implements Listener {
                             ItemStack removeItem = new ItemStack(Material.BARRIER);
                             removeItem.editMeta(meta -> {
                                 meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.removeitem")));
-                                meta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.remove"))));
+                                meta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.remove"))));
                             });
 
                             overview.setItem(15, removeItem);
+                            overview.setItem(18, getBackArrow(event.getClickedInventory()));
 
+                            player.openInventory(overview);
                         } else {
                             player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.notfound")));
                             player.closeInventory();
@@ -84,20 +89,164 @@ public class EntryEvent implements Listener {
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
-                   }
+                }
 
-                case PAPER -> {
+                case BOOK -> {
+                    Inventory overview = Bukkit.createInventory(player, 27, Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Whitelisted IP"));
+                    ItemStack item = event.getCurrentItem();
 
+                    String ip = serializer.serialize(item.getItemMeta().displayName());
+                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = '" + ip + "'");
+
+                    try {
+                        if (rs.next()) {
+                            long unix = rs.getLong("unix");
+                            String byPlayer = rs.getString("byPlayer");
+
+                            SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
+
+                            item.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.entry.info"))));
+                            overview.setItem(4, item);
+
+                            ItemStack infoItem = new ItemStack(Material.PAPER);
+                            infoItem.editMeta(meta -> {
+                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.infoitem")));
+                                meta.lore(List.of(
+                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.name", ip)),
+                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.by", byPlayer)),
+                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.date", sdf.format(new Date(unix))))
+                                ));
+                            });
+
+                            overview.setItem(11, infoItem);
+
+                            ItemStack removeItem = new ItemStack(Material.BARRIER);
+                            removeItem.editMeta(meta -> {
+                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.removeitem")));
+                                meta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.remove"))));
+                            });
+
+                            overview.setItem(15, removeItem);
+                            overview.setItem(18, getBackArrow(event.getClickedInventory()));
+
+                            player.openInventory(overview);
+                        } else {
+                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.notfound")));
+                            player.closeInventory();
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
             }
-
-            int pageIndex = event.getInventory().getItem(26).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-            int skipIndex = event.getInventory().getItem(26).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER);
-            boolean onlyPlayer = false;
-            boolean onlyIp = false;
-            try {onlyPlayer = 0 != event.getInventory().getItem(26).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER);} catch (Exception ignored) {}
-            try {onlyIp = 0 != event.getInventory().getItem(26).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER);} catch (Exception ignored) {}
-
         }
+    }
+
+    @EventHandler
+    public void onBackClick(InventoryClickEvent event) throws SQLException {
+        if (event.getClickedInventory() == null) return;
+        if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Whitelisted Player")) || event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Whitelisted IP"))) {
+            event.setCancelled(true);
+
+            if (event.getCurrentItem() == null) return;
+            if (!(event.getWhoClicked() instanceof Player player)) return;
+
+            if (event.getCurrentItem().getType() == Material.ARROW) {
+                int pageIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
+                int skipIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER);
+                boolean onlyPlayer = false;
+                boolean onlyIp = false;
+                try {
+                    onlyPlayer = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER);
+                } catch (Exception ignored) {
+                }
+
+                try {
+                    onlyIp = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER);
+                } catch (Exception ignored) {
+                }
+
+                player.openInventory(WhitelistEvent.getPage(pageIndex, skipIndex, onlyPlayer, onlyIp));
+            }
+        }
+    }
+
+    @EventHandler
+    public void onRemoveClick(InventoryClickEvent event) throws SQLException {
+        if (event.getClickedInventory() == null) return;
+        if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Whitelisted Player"))) {
+            event.setCancelled(true);
+
+            if (event.getCurrentItem() == null) return;
+            if (!(event.getWhoClicked() instanceof Player player)) return;
+
+            LanguageUtil lang = Keklist.getLanguage();
+
+            if (event.getCurrentItem().getType() == Material.BARRIER) {
+                ItemStack item = event.getClickedInventory().getItem(4);
+                String username = ((SkullMeta) item.getItemMeta()).getOwningPlayer().getName();
+
+                Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = '" + username + "'");
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.removed", username)));
+
+                player.openInventory(WhitelistEvent.getPage(0, 0, false, false)); // We can't use the back arrow here because the player is not in the inventory anymore and values may change
+            }
+        } else if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Whitelisted IP"))) {
+            event.setCancelled(true);
+
+            if (event.getCurrentItem() == null) return;
+            if (!(event.getWhoClicked() instanceof Player player)) return;
+
+            LanguageUtil lang = Keklist.getLanguage();
+
+            if (event.getCurrentItem().getType() == Material.BARRIER) {
+                ItemStack item = event.getClickedInventory().getItem(4);
+                String ip = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
+
+                Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = '" + ip + "'");
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.removed", ip)));
+
+                player.openInventory(WhitelistEvent.getPage(0, 0, false, false)); // We can't use the back arrow here because the player is not in the inventory anymore and values may change
+            }
+        }
+    }
+
+    private ItemStack getBackArrow(Inventory inventory) {
+        int pageIndex = 0;
+        int skipIndex = 0;
+        boolean onlyPlayer = false;
+        boolean onlyIp = false;
+
+        /*if (inventory.getItem(18) != null) {
+            System.out.println("Inventory is not null");
+            System.out.println(inventory.getItem(18));
+            pageIndex = inventory.getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER) + 1;
+            skipIndex = inventory.getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER);
+            try {
+                onlyPlayer = 0 != inventory.getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER);
+            } catch (Exception ignored) {
+            }
+            try {
+                onlyIp = 0 != inventory.getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER);
+            } catch (Exception ignored) {
+            }
+        }else
+            System.out.println(inventory.getItem(18));*/
+
+        ItemStack item = new ItemStack(Material.ARROW);
+        item.editMeta(meta -> {
+            meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.entry.back")));
+            meta.lore(Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.entry.back.lore"))));
+        });
+
+        ItemMeta meta = item.getItemMeta();
+        PersistentDataContainer container = meta.getPersistentDataContainer();
+        container.set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex);
+        container.set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, skipIndex);
+        container.set(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER, onlyPlayer ? 1 : 0);
+        container.set(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER, onlyIp ? 1 : 0);
+
+        item.setItemMeta(meta);
+        return item;
     }
 }

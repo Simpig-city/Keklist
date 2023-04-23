@@ -54,6 +54,10 @@ public final class Keklist extends JavaPlugin {
                     .resolver(StandardTags.reset())
                     .resolver(StandardTags.rainbow())
                     .resolver(StandardTags.translatable())
+                    .resolver(StandardTags.hoverEvent())
+                    .resolver(StandardTags.clickEvent())
+                    .resolver(StandardTags.insertion())
+                    .resolver(StandardTags.reset())
                     .build()).build();
 
     @Override
