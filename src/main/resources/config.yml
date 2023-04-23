@@ -62,3 +62,7 @@ messages:
     whitelisted:
       - "<gold><bold>You're kicked because the server is in whitelist mode!"
       - "<gold><bold>Sorry, but you're not on the whitelist!"
+
+# Enable bstats
+# This is used to collect anonymous data about the plugin, which helps me to improve the plugin
+bstats: true
