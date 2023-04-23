@@ -23,10 +23,6 @@ public class KeklistMetrics {
     }
 
     private void initChars(){
-        metrics.addCustomChart(new SimplePie("keklist_version", () -> {
-            return plugin.getPluginMeta().getVersion();
-        }));
-
         metrics.addCustomChart(new SimplePie("keklist_language", () -> {
             return Keklist.getLanguage().getLanguageCode();
         }));
