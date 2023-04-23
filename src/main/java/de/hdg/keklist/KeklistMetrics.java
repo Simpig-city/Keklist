@@ -18,11 +18,11 @@ public class KeklistMetrics {
         initChars();
     }
 
-    public void shutdown(){
+    public void shutdown() {
         metrics.shutdown();
     }
 
-    private void initChars(){
+    private void initChars() {
         metrics.addCustomChart(new SimplePie("keklist_language", () -> {
             return Keklist.getLanguage().getLanguageCode();
         }));
@@ -43,9 +43,14 @@ public class KeklistMetrics {
             ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");
             ResultSet rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelistIp");
             try {
-                if (rsPlayers.next() && rsIPs.next()) {
-                    return rsPlayers.getInt(1) + rsIPs.getInt(1);
-                }
+                int count = 0;
+                if (rsPlayers.next())
+                    count += rsPlayers.getInt(1);
+
+                if (rsIPs.next())
+                    count += rsIPs.getInt(1);
+
+                return count;
             } catch (Exception ignored) {}
             return 0;
         }));
@@ -54,9 +59,14 @@ public class KeklistMetrics {
             ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklist");
             ResultSet rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistIp");
             try {
-                if (rsPlayers.next() && rsIPs.next()) {
-                    return rsPlayers.getInt(1) + rsIPs.getInt(1);
-                }
+                int count = 0;
+                if (rsPlayers.next())
+                    count += rsPlayers.getInt(1);
+
+                if (rsIPs.next())
+                    count += rsIPs.getInt(1);
+
+                return count;
             } catch (Exception ignored) {}
             return 0;
         }));
