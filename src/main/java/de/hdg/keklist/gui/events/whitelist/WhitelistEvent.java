@@ -1,6 +1,7 @@
 package de.hdg.keklist.gui.events.whitelist;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.gui.GuiManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -71,6 +72,7 @@ public class WhitelistEvent implements Listener {
                     Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign), 5);
                 }
                 case PLAYER_HEAD -> player.openInventory(getPage(0, 0, false, false));
+                case ARROW -> GuiManager.openMainGUI(player);
             }
         }
     }
@@ -91,6 +93,8 @@ public class WhitelistEvent implements Listener {
                 Block block = signMap.get(event.getPlayer());
                 block.getWorld().setBlockData(block.getLocation(), block.getBlockData());
                 signMap.remove(event.getPlayer());
+
+                GuiManager.handleMainGUICLick("whitelist", event.getPlayer());
             }
         }
     }
@@ -120,6 +124,11 @@ public class WhitelistEvent implements Listener {
                 }
 
                 player.openInventory(getPage(pageIndex, skipIndex, onlyPlayer, onlyIp));
+            }
+
+            if(event.getCurrentItem().getType().equals(Material.BARRIER)){
+                event.setCancelled(true);
+               GuiManager.handleMainGUICLick("whitelist", player);
             }
         }
     }
@@ -208,6 +217,12 @@ public class WhitelistEvent implements Listener {
                     sharedI++;
                 }
             }
+
+            ItemStack back = new ItemStack(Material.BARRIER);
+            ItemMeta backMeta = back.getItemMeta();
+            backMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.back")));
+            back.setItemMeta(backMeta);
+            whitelist.setItem(22, back);
         }
 
         if (pageIndex > 0) {

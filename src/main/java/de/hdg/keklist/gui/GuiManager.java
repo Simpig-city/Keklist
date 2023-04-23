@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
+import java.util.Arrays;
 import java.util.List;
 
 public class GuiManager {
@@ -18,7 +19,7 @@ public class GuiManager {
     static LanguageUtil language = Keklist.getLanguage();
 
     public static void openMainGUI(Player player) {
-        Inventory mainMenu = Bukkit.createInventory(player, 9*3, plugin.getMiniMessage().deserialize("<gold><b>Keklist"));
+        Inventory mainMenu = Bukkit.createInventory(player, 9 * 3, plugin.getMiniMessage().deserialize("<gold><b>Keklist"));
 
         ItemStack whitelist = new ItemStack(Material.PAPER);
         ItemMeta whitelistMeta = whitelist.getItemMeta();
@@ -39,8 +40,8 @@ public class GuiManager {
         settings.setItemMeta(settingsMeta);
 
         mainMenu.setItem(11, whitelist);
-        mainMenu.setItem(13, blacklist);
-        mainMenu.setItem(15, settings);
+        mainMenu.setItem(13, settings);
+        mainMenu.setItem(15, blacklist);
 
         player.openInventory(mainMenu);
     }
@@ -49,7 +50,7 @@ public class GuiManager {
     public static void handleMainGUICLick(String menu, Player player) {
         switch (menu.toLowerCase()) {
             case "whitelist" -> {
-                Inventory whitelist = Bukkit.createInventory(null, 9*3, plugin.getMiniMessage().deserialize("<gold><b>Whitelist"));
+                Inventory whitelist = Bukkit.createInventory(null, 9 * 3, plugin.getMiniMessage().deserialize("<gold><b>Whitelist"));
 
                 ItemStack add = new ItemStack(Material.SPRUCE_SIGN);
                 ItemMeta addMeta = add.getItemMeta();
@@ -88,9 +89,44 @@ public class GuiManager {
             }
 
             case "settings" -> {
+                Inventory settings = Bukkit.createInventory(null, 9 * 3, plugin.getMiniMessage().deserialize("<gold><b>Settings"));
 
+                ItemStack back = new ItemStack(Material.ARROW);
+                ItemMeta backMeta = back.getItemMeta();
+                backMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.back")));
+                back.setItemMeta(backMeta);
+
+                ItemStack whitelist = new ItemStack(Material.PAPER);
+                ItemMeta whitelistMeta = whitelist.getItemMeta();
+                whitelistMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.settings.whitelist.title")));
+                whitelistMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.settings.whitelist.description"))));
+                whitelist.setItemMeta(whitelistMeta);
+
+                ItemStack blacklist = new ItemStack(Material.ANVIL);
+                ItemMeta blacklistMeta = blacklist.getItemMeta();
+                blacklistMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.settings.blacklist.title")));
+                blacklistMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.settings.blacklist.description"))));
+                blacklist.setItemMeta(blacklistMeta);
+
+                ItemStack info = new ItemStack(Material.BOOK);
+                ItemMeta infoMeta = info.getItemMeta();
+                infoMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.settings.info.title")));
+                infoMeta.lore(List.of(
+                        plugin.getMiniMessage().deserialize(language.get("gui.settings.info.language", language.getLanguageCode())),
+                        plugin.getMiniMessage().deserialize(language.get("gui.settings.info.version", plugin.getPluginMeta().getVersion())),
+                        plugin.getMiniMessage().deserialize(language.get("gui.settings.info.authors")),
+                        plugin.getMiniMessage().deserialize("<white><b>" + String.join(", ", plugin.getPluginMeta().getAuthors())),
+                        plugin.getMiniMessage().deserialize(language.get("gui.settings.info.database", Keklist.getInstance().getConfig().getBoolean("mariadb.enabled") ? "MariaDB" : "SQLite"))
+                ));
+                info.setItemMeta(infoMeta);
+
+                settings.setItem(4, info);
+                settings.setItem(11, whitelist);
+                settings.setItem(15, blacklist);
+                settings.setItem(18, back);
+
+                player.openInventory(settings);
             }
-
         }
     }
 }
