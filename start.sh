@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mvn package -f pom.xml
-mkdir ./testserver && mkdir ./testserver/plugins
+mkdir -p ./testserver/plugins
 cp ./target/keklist-1.0-SNAPSHOT.jar ./testserver/plugins
 
 cd ./testserver || exit
