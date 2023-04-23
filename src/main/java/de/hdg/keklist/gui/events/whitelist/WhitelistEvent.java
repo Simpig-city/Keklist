@@ -138,10 +138,6 @@ public class WhitelistEvent implements Listener {
         ItemMeta previousPageMeta = previousPage.getItemMeta();
         previousPageMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.list.previous")));
 
-        /*System.out.println("PAGE: " + pageIndex);
-        System.out.println("SKIP: " + skipIndex);
-        System.out.println("IP: "+ onlyIP);
-        System.out.println("PLAYER: " + onlyPlayer);*/
 
         if (pageIndex == 0) {
             ResultSet players = Keklist.getDatabase().onQuery("SELECT * FROM whitelist");
