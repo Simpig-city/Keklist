@@ -198,7 +198,7 @@ public class Whitelist extends Command {
         JsonElement element = JsonParser.parseString(response);
 
         if (!element.isJsonNull()) {
-            if (element.getAsJsonObject().get("error") != null) {
+            if (element.getAsJsonObject().get("error") != null || !element.getAsJsonObject().has("id") || !element.getAsJsonObject().has("name")) {
                 return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("http.not-found", element.getAsJsonObject().get("error").getAsString()));
             }
         } else {
