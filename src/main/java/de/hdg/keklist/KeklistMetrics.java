@@ -27,51 +27,35 @@ public class KeklistMetrics {
             return Keklist.getLanguage().getLanguageCode();
         }));
 
-        metrics.addCustomChart(new SingleLineChart("keklist_whitelisted", () -> {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");
-            try {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            } catch (Exception ignored) {}
-            return 0;
+        metrics.addCustomChart(new SimplePie("keklist_whitelist", () -> {
+            return plugin.getConfig().getBoolean("whitelist.enabled") ? "enabled" : "disabled";
         }));
 
-        metrics.addCustomChart(new SingleLineChart("keklist_whitelistedIPs", () -> {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelistIp");
+        metrics.addCustomChart(new SimplePie("keklist_blacklist", () -> {
+            return plugin.getConfig().getBoolean("blacklist.enabled") ? "enabled" : "disabled";
+        }));
+
+        metrics.addCustomChart(new SimplePie(" keklist_motd_blacklist", () -> {
+            return plugin.getConfig().getBoolean("blacklist.enabled") ? "enabled" : "disabled";
+        }));
+
+        metrics.addCustomChart(new SingleLineChart("keklist_whitelisted", () -> {
+            ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");
+            ResultSet rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelistIp");
             try {
-                if (rs.next()) {
-                    return rs.getInt(1);
+                if (rsPlayers.next() && rsIPs.next()) {
+                    return rsPlayers.getInt(1) + rsIPs.getInt(1);
                 }
             } catch (Exception ignored) {}
             return 0;
         }));
 
         metrics.addCustomChart(new SingleLineChart("keklist_blacklisted", () -> {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklist");
+            ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklist");
+            ResultSet rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistIp");
             try {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            } catch (Exception ignored) {}
-            return 0;
-        }));
-
-        metrics.addCustomChart(new SingleLineChart("keklist_blacklistedIPs", () -> {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistIp");
-            try {
-                if (rs.next()) {
-                    return rs.getInt(1);
-                }
-            } catch (Exception ignored) {}
-            return 0;
-        }));
-
-        metrics.addCustomChart(new SingleLineChart("keklist_blacklistedMOTD", () -> {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistMotd");
-            try {
-                if (rs.next()) {
-                    return rs.getInt(1);
+                if (rsPlayers.next() && rsIPs.next()) {
+                    return rsPlayers.getInt(1) + rsIPs.getInt(1);
                 }
             } catch (Exception ignored) {}
             return 0;
