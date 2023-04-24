@@ -3,9 +3,6 @@ on:
   push:
     paths:
       - 'src/main/resources/assets/lang/en-us.json'
-  pull_request:
-    paths:
-      - 'src/main/resources/assets/lang/en-us.json'
   workflow_dispatch:
 
 jobs:
@@ -16,16 +13,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
+      - name: Extract branch name
+        shell: bash
+        run: |
+          branchName=$(echo ${GITHUB_REF#refs/heads/})
+          echo "branch=${branchName/\//"-"}"   >>$GITHUB_OUTPUT
+        id: gh_branch
+
       - name: Crowdin Upload
         uses: crowdin/github-action@v1
         with:
           upload_sources: true
           upload_translations: false
 
-          source: src/main/resources/assets/lang/en-us.json
+          source: "src/main/resources/assets/lang/en-us.json"
           translation: src/main/resources/assets/lang/%locale%.json
 
-          crowdin_branch_name: "${{ env.BRANCH_NAME }}"
+          crowdin_branch_name: ${{ steps.gh_branch.outputs.branch }}
           project_id: ${{ vars.CROWDIN_PROJECT_ID }}
           token: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
         env:
