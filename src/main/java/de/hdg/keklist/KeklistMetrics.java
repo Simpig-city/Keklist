@@ -35,10 +35,6 @@ public class KeklistMetrics {
             return plugin.getConfig().getBoolean("blacklist.enabled") ? "enabled" : "disabled";
         }));
 
-        metrics.addCustomChart(new SimplePie(" keklist_motd_blacklist", () -> {
-            return plugin.getConfig().getBoolean("blacklist.enabled") ? "enabled" : "disabled";
-        }));
-
         metrics.addCustomChart(new SingleLineChart("keklist_whitelisted", () -> {
             ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");
             ResultSet rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelistIp");
