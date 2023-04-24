@@ -10,7 +10,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 
-import java.util.Arrays;
 import java.util.List;
 
 public class GuiManager {
@@ -85,7 +84,41 @@ public class GuiManager {
             }
 
             case "blacklist" -> {
+                Inventory blacklist = Bukkit.createInventory(null, 9 * 3, plugin.getMiniMessage().deserialize("<gold><b>Blacklist"));
 
+                ItemStack add = new ItemStack(Material.DARK_OAK_SIGN);
+                ItemMeta addMeta = add.getItemMeta();
+                addMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.add.title")));
+                addMeta.lore(List.of(
+                        plugin.getMiniMessage().deserialize(language.get("gui.blacklist.add.description")),
+                        plugin.getMiniMessage().deserialize(language.get("gui.blacklist.add.description.motd"))
+                ));
+                add.setItemMeta(addMeta);
+
+                ItemStack remove = new ItemStack(Material.DARK_PRISMARINE);
+                ItemMeta removeMeta = remove.getItemMeta();
+                removeMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.remove.title")));
+                removeMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.remove.description"))));
+                remove.setItemMeta(removeMeta);
+
+                ItemStack listPlayer = new ItemStack(Material.PLAYER_HEAD);
+                SkullMeta listPlayerMeta = (SkullMeta) listPlayer.getItemMeta();
+                listPlayerMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.list.title")));
+                listPlayerMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.list.description"))));
+                listPlayerMeta.setOwningPlayer(player);
+                listPlayer.setItemMeta(listPlayerMeta);
+
+                ItemStack back = new ItemStack(Material.ARROW);
+                ItemMeta backMeta = back.getItemMeta();
+                backMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.back")));
+                back.setItemMeta(backMeta);
+
+                blacklist.setItem(11, add);
+                blacklist.setItem(13, listPlayer);
+                blacklist.setItem(15, remove);
+
+                blacklist.setItem(18, back);
+                player.openInventory(blacklist);
             }
 
             case "settings" -> {
