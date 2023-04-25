@@ -42,7 +42,7 @@ public class BlacklistEvent implements Listener {
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "blacklistMode"), PersistentDataType.STRING, "add");
-                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.blacklist.sign.line")));
+                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.sign.line")));
                     sign.line(1, Component.empty());
                     sign.update();
 
@@ -57,7 +57,7 @@ public class BlacklistEvent implements Listener {
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "blacklistMode"), PersistentDataType.STRING, "remove");
-                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.blacklist.sign.line")));
+                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.sign.line")));
                     sign.line(1, Component.empty());
                     sign.update();
 

@@ -26,7 +26,7 @@ public class SettingsEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            switch (event.getCurrentItem().getType()){
+            switch (event.getCurrentItem().getType()) {
                 case PAPER -> openWhitelistGUI(player);
                 case ANVIL -> openBlacklistGUI(player);
                 case ARROW -> GuiManager.openMainGUI(player);
@@ -35,7 +35,7 @@ public class SettingsEvent implements Listener {
     }
 
     @EventHandler
-    public void onWhitelistClick(InventoryClickEvent event){
+    public void onWhitelistClick(InventoryClickEvent event) {
         if (event.getClickedInventory() == null) return;
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Whitelist Settings"))) {
             event.setCancelled(true);
@@ -45,27 +45,33 @@ public class SettingsEvent implements Listener {
 
             switch (event.getCurrentItem().getType()) {
                 case LIME_DYE -> {
-                    if(!Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
+                    if (!Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
                         Keklist.getInstance().getConfig().set("whitelist.enabled", true);
                         Keklist.getInstance().saveConfig();
 
-                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.enabled")));
+                        player.sendMessage(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.enabled"))
+                        );
 
                         openWhitelistGUI(player);
-                    }else
-                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.already-enabled")));
+                    } else
+                        player.sendMessage(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-enabled"))
+                        );
                 }
 
                 case RED_DYE -> {
-                    if(Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
+                    if (Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
                         Keklist.getInstance().getConfig().set("whitelist.enabled", false);
                         Keklist.getInstance().saveConfig();
 
-                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.disabled")));
+                        player.sendMessage(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.disabled")));
 
                         openWhitelistGUI(player);
-                    }else
-                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.already-disabled")));
+                    } else
+                        player.sendMessage(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-disabled")));
                 }
 
                 case ARROW -> GuiManager.handleMainGUICLick("settings", player);
@@ -91,29 +97,41 @@ public class SettingsEvent implements Listener {
 
         ItemStack enable = new ItemStack(Material.LIME_DYE);
         ItemMeta enableMeta = enable.getItemMeta();
-        enableMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.whitelist.enable.title")));
-        enableMeta.lore(Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.whitelist.enable.description"))));
+        enableMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.enable.title"))
+        );
+        enableMeta.lore(
+                Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.enable.description"))
+                ));
         enable.setItemMeta(enableMeta);
 
         ItemStack disable = new ItemStack(Material.RED_DYE);
         ItemMeta disableMeta = disable.getItemMeta();
-        disableMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.whitelist.disable.title")));
-        disableMeta.lore(Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.whitelist.disable.description"))));
+        disableMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.disable.title"))
+        );
+        disableMeta.lore(Collections.singletonList(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.disable.description"))
+        ));
         disable.setItemMeta(disableMeta);
 
         ItemStack arrow = new ItemStack(Material.ARROW);
         ItemMeta arrowMeta = arrow.getItemMeta();
-        arrowMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.back")));
+        arrowMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.back"))
+        );
         arrow.setItemMeta(arrowMeta);
 
         ItemStack info = new ItemStack(Material.PAPER);
         ItemMeta infoMeta = info.getItemMeta();
-        infoMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.whitelist.info.title")));
+        infoMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.info.title"))
+        );
         infoMeta.lore(List.of(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.whitelist.info.status", Keklist.getInstance().getConfig().getBoolean("whitelist.enabled"))),
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.whitelist.info.players", whitelistedPlayers)),
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.whitelist.info.ips", whitelistedIPs)),
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.whitelist.info.hide-online", Keklist.getInstance().getConfig().getBoolean("whitelist.hide-online-players")))
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.info.status", Keklist.getInstance().getConfig().getBoolean("whitelist.enabled"))),
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.info.players", whitelistedPlayers)),
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.info.ips", whitelistedIPs)),
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.info.hide-online", Keklist.getInstance().getConfig().getBoolean("whitelist.hide-online-players")))
         ));
         info.setItemMeta(infoMeta);
 
@@ -126,7 +144,7 @@ public class SettingsEvent implements Listener {
     }
 
     @EventHandler
-    public void onBlacklistClick(InventoryClickEvent event){
+    public void onBlacklistClick(InventoryClickEvent event) {
         if (event.getClickedInventory() == null) return;
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Blacklist Settings"))) {
             event.setCancelled(true);
@@ -136,27 +154,35 @@ public class SettingsEvent implements Listener {
 
             switch (event.getCurrentItem().getType()) {
                 case LIME_DYE -> {
-                    if(!Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
+                    if (!Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
                         Keklist.getInstance().getConfig().set("blacklist.enabled", true);
                         Keklist.getInstance().saveConfig();
 
-                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.enabled")));
+                        player.sendMessage(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.enabled"))
+                        );
 
                         openBlacklistGUI(player);
-                    }else
-                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.already-enabled")));
+                    } else
+                        player.sendMessage(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-enabled"))
+                        );
                 }
 
                 case RED_DYE -> {
-                    if(Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
+                    if (Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
                         Keklist.getInstance().getConfig().set("blacklist.enabled", false);
                         Keklist.getInstance().saveConfig();
 
-                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.disabled")));
+                        player.sendMessage(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.disabled"))
+                        );
 
                         openBlacklistGUI(player);
-                    }else
-                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.already-disabled")));
+                    } else
+                        player.sendMessage(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-disabled"))
+                        );
                 }
 
                 case ARROW -> GuiManager.handleMainGUICLick("settings", player);
@@ -185,30 +211,42 @@ public class SettingsEvent implements Listener {
 
         ItemStack enable = new ItemStack(Material.LIME_DYE);
         ItemMeta enableMeta = enable.getItemMeta();
-        enableMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.enable.title")));
-        enableMeta.lore(Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.enable.description"))));
+        enableMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.enable.title"))
+        );
+        enableMeta.lore(Collections.singletonList(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.enable.description"))
+        ));
         enable.setItemMeta(enableMeta);
 
         ItemStack disable = new ItemStack(Material.RED_DYE);
         ItemMeta disableMeta = disable.getItemMeta();
-        disableMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.disable.title")));
-        disableMeta.lore(Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.disable.description"))));
+        disableMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.disable.title"))
+        );
+        disableMeta.lore(Collections.singletonList(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.disable.description"))
+        ));
         disable.setItemMeta(disableMeta);
 
         ItemStack arrow = new ItemStack(Material.ARROW);
         ItemMeta arrowMeta = arrow.getItemMeta();
-        arrowMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.back")));
+        arrowMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.back"))
+        );
         arrow.setItemMeta(arrowMeta);
 
         ItemStack info = new ItemStack(Material.PAPER);
         ItemMeta infoMeta = info.getItemMeta();
-        infoMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.info.title")));
+        infoMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.info.title"))
+        );
         infoMeta.lore(List.of(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.info.status", Keklist.getInstance().getConfig().getBoolean("blacklist.enabled"))),
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.info.players", blacklistedPlayers)),
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.info.ips", blacklistedIPS)),
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.info.motd", blacklistedMotd)),
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.settings.blacklist.info.allow-admin", Keklist.getInstance().getConfig().getBoolean("blacklist.allow-join-with-admin")))
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.info.status", Keklist.getInstance().getConfig().getBoolean("blacklist.enabled"))),
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.info.players", blacklistedPlayers)),
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.info.ips", blacklistedIPS)),
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.info.motd", blacklistedMotd)),
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.info.allow-admin", Keklist.getInstance().getConfig().getBoolean("blacklist.allow-join-with-admin")))
         ));
         info.setItemMeta(infoMeta);
 

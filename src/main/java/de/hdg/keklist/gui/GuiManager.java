@@ -15,7 +15,7 @@ import java.util.List;
 public class GuiManager {
 
     static Keklist plugin = Keklist.getInstance();
-    static LanguageUtil language = Keklist.getLanguage();
+    static LanguageUtil language = Keklist.getTranslations();
 
     public static void openMainGUI(Player player) {
         Inventory mainMenu = Bukkit.createInventory(player, 9 * 3, plugin.getMiniMessage().deserialize("<gold><b>Keklist"));

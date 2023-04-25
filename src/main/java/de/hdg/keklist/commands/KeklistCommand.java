@@ -19,8 +19,8 @@ public class KeklistCommand extends Command {
         super("keklist");
         setAliases(List.of("kek"));
         setPermission("keklist.manage");
-        setUsage(Keklist.getLanguage().get("keklist.usage"));
-        setDescription(Keklist.getLanguage().get("keklist.description"));
+        setUsage(Keklist.getTranslations().get("keklist.usage"));
+        setDescription(Keklist.getTranslations().get("keklist.description"));
     }
 
     @Override
@@ -36,14 +36,14 @@ public class KeklistCommand extends Command {
                                     Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
                                     for (Player player : Bukkit.getOnlinePlayers()) {
                                         if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.enabled")));
+                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.enabled")));
                                         }
                                     }
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
                             } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.already-enabled")));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-enabled")));
                             }
                         }
 
@@ -54,14 +54,14 @@ public class KeklistCommand extends Command {
                                     Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
                                     for (Player player : Bukkit.getOnlinePlayers()) {
                                         if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.disabled")));
+                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.disabled")));
                                         }
                                     }
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
                             } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.already-disabled")));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-disabled")));
                             }
                         }
 
@@ -72,14 +72,14 @@ public class KeklistCommand extends Command {
                                     Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
                                     for (Player player : Bukkit.getOnlinePlayers()) {
                                         if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.allow-blacklisted")));
+                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.allow-blacklisted")));
                                         }
                                     }
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
                             } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.already-allow-blacklisted")));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-allow-blacklisted")));
                             }
                         }
 
@@ -90,19 +90,19 @@ public class KeklistCommand extends Command {
                                     Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
                                     for (Player player : Bukkit.getOnlinePlayers()) {
                                         if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.disallow-blacklisted")));
+                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.disallow-blacklisted")));
                                         }
                                     }
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
                             } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("blacklist.already-disallow-blacklisted")));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-disallow-blacklisted")));
                             }
                         }
 
                         default -> {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("keklist.usage.command")));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
                         }
                     }
                 }
@@ -116,14 +116,14 @@ public class KeklistCommand extends Command {
                                     Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
                                     for (Player player : Bukkit.getOnlinePlayers()) {
                                         if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.enabled")));
+                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.enabled")));
                                         }
                                     }
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
                             } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.already-enabled")));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-enabled")));
                             }
                         }
 
@@ -134,25 +134,25 @@ public class KeklistCommand extends Command {
                                     Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
                                     for (Player player : Bukkit.getOnlinePlayers()) {
                                         if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.disabled")));
+                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.disabled")));
                                         }
                                     }
                                 } catch (IOException e) {
                                     throw new RuntimeException(e);
                                 }
                             } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.already-disabled")));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-disabled")));
                             }
                         }
 
                         default -> {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("keklist.usage.command")));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
                         }
                     }
                 }
 
                 default -> {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("keklist.usage.command")));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
                 }
             }
 
@@ -160,16 +160,16 @@ public class KeklistCommand extends Command {
             if (args[0].equalsIgnoreCase("reload")) {
                 try {
                     Keklist.getInstance().getConfig().load(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("config-reloaded")));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("config-reloaded")));
                 } catch (IOException | InvalidConfigurationException e) {
                     throw new RuntimeException(e);
                 }
             } else if (args[0].equalsIgnoreCase("gui")) {
                 GuiManager.openMainGUI((Player) sender);
             }else
-                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("keklist.usage.command")));
+                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
         } else
-            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("keklist.usage.command")));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
 
         return false;
     }

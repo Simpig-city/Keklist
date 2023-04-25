@@ -37,7 +37,7 @@ public class EntryEvent implements Listener {
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
             PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
-            LanguageUtil lang = Keklist.getLanguage();
+            LanguageUtil lang = Keklist.getTranslations();
 
             switch (event.getCurrentItem().getType()) {
                 case PLAYER_HEAD -> {
@@ -55,12 +55,16 @@ public class EntryEvent implements Listener {
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
-                            item.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.entry.info"))));
+                            item.lore(Collections.singletonList(
+                                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.entry.info"))
+                            ));
                             overview.setItem(4, item);
 
                             ItemStack infoItem = new ItemStack(Material.BOOK);
                             infoItem.editMeta(meta -> {
-                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.infoitem")));
+                                meta.displayName(
+                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.infoitem"))
+                                );
                                 meta.lore(List.of(
                                         Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.name", username)),
                                         Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.uuid")),
@@ -105,7 +109,9 @@ public class EntryEvent implements Listener {
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
-                            item.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.entry.info"))));
+                            item.lore(Collections.singletonList(
+                                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.entry.info"))
+                            ));
                             overview.setItem(4, item);
 
                             ItemStack infoItem = new ItemStack(Material.PAPER);
@@ -122,8 +128,12 @@ public class EntryEvent implements Listener {
 
                             ItemStack removeItem = new ItemStack(Material.BARRIER);
                             removeItem.editMeta(meta -> {
-                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.removeitem")));
-                                meta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.remove"))));
+                                meta.displayName(
+                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.removeitem"))
+                                );
+                                meta.lore(
+                                        List.of(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.remove"))
+                                        ));
                             });
 
                             overview.setItem(15, removeItem);
@@ -131,7 +141,9 @@ public class EntryEvent implements Listener {
 
                             player.openInventory(overview);
                         } else {
-                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.notfound")));
+                            player.sendMessage(
+                                    Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.notfound"))
+                            );
                             player.closeInventory();
                         }
                     } catch (Exception e) {
@@ -180,14 +192,16 @@ public class EntryEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            LanguageUtil lang = Keklist.getLanguage();
+            LanguageUtil lang = Keklist.getTranslations();
 
             if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
                 String username = ((SkullMeta) item.getItemMeta()).getOwningPlayer().getName();
 
                 Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = '" + username + "'");
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.removed", username)));
+                player.sendMessage(
+                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.removed", username))
+                );
 
                 player.openInventory(WhitelistEvent.getPage(0, 0, false, false)); // We can't use the back arrow here because the player is not in the inventory anymore and values may change
             }
@@ -197,7 +211,7 @@ public class EntryEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            LanguageUtil lang = Keklist.getLanguage();
+            LanguageUtil lang = Keklist.getTranslations();
 
             if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
@@ -217,26 +231,14 @@ public class EntryEvent implements Listener {
         boolean onlyPlayer = false;
         boolean onlyIp = false;
 
-        /*if (inventory.getItem(18) != null) {
-            System.out.println("Inventory is not null");
-            System.out.println(inventory.getItem(18));
-            pageIndex = inventory.getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER) + 1;
-            skipIndex = inventory.getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER);
-            try {
-                onlyPlayer = 0 != inventory.getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER);
-            } catch (Exception ignored) {
-            }
-            try {
-                onlyIp = 0 != inventory.getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER);
-            } catch (Exception ignored) {
-            }
-        }else
-            System.out.println(inventory.getItem(18));*/
-
         ItemStack item = new ItemStack(Material.ARROW);
         item.editMeta(meta -> {
-            meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.entry.back")));
-            meta.lore(Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.entry.back.lore"))));
+            meta.displayName(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.entry.back"))
+            );
+            meta.lore(Collections.singletonList(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.entry.back.lore"))
+            ));
         });
 
         ItemMeta meta = item.getItemMeta();

@@ -45,7 +45,7 @@ public final class Keklist extends JavaPlugin {
     private @Getter @Nullable FloodgateApi floodgateApi = null;
     private static @Getter DB database;
     private static @Getter PlanHook planHook;
-    private static @Getter LanguageUtil language;
+    private static @Getter LanguageUtil translations;
     private static final Random random = new Random();
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
             TagResolver.builder()
@@ -65,13 +65,13 @@ public final class Keklist extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
-        language = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")));
+        translations = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")));
 
         //Check for paper
         try {
             Class.forName("io.papermc.paper.plugin.loader.PluginLoader");
         } catch (ClassNotFoundException e) {
-            getLogger().severe(language.get("paper.required"));
+            getLogger().severe(translations.get("paper.required"));
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -194,7 +194,7 @@ public final class Keklist extends JavaPlugin {
 
             Iterables.getFirst(Bukkit.getOnlinePlayers(), null).sendPluginMessage(this, "keklist:data", out.toByteArray());
         }catch (NullPointerException | IllegalArgumentException ex){
-            getLogger().warning(language.get("limbo.error"));
+            getLogger().warning(translations.get("limbo.error"));
         }
     }
 
@@ -219,6 +219,6 @@ public final class Keklist extends JavaPlugin {
         if(database.isConnected()){
             return api;
         }else
-            throw new IllegalStateException(language.get("api.database-not-connected"));
+            throw new IllegalStateException(translations.get("api.database-not-connected"));
     }
 }

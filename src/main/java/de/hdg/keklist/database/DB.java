@@ -27,7 +27,7 @@ public class DB {
 
     public void connect() {
        if(count.get() >= 4){
-           plugin.getLogger().severe(Keklist.getLanguage().get("database.connect-fail"));
+           plugin.getLogger().severe(Keklist.getTranslations().get("database.connect-fail"));
            Bukkit.getPluginManager().disablePlugin(plugin);
            return;
          }
@@ -65,7 +65,7 @@ public class DB {
         } catch (SQLException | java.io.IOException ex) {
             ex.printStackTrace();
         } catch (ClassNotFoundException e) {
-            plugin.getLogger().severe(Keklist.getLanguage().get("database.driver-missing"));
+            plugin.getLogger().severe(Keklist.getTranslations().get("database.driver-missing"));
             Bukkit.getPluginManager().disablePlugin(plugin);
         }
     }

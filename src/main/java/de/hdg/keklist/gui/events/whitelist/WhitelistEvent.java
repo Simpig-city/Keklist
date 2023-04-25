@@ -24,6 +24,7 @@ import org.bukkit.persistence.PersistentDataType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -50,7 +51,7 @@ public class WhitelistEvent implements Listener {
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING, "add");
-                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.sign.line")));
+                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.line")));
                     sign.line(1, Component.empty());
                     sign.update();
 
@@ -65,7 +66,7 @@ public class WhitelistEvent implements Listener {
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING, "remove");
-                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.sign.line")));
+                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.line")));
                     sign.line(1, Component.empty());
                     sign.update();
 
@@ -126,9 +127,9 @@ public class WhitelistEvent implements Listener {
                 player.openInventory(getPage(pageIndex, skipIndex, onlyPlayer, onlyIp));
             }
 
-            if(event.getCurrentItem().getType().equals(Material.BARRIER)){
+            if (event.getCurrentItem().getType().equals(Material.BARRIER)) {
                 event.setCancelled(true);
-               GuiManager.handleMainGUICLick("whitelist", player);
+                GuiManager.handleMainGUICLick("whitelist", player);
             }
         }
     }
@@ -141,11 +142,15 @@ public class WhitelistEvent implements Listener {
 
         ItemStack nextPage = new ItemStack(Material.ARROW);
         ItemMeta nextPageMeta = nextPage.getItemMeta();
-        nextPageMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.list.next")));
+        nextPageMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.next"))
+        );
 
         ItemStack previousPage = new ItemStack(Material.ARROW);
         ItemMeta previousPageMeta = previousPage.getItemMeta();
-        previousPageMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.list.previous")));
+        previousPageMeta.displayName(
+                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.previous"))
+        );
 
 
         if (pageIndex == 0) {
@@ -155,8 +160,12 @@ public class WhitelistEvent implements Listener {
             while (players.next()) {
                 ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
                 SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-                skullMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(players.getString("name")));
-                skullMeta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.list.entry"))));
+                skullMeta.displayName(
+                        Keklist.getInstance().getMiniMessage().deserialize(players.getString("name"))
+                );
+                skullMeta.lore(Collections.singletonList(
+                        Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                ));
                 skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(players.getString("name")));
                 skull.setItemMeta(skullMeta);
                 playerHeads.add(skull);
@@ -165,8 +174,12 @@ public class WhitelistEvent implements Listener {
             while (ips.next()) {
                 ItemStack ip = new ItemStack(Material.BOOK);
                 ItemMeta ipMeta = ip.getItemMeta();
-                ipMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip")));
-                ipMeta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.list.entry"))));
+                ipMeta.displayName(
+                        Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip"))
+                );
+                ipMeta.lore(Collections.singletonList(
+                        Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                ));
                 ip.setItemMeta(ipMeta);
                 ipItems.add(ip);
             }
@@ -220,7 +233,7 @@ public class WhitelistEvent implements Listener {
 
             ItemStack back = new ItemStack(Material.BARRIER);
             ItemMeta backMeta = back.getItemMeta();
-            backMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.back")));
+            backMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.back")));
             back.setItemMeta(backMeta);
             whitelist.setItem(22, back);
         }
@@ -234,8 +247,12 @@ public class WhitelistEvent implements Listener {
                 while (ips.next()) {
                     ItemStack ip = new ItemStack(Material.BOOK);
                     ItemMeta ipMeta = ip.getItemMeta();
-                    ipMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip")));
-                    ipMeta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.list.entry"))));
+                    ipMeta.displayName(
+                            Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip"))
+                    );
+                    ipMeta.lore(Collections.singletonList(
+                            Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                    ));
                     ip.setItemMeta(ipMeta);
                     ipItems.add(ip);
                 }
@@ -280,8 +297,12 @@ public class WhitelistEvent implements Listener {
                 while (players.next()) {
                     ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
                     SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-                    skullMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(players.getString("name")));
-                    skullMeta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.list.entry"))));
+                    skullMeta.displayName(
+                            Keklist.getInstance().getMiniMessage().deserialize(players.getString("name"))
+                    );
+                    skullMeta.lore(Collections.singletonList(
+                            Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                    ));
                     skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(players.getString("name")));
                     skull.setItemMeta(skullMeta);
                     playerHeads.add(skull);
@@ -318,8 +339,12 @@ public class WhitelistEvent implements Listener {
                         while (ips.next()) {
                             ItemStack ip = new ItemStack(Material.BOOK);
                             ItemMeta ipMeta = ip.getItemMeta();
-                            ipMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip")));
-                            ipMeta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("gui.whitelist.list.entry"))));
+                            ipMeta.displayName(
+                                    Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip"))
+                            );
+                            ipMeta.lore(Collections.singletonList(
+                                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                            ));
                             ip.setItemMeta(ipMeta);
                             ipItems.add(ip);
                         }
