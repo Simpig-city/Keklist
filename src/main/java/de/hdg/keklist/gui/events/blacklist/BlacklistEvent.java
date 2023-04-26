@@ -80,6 +80,46 @@ public class BlacklistEvent implements Listener {
     }
 
     @EventHandler
+    public void onPageChange(InventoryClickEvent event) throws SQLException {
+        if (event.getCurrentItem() == null) return;
+        if (event.getClickedInventory() == null) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+
+        if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<white><b>Blacklist Players"))) {
+            if (event.getCurrentItem().getType().equals(Material.ARROW)) {
+                event.setCancelled(true);
+
+                int pageIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
+                int skipIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER);
+                boolean onlyPlayer = false;
+                boolean onlyIp = false;
+                boolean onlyMOTD = false;
+                try {
+                    onlyPlayer = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER);
+                } catch (Exception ignored) {
+                }
+
+                try {
+                    onlyIp = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER);
+                } catch (Exception ignored) {
+                }
+
+                try {
+                    onlyMOTD = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyMOTD"), PersistentDataType.INTEGER);
+                } catch (Exception ignored) {
+                }
+
+                player.openInventory(getPage(pageIndex, skipIndex, onlyPlayer, onlyIp, onlyMOTD));
+            }
+
+            if (event.getCurrentItem().getType().equals(Material.BARRIER)) {
+                event.setCancelled(true);
+                GuiManager.handleMainGUICLick("blacklist", player);
+            }
+        }
+    }
+
+    @EventHandler
     public void onSign(SignChangeEvent event) {
         if (event.getBlock().getType().equals(Material.DARK_OAK_SIGN)) {
             Sign sign = (Sign) event.getBlock().getWorld().getBlockState(event.getBlock().getLocation());

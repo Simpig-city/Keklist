@@ -208,8 +208,6 @@ public class BlacklistEntryEvent implements Listener {
                         e.printStackTrace();
                     }
                 }
-
-                case BARRIER -> GuiManager.handleMainGUICLick("blacklist", player);
             }
         }
     }
