@@ -60,7 +60,7 @@ public final class Keklist extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
-        language = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")));
+        language = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")), this.getDataFolder(), this.getSLF4JLogger());
 
         //Check for paper
         try {

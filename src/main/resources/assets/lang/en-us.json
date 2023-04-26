@@ -12,6 +12,24 @@
   "plan.error": "DataExtension implementation is invalid, cannot register DataExtension.",
   "plan.registered": "DataExtension registered successfully.",
 
+  "limbo.no-schematic": "The schematic file for the Limbo doesn't exist! Could not load %s",
+  "limbo.no-api": "LimboAPI not found! Please install LimboAPI to use the Limbo!",
+  "limbo.proxy-disabled": "Velocity Limbo not enabled! Kicking player instead if message from Spigot Plugin...",
+  "limbo.where-am-i": "Know body really knows? Maybe on the main server, maybe not. I hope you enjoy this server! Maybe just build something here.",
+  "limbo.sent": "User %s is entering the Keklist Limbo from Server %s. Operation took %sseconds",
+  "limbo.disable-kick": "The Limbo server is disabled on proxy side! \n Kicking you instead <3",
+  "limbo.user-not-found": "Failed to send user with UUID: %s to the limbo! User not found.",
+  "limbo.map.error": "Could not load BufferedImage from file map file!",
+  "limbo.map.not-found": "Could not find map file! Please check your config!",
+  "limbo.user-left": "User %s left the limbo after %sseconds",
+
+  "velocity.config.error": "Error while creating config file! Please report this to the developer!",
+  "velocity.config.creating": "Generating config...",
+  "velocity.config.created": "Config generated!",
+  "velocity.api.disabled": "Received API message from backend, but API is disabled!",
+  "velocity.api.response-not-found": "Server %S not found! Could not send keklist backend response to it!",
+  "velocity.api.action-server-not-found": "Server %s not found! Could not send message to it!",
+
   "database.connect-fail": "Could not connect to the database! Disabling plugin...",
   "database.driver-missing": "MariaDB driver not found! Disabling plugin...",
 

@@ -4,6 +4,9 @@
 # all: if you want to use the motd and server icon feature by the backend plugin.
 # NOTE: You need to set the server with the motd/icon feature of Keklist as the default server
 
+# Language for the plugin
+language: en-us
+
 # Settings for the limbo server
 # This section uses the limboapi plugin
 # You can find it here: https://github.com/Elytrium/LimboAPI
