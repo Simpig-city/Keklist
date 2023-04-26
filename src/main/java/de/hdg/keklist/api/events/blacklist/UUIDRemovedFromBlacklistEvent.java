@@ -19,10 +19,11 @@ public class UUIDRemovedFromBlacklistEvent extends Event {
     public UUIDRemovedFromBlacklistEvent(@NotNull UUID uuid) {
         this.uuid = uuid;
 
-        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
-            caller.updatePlayerData(uuid, null);
-            caller.updateServerData();
-        });
+        if (Keklist.getPlanHook() != null)
+            Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+                caller.updatePlayerData(uuid, null);
+                caller.updateServerData();
+            });
     }
 
     public UUIDRemovedFromBlacklistEvent(@NotNull Player player) {

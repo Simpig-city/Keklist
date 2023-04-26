@@ -22,10 +22,11 @@ public class UUIDAddToWhitelistEvent extends Event {
 
         Bukkit.getOfflinePlayer(uuid).setWhitelisted(true);
 
-        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
-            caller.updatePlayerData(uuid, null);
-            caller.updateServerData();
-        });
+        if (Keklist.getPlanHook() != null)
+            Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+                caller.updatePlayerData(uuid, null);
+                caller.updateServerData();
+            });
     }
 
     public UUIDAddToWhitelistEvent(@NotNull UUID uuid) {
@@ -33,10 +34,11 @@ public class UUIDAddToWhitelistEvent extends Event {
 
         Bukkit.getOfflinePlayer(uuid).setWhitelisted(true);
 
-        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
-            caller.updatePlayerData(uuid, null);
-            caller.updateServerData();
-        });
+        if (Keklist.getPlanHook() != null)
+            Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+                caller.updatePlayerData(uuid, null);
+                caller.updateServerData();
+            });
     }
 
     /**

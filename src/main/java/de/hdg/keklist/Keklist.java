@@ -16,8 +16,9 @@ import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
 import de.hdg.keklist.gui.events.MainGUIEvent;
 import de.hdg.keklist.gui.events.SettingsEvent;
+import de.hdg.keklist.gui.events.blacklist.BlacklistEntryEvent;
 import de.hdg.keklist.gui.events.blacklist.BlacklistEvent;
-import de.hdg.keklist.gui.events.whitelist.EntryEvent;
+import de.hdg.keklist.gui.events.whitelist.WhitelistEntryEvent;
 import de.hdg.keklist.gui.events.whitelist.WhitelistEvent;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.util.PlanHook;
@@ -116,10 +117,13 @@ public final class Keklist extends JavaPlugin {
 
         // GUI Listener
         pm.registerEvents(new MainGUIEvent(), this);
-        pm.registerEvents(new WhitelistEvent(), this);
-        pm.registerEvents(new EntryEvent(), this);
         pm.registerEvents(new SettingsEvent(), this);
+
+        pm.registerEvents(new WhitelistEvent(), this);
+        pm.registerEvents(new WhitelistEntryEvent(), this);
+
         pm.registerEvents(new BlacklistEvent(), this);
+        pm.registerEvents(new BlacklistEntryEvent(), this);
 
 
         // Register plugin channel for API usage

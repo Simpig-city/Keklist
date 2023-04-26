@@ -12,7 +12,7 @@ import java.util.UUID;
 /**
  * This event is called when a UUID is added to the blacklist.
  * <p>
- *     This can be a floodgate UUID
+ * This can be a floodgate UUID
  * </p>
  */
 public class UUIDAddToBlacklistEvent extends Event {
@@ -24,20 +24,22 @@ public class UUIDAddToBlacklistEvent extends Event {
         this.uuid = player.getUniqueId();
         this.reason = reason;
 
-        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
-            caller.updatePlayerData(uuid, player.getName());
-            caller.updateServerData();
-        });
+        if (Keklist.getPlanHook() != null)
+            Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+                caller.updatePlayerData(uuid, player.getName());
+                caller.updateServerData();
+            });
     }
 
     public UUIDAddToBlacklistEvent(@NotNull UUID uuid, @Nullable String reason) {
         this.uuid = uuid;
         this.reason = reason;
 
-        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
-            caller.updatePlayerData(uuid, null);
-            caller.updateServerData();
-        });
+        if (Keklist.getPlanHook() != null)
+            Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+                caller.updatePlayerData(uuid, null);
+                caller.updateServerData();
+            });
     }
 
     /**

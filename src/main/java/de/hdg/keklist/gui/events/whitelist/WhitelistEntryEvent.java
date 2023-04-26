@@ -25,7 +25,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
-public class EntryEvent implements Listener {
+public class WhitelistEntryEvent implements Listener {
 
     @EventHandler
     public void onEntryClick(InventoryClickEvent event) {
@@ -45,7 +45,7 @@ public class EntryEvent implements Listener {
                     ItemStack item = event.getCurrentItem();
 
                     String username = ((SkullMeta) item.getItemMeta()).getOwningPlayer().getName();
-                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = '" + username + "'");
+                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", username);
 
                     try {
                         if (rs.next()) {
@@ -100,7 +100,7 @@ public class EntryEvent implements Listener {
                     ItemStack item = event.getCurrentItem();
 
                     String ip = serializer.serialize(item.getItemMeta().displayName());
-                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = '" + ip + "'");
+                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", ip);
 
                     try {
                         if (rs.next()) {
@@ -198,7 +198,7 @@ public class EntryEvent implements Listener {
                 ItemStack item = event.getClickedInventory().getItem(4);
                 String username = ((SkullMeta) item.getItemMeta()).getOwningPlayer().getName();
 
-                Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = '" + username + "'");
+                Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", username);
                 player.sendMessage(
                         Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.removed", username))
                 );
@@ -217,7 +217,7 @@ public class EntryEvent implements Listener {
                 ItemStack item = event.getClickedInventory().getItem(4);
                 String ip = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
 
-                Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = '" + ip + "'");
+                Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", ip);
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.removed", ip)));
 
                 player.openInventory(WhitelistEvent.getPage(0, 0, false, false)); // We can't use the back arrow here because the player is not in the inventory anymore and values may change
