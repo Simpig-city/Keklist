@@ -105,10 +105,8 @@ public final class Keklist extends JavaPlugin {
         registerCommand(new Whitelist());
         registerCommand(new Blacklist());
 
-        // Register command if enabled in config
-        if(getConfig().getBoolean("enable-manage-command")) {
-            registerCommand(new KeklistCommand());
-        }
+        // Manage commands are handled in the command itself
+        registerCommand(new KeklistCommand());
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new ListPingEvent(), this);

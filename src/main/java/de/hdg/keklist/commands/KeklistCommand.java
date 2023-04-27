@@ -11,10 +11,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class KeklistCommand extends Command {
+
     public KeklistCommand() {
         super("keklist");
         setAliases(List.of("kek"));
@@ -25,7 +27,7 @@ public class KeklistCommand extends Command {
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
-        if (args.length >= 2) {
+        if (args.length >= 2 && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
             switch (args[0]) {
                 case "blacklist" -> {
                     switch (args[1]) {
@@ -145,15 +147,13 @@ public class KeklistCommand extends Command {
                             }
                         }
 
-                        default -> {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
-                        }
+                        default ->
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
                     }
                 }
 
-                default -> {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
-                }
+                default ->
+                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
             }
 
         } else if (args.length == 1) {
@@ -166,7 +166,7 @@ public class KeklistCommand extends Command {
                 }
             } else if (args[0].equalsIgnoreCase("gui")) {
                 GuiManager.openMainGUI((Player) sender);
-            }else
+            } else
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
         } else
             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
@@ -177,8 +177,13 @@ public class KeklistCommand extends Command {
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length < 2) {
-            return List.of("whitelist", "blacklist", "reload", "gui");
-        } else if (args.length == 2) {
+            List<String> suggestions = new ArrayList<>(List.of("reload", "gui"));
+            if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
+                suggestions.add("whitelist");
+                suggestions.add("blacklist");
+            }
+            return suggestions;
+        } else if (args.length == 2 && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
             if (args[0].equalsIgnoreCase("whitelist")) {
                 return List.of("enable", "disable");
             } else if (args[0].equalsIgnoreCase("blacklist")) {
