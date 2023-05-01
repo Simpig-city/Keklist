@@ -37,7 +37,7 @@ public class WhitelistEntryEvent implements Listener {
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
             PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
-            LanguageUtil lang = Keklist.getTranslations();
+            LanguageUtil translations = Keklist.getTranslations();
 
             switch (event.getCurrentItem().getType()) {
                 case PLAYER_HEAD -> {
@@ -63,14 +63,14 @@ public class WhitelistEntryEvent implements Listener {
                             ItemStack infoItem = new ItemStack(Material.BOOK);
                             infoItem.editMeta(meta -> {
                                 meta.displayName(
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.infoitem"))
+                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.infoitem"))
                                 );
                                 meta.lore(List.of(
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.name", username)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.uuid")),
+                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.name", username)),
+                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.uuid")),
                                         Keklist.getInstance().getMiniMessage().deserialize("<white>" + uuid.toString()),
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.by", byPlayer)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.date", sdf.format(new Date(unix))))
+                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.by", byPlayer)),
+                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.date", sdf.format(new Date(unix))))
                                 ));
                             });
 
@@ -78,8 +78,8 @@ public class WhitelistEntryEvent implements Listener {
 
                             ItemStack removeItem = new ItemStack(Material.BARRIER);
                             removeItem.editMeta(meta -> {
-                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.removeitem")));
-                                meta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.remove"))));
+                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.removeitem")));
+                                meta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.remove"))));
                             });
 
                             overview.setItem(15, removeItem);
@@ -87,7 +87,7 @@ public class WhitelistEntryEvent implements Listener {
 
                             player.openInventory(overview);
                         } else {
-                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.notfound")));
+                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.notfound")));
                             player.closeInventory();
                         }
                     } catch (Exception e) {
@@ -116,11 +116,11 @@ public class WhitelistEntryEvent implements Listener {
 
                             ItemStack infoItem = new ItemStack(Material.PAPER);
                             infoItem.editMeta(meta -> {
-                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.infoitem")));
+                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.ip.infoitem")));
                                 meta.lore(List.of(
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.name", ip)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.by", byPlayer)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.date", sdf.format(new Date(unix))))
+                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.ip.name", ip)),
+                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.ip.by", byPlayer)),
+                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.ip.date", sdf.format(new Date(unix))))
                                 ));
                             });
 
@@ -129,10 +129,10 @@ public class WhitelistEntryEvent implements Listener {
                             ItemStack removeItem = new ItemStack(Material.BARRIER);
                             removeItem.editMeta(meta -> {
                                 meta.displayName(
-                                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.removeitem"))
+                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.ip.removeitem"))
                                 );
                                 meta.lore(
-                                        List.of(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.remove"))
+                                        List.of(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.ip.remove"))
                                         ));
                             });
 
@@ -142,7 +142,7 @@ public class WhitelistEntryEvent implements Listener {
                             player.openInventory(overview);
                         } else {
                             player.sendMessage(
-                                    Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.notfound"))
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.ip.notfound"))
                             );
                             player.closeInventory();
                         }

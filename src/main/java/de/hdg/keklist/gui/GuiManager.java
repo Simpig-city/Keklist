@@ -14,28 +14,28 @@ import java.util.List;
 
 public class GuiManager {
 
-    static Keklist plugin = Keklist.getInstance();
-    static LanguageUtil language = Keklist.getTranslations();
+    private static final Keklist plugin = Keklist.getInstance();
+    private static final LanguageUtil translations = Keklist.getTranslations();
 
     public static void openMainGUI(Player player) {
         Inventory mainMenu = Bukkit.createInventory(player, 9 * 3, plugin.getMiniMessage().deserialize("<gold><b>Keklist"));
 
         ItemStack whitelist = new ItemStack(Material.PAPER);
         ItemMeta whitelistMeta = whitelist.getItemMeta();
-        whitelistMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.whitelist.title")));
-        whitelistMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.whitelist.description"))));
+        whitelistMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.whitelist.title")));
+        whitelistMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.whitelist.description"))));
         whitelist.setItemMeta(whitelistMeta);
 
         ItemStack blacklist = new ItemStack(Material.ANVIL);
         ItemMeta blacklistMeta = blacklist.getItemMeta();
-        blacklistMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.title")));
-        blacklistMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.description"))));
+        blacklistMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.blacklist.title")));
+        blacklistMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.blacklist.description"))));
         blacklist.setItemMeta(blacklistMeta);
 
         ItemStack settings = new ItemStack(Material.REDSTONE);
         ItemMeta settingsMeta = settings.getItemMeta();
-        settingsMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.settings.title")));
-        settingsMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.settings.description"))));
+        settingsMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.settings.title")));
+        settingsMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.settings.description"))));
         settings.setItemMeta(settingsMeta);
 
         mainMenu.setItem(11, whitelist);
@@ -53,26 +53,26 @@ public class GuiManager {
 
                 ItemStack add = new ItemStack(Material.SPRUCE_SIGN);
                 ItemMeta addMeta = add.getItemMeta();
-                addMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.whitelist.add.title")));
-                addMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.whitelist.add.description"))));
+                addMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.whitelist.add.title")));
+                addMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.whitelist.add.description"))));
                 add.setItemMeta(addMeta);
 
                 ItemStack remove = new ItemStack(Material.PRISMARINE_SHARD);
                 ItemMeta removeMeta = remove.getItemMeta();
-                removeMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.whitelist.remove.title")));
-                removeMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.whitelist.remove.description"))));
+                removeMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.whitelist.remove.title")));
+                removeMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.whitelist.remove.description"))));
                 remove.setItemMeta(removeMeta);
 
                 ItemStack listPlayer = new ItemStack(Material.PLAYER_HEAD);
                 SkullMeta listPlayerMeta = (SkullMeta) listPlayer.getItemMeta();
-                listPlayerMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.whitelist.list.title")));
-                listPlayerMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.whitelist.list.description"))));
+                listPlayerMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.whitelist.list.title")));
+                listPlayerMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.whitelist.list.description"))));
                 listPlayerMeta.setOwningPlayer(player);
                 listPlayer.setItemMeta(listPlayerMeta);
 
                 ItemStack back = new ItemStack(Material.ARROW);
                 ItemMeta backMeta = back.getItemMeta();
-                backMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.back")));
+                backMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.back")));
                 back.setItemMeta(backMeta);
 
                 whitelist.setItem(11, add);
@@ -88,29 +88,29 @@ public class GuiManager {
 
                 ItemStack add = new ItemStack(Material.DARK_OAK_SIGN);
                 ItemMeta addMeta = add.getItemMeta();
-                addMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.add.title")));
+                addMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.blacklist.add.title")));
                 addMeta.lore(List.of(
-                        plugin.getMiniMessage().deserialize(language.get("gui.blacklist.add.description")),
-                        plugin.getMiniMessage().deserialize(language.get("gui.blacklist.add.description.motd"))
+                        plugin.getMiniMessage().deserialize(translations.get("gui.blacklist.add.description")),
+                        plugin.getMiniMessage().deserialize(translations.get("gui.blacklist.add.description.motd"))
                 ));
                 add.setItemMeta(addMeta);
 
                 ItemStack remove = new ItemStack(Material.DARK_PRISMARINE);
                 ItemMeta removeMeta = remove.getItemMeta();
-                removeMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.remove.title")));
-                removeMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.remove.description"))));
+                removeMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.blacklist.remove.title")));
+                removeMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.blacklist.remove.description"))));
                 remove.setItemMeta(removeMeta);
 
                 ItemStack listPlayer = new ItemStack(Material.PLAYER_HEAD);
                 SkullMeta listPlayerMeta = (SkullMeta) listPlayer.getItemMeta();
-                listPlayerMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.list.title")));
-                listPlayerMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.blacklist.list.description"))));
+                listPlayerMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.blacklist.list.title")));
+                listPlayerMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.blacklist.list.description"))));
                 listPlayerMeta.setOwningPlayer(player);
                 listPlayer.setItemMeta(listPlayerMeta);
 
                 ItemStack back = new ItemStack(Material.ARROW);
                 ItemMeta backMeta = back.getItemMeta();
-                backMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.back")));
+                backMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.back")));
                 back.setItemMeta(backMeta);
 
                 blacklist.setItem(11, add);
@@ -126,30 +126,30 @@ public class GuiManager {
 
                 ItemStack back = new ItemStack(Material.ARROW);
                 ItemMeta backMeta = back.getItemMeta();
-                backMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.back")));
+                backMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.back")));
                 back.setItemMeta(backMeta);
 
                 ItemStack whitelist = new ItemStack(Material.PAPER);
                 ItemMeta whitelistMeta = whitelist.getItemMeta();
-                whitelistMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.settings.whitelist.title")));
-                whitelistMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.settings.whitelist.description"))));
+                whitelistMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.settings.whitelist.title")));
+                whitelistMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.settings.whitelist.description"))));
                 whitelist.setItemMeta(whitelistMeta);
 
                 ItemStack blacklist = new ItemStack(Material.ANVIL);
                 ItemMeta blacklistMeta = blacklist.getItemMeta();
-                blacklistMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.settings.blacklist.title")));
-                blacklistMeta.lore(List.of(plugin.getMiniMessage().deserialize(language.get("gui.settings.blacklist.description"))));
+                blacklistMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.settings.blacklist.title")));
+                blacklistMeta.lore(List.of(plugin.getMiniMessage().deserialize(translations.get("gui.settings.blacklist.description"))));
                 blacklist.setItemMeta(blacklistMeta);
 
                 ItemStack info = new ItemStack(Material.BOOK);
                 ItemMeta infoMeta = info.getItemMeta();
-                infoMeta.displayName(plugin.getMiniMessage().deserialize(language.get("gui.settings.info.title")));
+                infoMeta.displayName(plugin.getMiniMessage().deserialize(translations.get("gui.settings.info.title")));
                 infoMeta.lore(List.of(
-                        plugin.getMiniMessage().deserialize(language.get("gui.settings.info.language", language.getLanguageCode())),
-                        plugin.getMiniMessage().deserialize(language.get("gui.settings.info.version", plugin.getPluginMeta().getVersion())),
-                        plugin.getMiniMessage().deserialize(language.get("gui.settings.info.authors")),
+                        plugin.getMiniMessage().deserialize(translations.get("gui.settings.info.language", translations.getLanguageCode())),
+                        plugin.getMiniMessage().deserialize(translations.get("gui.settings.info.version", plugin.getPluginMeta().getVersion())),
+                        plugin.getMiniMessage().deserialize(translations.get("gui.settings.info.authors")),
                         plugin.getMiniMessage().deserialize("<white><b>" + String.join(", ", plugin.getPluginMeta().getAuthors())),
-                        plugin.getMiniMessage().deserialize(language.get("gui.settings.info.database", Keklist.getInstance().getConfig().getBoolean("mariadb.enabled") ? "MariaDB" : "SQLite"))
+                        plugin.getMiniMessage().deserialize(translations.get("gui.settings.info.database", Keklist.getInstance().getConfig().getBoolean("mariadb.enabled") ? "MariaDB" : "SQLite"))
                 ));
                 info.setItemMeta(infoMeta);
 
