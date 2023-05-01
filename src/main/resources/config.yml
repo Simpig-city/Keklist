@@ -30,6 +30,14 @@ whitelist:
 floodgate:
   prefix: "." # Prefix for the floodgate player
 
+discord:
+  enabled: false
+  webhook-url: https://discord.com
+  username: "Keklist"
+  avatar-url: "https://avatars.githubusercontent.com/u/81553878?s=200&v=4"
+  events: ["blacklist_add", "blacklist_remove", "whitelist_add", "whitelist_remove", "limbo", "prelogin_kick"]
+  ping-roles: ["214809157574983681"]
+
 # Settings for the database
 # This is useful to share the blacklist and whitelist between multiple servers
 mariadb:

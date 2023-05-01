@@ -11,6 +11,7 @@
   "plan.not-enabled": "Plan is not enabled, cannot register DataExtension.",
   "plan.error": "DataExtension implementation is invalid, cannot register DataExtension.",
   "plan.registered": "DataExtension registered successfully.",
+  "plan.enabled": "Plan extension is now enabled!",
 
   "limbo.no-schematic": "The schematic file for the Limbo doesn't exist! Could not load %s",
   "limbo.no-api": "LimboAPI not found! Please install LimboAPI to use the Limbo!",
@@ -68,6 +69,14 @@
   "whitelist.already-enabled": "<red>Whitelist is already enabled!",
   "whitelist.disabled": "<green>Whitelist is now disabled!",
   "whitelist.already-disabled": "<red>Whitelist is already disabled!",
+
+  "discord.whitelist.added": "Added **%s** to the whitelist! \n \n **From:** %s \n **Timestamp:** %s",
+  "discord.whitelist.removed": "Removed **%s** from the whitelist! \n \n **From:** %s \n **Timestamp:** %s",
+  "discord.whitelist.kicked": "Kicked **%s** from the server cause of whitelist! \n \n **Added by:** %s \n **Kicked at:** %s",
+  "discord.blacklist.added": "Added **%s** to the blacklist! \n \n **From:** %s \n **Reason:** %s \n **Timestamp:** %s",
+  "discord.blacklist.removed": "Added **%s** to the blacklist! \n \n **From:** %s \n **Timestamp:** %s",
+  "discord.blacklist.kicked": "Kicked **%s** from the server cause of blacklist! \n \n **Added by:** %s \n **Kicked at:** %s",
+  "discord.limbo.kicked": "Sent **%s** to the limbo! \n \n **Kicked at:** %s",
 
   "keklist.usage": "/keklist <blacklist/whitelist/reload> [feature/enable/disable]",
   "keklist.usage.command": "Please use: /keklist <blacklist/whitelist/reload> [feature/enable/disable]",

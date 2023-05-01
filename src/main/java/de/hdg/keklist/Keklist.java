@@ -16,6 +16,7 @@ import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.util.PlanHook;
+import de.hdg.keklist.util.WebhookManager;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -45,6 +46,7 @@ public final class Keklist extends JavaPlugin {
     private static @Getter DB database;
     private static @Getter PlanHook planHook;
     private static @Getter LanguageUtil language;
+    private static @Getter WebhookManager webhookManager;
     private static final Random random = new Random();
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
             TagResolver.builder()
@@ -121,15 +123,19 @@ public final class Keklist extends JavaPlugin {
             }
         }
 
+        //Webhook Manager
+        if (getConfig().getBoolean("discord.enabled"))
+            webhookManager = new WebhookManager(this);
+
         // BStats Metrics
-        if(getConfig().getBoolean("bstats"))
+        if (getConfig().getBoolean("bstats"))
             metrics = new KeklistMetrics(new Metrics(this, bstatsID), this);
     }
 
     @Override
     public void onDisable() {
         // Shutdown metrics
-        if(getConfig().getBoolean("bstats") && metrics != null)
+        if (getConfig().getBoolean("bstats") && metrics != null)
             metrics.shutdown();
 
         // Disconnect from database
@@ -188,6 +194,7 @@ public final class Keklist extends JavaPlugin {
             out.writeUTF(data.toString());
 
             Iterables.getFirst(Bukkit.getOnlinePlayers(), null).sendPluginMessage(this, "keklist:data", out.toByteArray());
+            webhookManager.fireEvent(WebhookManager.EVENT_TYPE.LIMBO, uuid.toString(), System.currentTimeMillis());
         } catch (NullPointerException | IllegalArgumentException ex) {
             getLogger().warning(language.get("limbo.error"));
         }

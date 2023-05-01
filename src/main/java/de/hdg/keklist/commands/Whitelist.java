@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.api.events.whitelist.*;
+import de.hdg.keklist.util.WebhookManager;
 import net.kyori.adventure.text.Component;
 import okhttp3.*;
 import org.bukkit.Bukkit;
@@ -77,7 +78,7 @@ public class Whitelist extends Command {
                 case "add" -> {
                     if (type.equals(WhiteListType.JAVA)) {
                         Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
-                        client.newCall(request).enqueue(new Whitelist.UserWhitelistAddCallback((sender instanceof Player) ? (Player) sender : null));
+                        client.newCall(request).enqueue(new Whitelist.UserWhitelistAddCallback(sender));
                     } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
@@ -85,6 +86,9 @@ public class Whitelist extends Command {
                             new IpAddToWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.added", args[1])));
+
+                            if (Keklist.getWebhookManager() != null)
+                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, args[1], senderName, System.currentTimeMillis());
                         } else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.already-whitelisted", args[1])));
 
@@ -102,11 +106,18 @@ public class Whitelist extends Command {
                             new PlayerRemovedFromWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.removed", args[1])));
+
+                            if (Keklist.getWebhookManager() != null)
+                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
+
                         } else {
                             ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
                             if (rsUserFix.next()) {
                                 Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.removed", args[1] + " (Old Name)")));
+
+                                if (Keklist.getWebhookManager() != null)
+                                    Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
 
                             } else {
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.not-whitelisted", args[1])));
@@ -118,6 +129,10 @@ public class Whitelist extends Command {
                             new IpRemovedFromWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", args[1]);
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.removed", args[1])));
+
+                            if (Keklist.getWebhookManager() != null)
+                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
+
                         } else {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.not-whitelisted", args[1])));
                         }
@@ -153,6 +168,9 @@ public class Whitelist extends Command {
                 Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis());
                 from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.added", playerName)));
 
+                if (Keklist.getWebhookManager() != null)
+                    Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, playerName, from.getName(), System.currentTimeMillis());
+
             } else
                 from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.already-whitelisted", playerName)));
         } catch (SQLException e) {
@@ -161,36 +179,33 @@ public class Whitelist extends Command {
     }
 
     private class UserWhitelistAddCallback implements Callback {
-        private final Player player;
+        private final CommandSender player;
 
-        public UserWhitelistAddCallback(Player player) {
+        public UserWhitelistAddCallback(CommandSender player) {
             this.player = player;
         }
 
         @Override
         public void onResponse(Call call, Response response) throws IOException {
-            if (player.isOnline()) {
-                String body = response.body().string();
-                if (checkForGoodResponse(body) != null) {
-                    player.sendMessage(checkForGoodResponse(body));
-                } else {
-                    Map<String, String> map = gson.fromJson(body, token);
-                    String uuid = map.get("id");
-                    String name = map.get("name");
 
-                    whitelistUser(player,  UUID.fromString(uuid.replaceFirst(
-                            "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
-                            "$1-$2-$3-$4-$5")), name);
-                }
+            String body = response.body().string();
+            if (checkForGoodResponse(body) != null) {
+                player.sendMessage(checkForGoodResponse(body));
+            } else {
+                Map<String, String> map = gson.fromJson(body, token);
+                String uuid = map.get("id");
+                String name = map.get("name");
+
+                whitelistUser(player, UUID.fromString(uuid.replaceFirst(
+                        "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
+                        "$1-$2-$3-$4-$5")), name);
             }
         }
 
         @Override
         public void onFailure(Call call, IOException e) {
-            if (player.isOnline()) {
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("http.error")));
-                player.sendMessage(Component.text(Keklist.getLanguage().get("http.detail", e.getMessage())));
-            }
+            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("http.error")));
+            player.sendMessage(Component.text(Keklist.getLanguage().get("http.detail", e.getMessage())));
         }
     }
 

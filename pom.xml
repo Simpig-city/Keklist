@@ -168,7 +168,7 @@
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.13.0</version>
+            <version>4.13.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -221,6 +221,12 @@
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>5.0.0-alpha.11</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>club.minnced</groupId>
+            <artifactId>discord-webhooks</artifactId>
+            <version>0.8.2</version>
             <scope>provided</scope>
         </dependency>
 

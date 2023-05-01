@@ -7,6 +7,7 @@ import de.hdg.keklist.api.events.whitelist.IpRemovedFromWhitelistEvent;
 import de.hdg.keklist.api.events.whitelist.UUIDAddToWhitelistEvent;
 import de.hdg.keklist.api.events.whitelist.UUIDRemovedFromWhitelistEvent;
 import de.hdg.keklist.database.DB;
+import de.hdg.keklist.util.WebhookManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;
@@ -203,6 +204,9 @@ public class KeklistAPI {
         awaitSync(() -> new UUIDAddToWhitelistEvent(uuid).callEvent());
 
         Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName == null ? API_INFO : playerName, API_INFO, System.currentTimeMillis());
+
+        if(Keklist.getWebhookManager() != null)
+            Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, playerName==null?uuid.toString():playerName, "API", System.currentTimeMillis());
     }
 
     /**
@@ -219,6 +223,9 @@ public class KeklistAPI {
         awaitSync(() -> new IpAddToWhitelistEvent(ip).callEvent());
 
         Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", ip, API_INFO, System.currentTimeMillis());
+
+        if(Keklist.getWebhookManager() != null)
+            Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, ip, "API", System.currentTimeMillis());
     }
 
     /**
