@@ -10,7 +10,6 @@ import java.util.Optional;
 
 public class PlanHook {
 
-
     private @Getter Optional<Caller> caller;
 
     public PlanHook() {

@@ -109,6 +109,7 @@ public final class Keklist extends JavaPlugin {
         registerCommand(new Whitelist());
         registerCommand(new Blacklist());
 
+        // Manage commands are handled in the command itself
         registerCommand(new KeklistCommand());
 
         PluginManager pm = getServer().getPluginManager();
