@@ -3,6 +3,7 @@
   "paper.required": "Dieses Plugin benötigt Paper! ",
   "invalid-syntax": "<red>Invalider syntax!",
   "config-reloaded": "<green>Config wurde neu geladen!",
+  "bstats.done": "bStats wurde erfolgreich geladen!",
 
   "api.database-not-connected": "Datenbank ist nicht verbunden!",
   "api.proxy-send-fail": "Proxy Nachricht konnte nicht gesendet werden!",

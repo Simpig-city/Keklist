@@ -43,7 +43,7 @@ public class VelocityConfig {
             }*/
         } catch (IOException exception) {
             exception.printStackTrace();
-            KeklistVelocity.getInstance().getLogger().error("Error while creating config file! Please report this to the developer!");
+            KeklistVelocity.getInstance().getLogger().error(KeklistVelocity.getTranslations().get("velocity.config.error"));
         }
     }
 
@@ -55,7 +55,7 @@ public class VelocityConfig {
      * @return The value to the path or default
      */
     @SneakyThrows(IOException.class)
-    public <T> T getOption(@Nullable T defaultValue, @NotNull String path) {
+    public <T> T getOption(@NotNull T defaultValue, @NotNull String path) {
         return configLoader.load().getNode(path).getValue() != null ? (T) configLoader.load().getNode(path).getValue() : defaultValue;
     }
 
@@ -79,7 +79,7 @@ public class VelocityConfig {
      * @throws IOException On any IO error
      */
     private void generateConfig(@NotNull String filename) throws IOException {
-        KeklistVelocity.getInstance().getLogger().info("Generating config...");
+        KeklistVelocity.getInstance().getLogger().info(KeklistVelocity.getTranslations().get("velocity.config.creating"));
 
         InputStream configStream = KeklistVelocity.class.getResourceAsStream("/velocity-config.yml");
         File config = configDirectory.resolve(filename).toFile();
@@ -95,7 +95,7 @@ public class VelocityConfig {
         writer.close();
         reader.close();
 
-        KeklistVelocity.getInstance().getLogger().info("Config generated!");
+        KeklistVelocity.getInstance().getLogger().info(KeklistVelocity.getTranslations().get("velocity.config.created"));
     }
 
 }

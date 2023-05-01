@@ -30,7 +30,7 @@ public class APIMessageReceiver {
 
             if (event.getSource() instanceof ServerConnection) {
                 if(KeklistVelocity.getInstance().getConfig().getOption(true, "enable-api")) {
-                    KeklistVelocity.getInstance().getLogger().error("Received API message from backend, but API is disabled!");
+                    KeklistVelocity.getInstance().getLogger().error(KeklistVelocity.getTranslations().get("velocity.api.disabled"));
                     return;
                 }
 
@@ -63,7 +63,7 @@ public class APIMessageReceiver {
                         KeklistVelocity.getInstance().getServer().getServer(relayServer).ifPresentOrElse(serverConnection -> {
                             serverConnection.sendPluginMessage(identifier, out.toByteArray());
                         }, () -> {
-                            KeklistVelocity.getInstance().getLogger().error("Server " + relayServer + " not found! Could not send keklist backend response to it!");
+                            KeklistVelocity.getInstance().getLogger().error(KeklistVelocity.getTranslations().get("velocity.api.response-not-found"), relayServer);
                         });
                         return;
                     }
@@ -75,7 +75,7 @@ public class APIMessageReceiver {
                 KeklistVelocity.getInstance().getServer().getServer(server).ifPresentOrElse(serverConnection -> {
                     serverConnection.sendPluginMessage(identifier, out.toByteArray());
                 }, () -> {
-                    KeklistVelocity.getInstance().getLogger().error("Server " + server + " not found! Could not send message to it!");
+                    KeklistVelocity.getInstance().getLogger().error(KeklistVelocity.getTranslations().get("velocity.api.action-server-not-found"), server);
                 });
             }
         }

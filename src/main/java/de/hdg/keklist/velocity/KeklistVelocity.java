@@ -10,6 +10,7 @@ import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.messages.MinecraftChannelIdentifier;
+import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.velocity.api.APIMessageReceiver;
 import de.hdg.keklist.velocity.channel.MessageReceiver;
 import de.hdg.keklist.velocity.command.WhereAmICommand;
@@ -41,6 +42,7 @@ public class KeklistVelocity {
     private final @Getter ProxyServer server;
     private final @Getter Logger logger;
     private final @Getter VelocityConfig config;
+    private static @Getter LanguageUtil translations;
 
     private @Getter LimboFactory limboAPI;
     private @Getter Limbo limbo;
@@ -52,20 +54,22 @@ public class KeklistVelocity {
 
     @Inject
     public KeklistVelocity(ProxyServer server, Logger logger, @DataDirectory Path dataDirectory) {
+        instance = this;
+
         this.server = server;
         this.logger = logger;
         this.dataDirectory = dataDirectory;
-        instance = this;
         this.config = new VelocityConfig(dataDirectory, "config.yml");
+        this.translations = new LanguageUtil(config.getOption("en-us", "language"), dataDirectory.toFile(), logger);
 
         if (config.getOption(false, "limbo.enabled")) {
             if(server.getPluginManager().isLoaded("limboapi")) {
                 limboAPI = (LimboFactory) this.server.getPluginManager().getPlugin("limboapi").flatMap(PluginContainer::getInstance).orElseThrow();
                 if (!KeklistVelocity.getInstance().dataDirectory.resolve(config.getOption("limbo.nbt", "limbo.file")).toFile().exists()) {
-                    logger.error("The schematic file for the Limbo doesn't exist! Could not load " + config.getOption("limbo.nbt", "limbo.file"));
+                    logger.error(translations.get("limbo.no-schematic", config.getOption("limbo.nbt", "limbo.file")));
                 }
             }else{
-                logger.error("LimboAPI not found! Please install LimboAPI to use the Limbo!");
+                logger.error(translations.get("limbo.no-api"));
             }
         }
     }
@@ -75,7 +79,7 @@ public class KeklistVelocity {
         if(config.getOption(true, "limbo.enabled")){
             this.limbo = createLimbo();
         }else
-            logger.warn("Velocity Limbo not enabled! Kicking player instead if message from Spigot Plugin...");
+            logger.warn(translations.get("limbo.proxy-disabled"));
 
         //Register Limbo channel
         server.getChannelRegistrar().register(limboChannel);

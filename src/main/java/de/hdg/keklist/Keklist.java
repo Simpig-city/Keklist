@@ -26,6 +26,7 @@ import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
@@ -41,9 +42,12 @@ import java.util.UUID;
 
 public final class Keklist extends JavaPlugin {
 
+    private final int bstatsID = 18279;
+    private KeklistMetrics metrics;
     private static KeklistAPI api;
     private static @Getter Keklist instance;
-    private @Getter @Nullable FloodgateApi floodgateApi = null;
+    private @Getter
+    @Nullable FloodgateApi floodgateApi = null;
     private static @Getter DB database;
     private static @Getter PlanHook planHook;
     private static @Getter LanguageUtil translations;
@@ -66,7 +70,7 @@ public final class Keklist extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
-        translations = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")));
+        translations = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")), this.getDataFolder(), this.getSLF4JLogger());
 
         //Check for paper
         try {
@@ -77,7 +81,7 @@ public final class Keklist extends JavaPlugin {
             return;
         }
 
-        if(Bukkit.getPluginManager().getPlugin("floodgate") != null){
+        if (Bukkit.getPluginManager().getPlugin("floodgate") != null) {
             floodgateApi = FloodgateApi.getInstance();
         }
 
@@ -89,9 +93,9 @@ public final class Keklist extends JavaPlugin {
         this.saveDefaultConfig();
 
         //SQL
-        if(getConfig().getBoolean("mariadb.enabled")){
+        if (getConfig().getBoolean("mariadb.enabled")) {
             database = new DB(DB.DBType.MARIADB, instance);
-        }else
+        } else
             database = new DB(DB.DBType.SQLITE, instance);
 
         database.connect();
@@ -105,7 +109,6 @@ public final class Keklist extends JavaPlugin {
         registerCommand(new Whitelist());
         registerCommand(new Blacklist());
 
-        // Manage commands are handled in the command itself
         registerCommand(new KeklistCommand());
 
         PluginManager pm = getServer().getPluginManager();
@@ -129,17 +132,25 @@ public final class Keklist extends JavaPlugin {
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:api");
 
         //Plan Hook
-        if(Bukkit.getPluginManager().getPlugin("Plan") != null){
-            if(getConfig().getBoolean("plan-support")) {
+        if (Bukkit.getPluginManager().getPlugin("Plan") != null) {
+            if (getConfig().getBoolean("plan-support")) {
                 planHook = new PlanHook();
                 planHook.hookIntoPlan();
             }
         }
+
+        // BStats Metrics
+        if(getConfig().getBoolean("bstats"))
+            metrics = new KeklistMetrics(new Metrics(this, bstatsID), this);
     }
 
     @Override
     public void onDisable() {
-       // Disconnect from database
+        // Shutdown metrics
+        if(getConfig().getBoolean("bstats") && metrics != null)
+            metrics.shutdown();
+
+        // Disconnect from database
         database.disconnect();
 
         // Unregister plugin channel
@@ -179,11 +190,11 @@ public final class Keklist extends JavaPlugin {
         }
     }
 
-    public void sendUserToLimbo(Player player){
-       sendUserToLimbo(player.getUniqueId());
+    public void sendUserToLimbo(Player player) {
+        sendUserToLimbo(player.getUniqueId());
     }
 
-    public void sendUserToLimbo(UUID uuid){
+    public void sendUserToLimbo(UUID uuid) {
         try {
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
@@ -217,8 +228,8 @@ public final class Keklist extends JavaPlugin {
      * @return The API object
      * @throws IllegalStateException if the database is not connected, **really unlikely**
      */
-    public static KeklistAPI getApi(){
-        if(database.isConnected()){
+    public static KeklistAPI getApi() {
+        if (database.isConnected()) {
             return api;
         }else
             throw new IllegalStateException(translations.get("api.database-not-connected"));

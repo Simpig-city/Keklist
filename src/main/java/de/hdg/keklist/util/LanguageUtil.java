@@ -3,9 +3,9 @@ package de.hdg.keklist.util;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import de.hdg.keklist.Keklist;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,24 +23,24 @@ public class LanguageUtil {
     private static Map<String, String> defaultTranslations;
 
 
-    public LanguageUtil(@NotNull String language) {
+    public LanguageUtil(@NotNull String language, @NotNull File dataFolder, Logger logger) {
         this.language = language;
-        InputStream langStream = Keklist.class.getResourceAsStream("/assets/lang/" + language + ".json");
-        InputStream defaultStream = Keklist.class.getResourceAsStream("/assets/lang/en-us.json");
+        InputStream langStream = this.getClass().getResourceAsStream("/assets/lang/" + language + ".json");
+        InputStream defaultStream = this.getClass().getResourceAsStream("/assets/lang/en-us.json");
 
-        if (new File(Keklist.getInstance().getDataFolder(), "lang/" + language + ".json").exists()) {
+        if (new File(dataFolder, "lang/" + language + ".json").exists()) {
             try {
-                langStream = new File(Keklist.getInstance().getDataFolder(), "lang/" + language + ".json").toURI().toURL().openStream();
+                langStream = new File(dataFolder, "lang/" + language + ".json").toURI().toURL().openStream();
             } catch (IOException e) {
-                Keklist.getInstance().getLogger().warning("Custom language " + language + " not found! Using default language en-us");
+                logger.warn("Custom language " + language + " not found! Using default language en-us");
                 langStream = defaultStream;
             }
         } else {
             if (langStream == null) {
-                Keklist.getInstance().getLogger().warning("Language " + language + " not found! Using default language en-us");
+                logger.warn("Language " + language + " not found! Using default language en-us");
                 langStream = defaultStream;
             } else
-                Keklist.getInstance().getLogger().info("Language " + language + " loaded!");
+                logger.info("Language " + language + " loaded!");
         }
 
         translations = gson.fromJson(new InputStreamReader(langStream), translationTypes.getType());

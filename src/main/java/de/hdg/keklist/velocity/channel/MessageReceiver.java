@@ -52,11 +52,11 @@ public class MessageReceiver {
 
                         limbo.spawnPlayer(player, new KeklistSessionHandler());
 
-                        KeklistVelocity.getInstance().getLogger().info("User " + player.getUsername() + " is entering the Keklist Limbo from Server " + fromServer + ". Operation took" + (System.currentTimeMillis() - unix) + "ms");
+                        KeklistVelocity.getInstance().getLogger().info(KeklistVelocity.getTranslations().get("limbo.sent", player.getUsername(), fromServer, (System.currentTimeMillis() - unix) / 1000));
                     } else {
-                        player.disconnect(Component.text("The Limbo server is disabled on proxy side! \n Kicking you instead <3"));
+                        player.disconnect(Component.text(KeklistVelocity.getTranslations().get("limbo.disable-kick")));
                     }
-                }, () -> KeklistVelocity.getInstance().getLogger().error("Failed to send user with UUID: " + uuid+ " to the limbo! User not found."));
+                }, () -> KeklistVelocity.getInstance().getLogger().error(KeklistVelocity.getTranslations().get("limbo.user-not-found", uuid)));
             }
         }
     }
@@ -77,21 +77,21 @@ public class MessageReceiver {
             player.sendAbilities((byte) (AbilityFlags.FLYING | AbilityFlags.ALLOW_FLYING), 0.05F, 0.1F);
 
             if (KeklistVelocity.getInstance().getConfig().getOption(false, "limbo.enable-map")) {
-                if (KeklistVelocity.getInstance().getDataDirectory().resolve("map.jpg").toFile().exists()) {
+                if (KeklistVelocity.getInstance().getDataDirectory().resolve(KeklistVelocity.getInstance().getConfig().getOption("map.jpg", "limbo.map-image")).toFile().exists()) {
                     try {
                         player.sendImage(0, ImageIO.read(KeklistVelocity.getInstance().getDataDirectory().resolve(KeklistVelocity.getInstance().getConfig().getOption("map.jpg", "limbo.map-image")).toFile()));
                         player.setInventory(4, getMap(), 1, 0, CompoundBinaryTag.builder().putInt("map", 0).build());
                     } catch (IOException e) {
-                        KeklistVelocity.getInstance().getLogger().error("Could not load BufferedImage from file map file!");
+                        KeklistVelocity.getInstance().getLogger().error(KeklistVelocity.getTranslations().get("limbo.map.error"));
                     }
                 } else
-                    KeklistVelocity.getInstance().getLogger().warn("Could not load map file! File does not exist!");
+                    KeklistVelocity.getInstance().getLogger().warn(KeklistVelocity.getTranslations().get("limbo.map.not-found"));
             }
         }
 
         @Override
         public void onDisconnect() {
-            KeklistVelocity.getInstance().getLogger().info("User " + player.getProxyPlayer().getUsername() + " left the limbo after " + ((System.currentTimeMillis() - joinTime) / 1000) + "secs");
+            KeklistVelocity.getInstance().getLogger().info(KeklistVelocity.getTranslations().get("limbo.user-left", player.getProxyPlayer().getUsername(), (System.currentTimeMillis() - joinTime) / 1000));
         }
 
         private VirtualItem getMap() {
