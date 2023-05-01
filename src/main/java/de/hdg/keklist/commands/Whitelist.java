@@ -15,6 +15,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -31,16 +32,16 @@ public class Whitelist extends Command {
     public Whitelist() {
         super("whitelist");
         setPermission("keklist.whitelist");
-        setDescription(Keklist.getLanguage().get("whitelist.description"));
+        setDescription(Keklist.getTranslations().get("whitelist.description"));
         setAliases(List.of("wl"));
-        setUsage(Keklist.getLanguage().get("whitelist.usage"));
+        setUsage(Keklist.getTranslations().get("whitelist.usage"));
     }
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
         if (args.length < 2) {
-            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("invalid-syntax")));
-            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.usage.command")));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("invalid-syntax")));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.usage.command")));
             return true;
         }
 
@@ -63,11 +64,11 @@ public class Whitelist extends Command {
                         bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
                         type = WhiteListType.BEDROCK;
                     } else {
-                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.invalid-argument")));
+                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-argument")));
                         return true;
                     }
                 } else {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.invalid-argument")));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-argument")));
                     return true;
                 }
             }
@@ -84,9 +85,9 @@ public class Whitelist extends Command {
                         if (!rs.next()) {
                             new IpAddToWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.added", args[1])));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.added", args[1])));
                         } else
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.already-whitelisted", args[1])));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-whitelisted", args[1])));
 
                     } else if (type.equals(WhiteListType.BEDROCK)) {
                         whitelistUser(sender, bedrockUUID, senderName);
@@ -101,15 +102,15 @@ public class Whitelist extends Command {
                         if (rs.next()) {
                             new PlayerRemovedFromWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.removed", args[1])));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
                         } else {
                             ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
                             if (rsUserFix.next()) {
                                 Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.removed", args[1] + " (Old Name)")));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1] + " (Old Name)")));
 
                             } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.not-whitelisted", args[1])));
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
                             }
                         }
                     } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
@@ -117,9 +118,9 @@ public class Whitelist extends Command {
                         if (rs.next()) {
                             new IpRemovedFromWhitelistEvent(args[1]).callEvent();
                             Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", args[1]);
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.removed", args[1])));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
                         } else {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.not-whitelisted", args[1])));
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
                         }
                     }
 
@@ -127,8 +128,8 @@ public class Whitelist extends Command {
                 }
 
                 default -> {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("invalid-syntax")));
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.usage.command")));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("invalid-syntax")));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.usage.command")));
                 }
             }
 
@@ -139,7 +140,7 @@ public class Whitelist extends Command {
         return false;
     }
 
-    private void whitelistUser(CommandSender from, UUID uuid, String playerName) {
+    private static void whitelistUser(CommandSender from, UUID uuid, String playerName) {
         try {
             ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
             ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", playerName);
@@ -151,16 +152,16 @@ public class Whitelist extends Command {
 
                 Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToWhitelistEvent(uuid).callEvent());
                 Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis());
-                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.added", playerName)));
+                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.added", playerName)));
 
             } else
-                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("whitelist.already-whitelisted", playerName)));
+                from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-whitelisted", playerName)));
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
 
-    private class UserWhitelistAddCallback implements Callback {
+    public static class UserWhitelistAddCallback implements Callback {
         private final Player player;
 
         public UserWhitelistAddCallback(Player player) {
@@ -168,7 +169,7 @@ public class Whitelist extends Command {
         }
 
         @Override
-        public void onResponse(Call call, Response response) throws IOException {
+        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
             if (player.isOnline()) {
                 String body = response.body().string();
                 if (checkForGoodResponse(body) != null) {
@@ -178,7 +179,7 @@ public class Whitelist extends Command {
                     String uuid = map.get("id");
                     String name = map.get("name");
 
-                    whitelistUser(player,  UUID.fromString(uuid.replaceFirst(
+                    whitelistUser(player, UUID.fromString(uuid.replaceFirst(
                             "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
                             "$1-$2-$3-$4-$5")), name);
                 }
@@ -186,23 +187,26 @@ public class Whitelist extends Command {
         }
 
         @Override
-        public void onFailure(Call call, IOException e) {
+        public void onFailure(@NotNull Call call, @NotNull IOException e) {
             if (player.isOnline()) {
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("http.error")));
-                player.sendMessage(Component.text(Keklist.getLanguage().get("http.detail", e.getMessage())));
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.error")));
+                player.sendMessage(Component.text(Keklist.getTranslations().get("http.detail", e.getMessage())));
             }
         }
     }
 
-    private Component checkForGoodResponse(String response) {
-        JsonElement element = JsonParser.parseString(response);
+    @Nullable
+    private static Component checkForGoodResponse(@NotNull String response) {
+        JsonElement responseElement = JsonParser.parseString(response);
 
-        if (!element.isJsonNull()) {
-            if (element.getAsJsonObject().get("error") != null) {
-                return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getLanguage().get("http.not-found", element.getAsJsonObject().get("error").getAsString()));
+        if (!responseElement.isJsonNull()) {
+            if (responseElement.getAsJsonObject().get("error") != null ||
+                    !responseElement.getAsJsonObject().has("id") ||
+                    !responseElement.getAsJsonObject().has("name")) {
+                return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.not-found", responseElement.getAsJsonObject().get("error").getAsString()));
             }
         } else {
-            return Component.text(Keklist.getLanguage().get("http.null-response"));
+            return Component.text(Keklist.getTranslations().get("http.null-response"));
         }
 
         return null;

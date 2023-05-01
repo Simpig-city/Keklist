@@ -10,7 +10,6 @@ import java.util.Optional;
 
 public class PlanHook {
 
-
     private @Getter Optional<Caller> caller;
 
     public PlanHook() {
@@ -32,9 +31,9 @@ public class PlanHook {
         try {
             caller = ExtensionService.getInstance().register(new KekDataExtension());
         } catch (IllegalStateException notEnabled) {
-            Keklist.getInstance().getLogger().warning(Keklist.getLanguage().get("plan.not-enabled"));
+            Keklist.getInstance().getLogger().warning(Keklist.getTranslations().get("plan.not-enabled"));
         } catch (IllegalArgumentException exception) {
-            Keklist.getInstance().getLogger().severe(Keklist.getLanguage().get("plan.error"));
+            Keklist.getInstance().getLogger().severe(Keklist.getTranslations().get("plan.error"));
             exception.printStackTrace();
         }
     }

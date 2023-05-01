@@ -117,6 +117,6 @@ public class KeklistChannelListener implements PluginMessageListener {
         out.writeUTF(s);
         out.writeBoolean(b);
 
-        Bukkit.getOnlinePlayers().stream().findFirst().ifPresentOrElse(player -> player.sendPluginMessage(Keklist.getInstance(), "keklist:api", out.toByteArray()), () -> Bukkit.getLogger().warning(Keklist.getLanguage().get("api.proxy-send-fail")));
+        Bukkit.getOnlinePlayers().stream().findFirst().ifPresentOrElse(player -> player.sendPluginMessage(Keklist.getInstance(), "keklist:api", out.toByteArray()), () -> Bukkit.getLogger().warning(Keklist.getTranslations().get("api.proxy-send-fail")));
     }
 }

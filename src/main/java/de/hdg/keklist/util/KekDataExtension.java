@@ -21,7 +21,7 @@ import java.util.UUID;
 public class KekDataExtension implements DataExtension {
 
     public KekDataExtension() {
-        Keklist.getInstance().getLogger().info(Keklist.getLanguage().get("plan.enabled"));
+        Keklist.getInstance().getLogger().info(Keklist.getTranslations().get("plan.enabled"));
     }
 
     @Override

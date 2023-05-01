@@ -14,6 +14,12 @@ import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.BlacklistRemoveMotd;
 import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
+import de.hdg.keklist.gui.events.MainGUIEvent;
+import de.hdg.keklist.gui.events.SettingsEvent;
+import de.hdg.keklist.gui.events.blacklist.BlacklistEntryEvent;
+import de.hdg.keklist.gui.events.blacklist.BlacklistEvent;
+import de.hdg.keklist.gui.events.whitelist.WhitelistEntryEvent;
+import de.hdg.keklist.gui.events.whitelist.WhitelistEvent;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.util.PlanHook;
 import lombok.Getter;
@@ -44,7 +50,7 @@ public final class Keklist extends JavaPlugin {
     @Nullable FloodgateApi floodgateApi = null;
     private static @Getter DB database;
     private static @Getter PlanHook planHook;
-    private static @Getter LanguageUtil language;
+    private static @Getter LanguageUtil translations;
     private static final Random random = new Random();
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
             TagResolver.builder()
@@ -55,18 +61,22 @@ public final class Keklist extends JavaPlugin {
                     .resolver(StandardTags.reset())
                     .resolver(StandardTags.rainbow())
                     .resolver(StandardTags.translatable())
+                    .resolver(StandardTags.hoverEvent())
+                    .resolver(StandardTags.clickEvent())
+                    .resolver(StandardTags.insertion())
+                    .resolver(StandardTags.reset())
                     .build()).build();
 
     @Override
     public void onLoad() {
         instance = this;
-        language = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")), this.getDataFolder(), this.getSLF4JLogger());
+        translations = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")), this.getDataFolder(), this.getSLF4JLogger());
 
         //Check for paper
         try {
             Class.forName("io.papermc.paper.plugin.loader.PluginLoader");
         } catch (ClassNotFoundException e) {
-            getLogger().severe(language.get("paper.required"));
+            getLogger().severe(translations.get("paper.required"));
             Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
@@ -99,15 +109,24 @@ public final class Keklist extends JavaPlugin {
         registerCommand(new Whitelist());
         registerCommand(new Blacklist());
 
-        // Register command if enabled in config
-        if (getConfig().getBoolean("enable-manage-command")) {
-            registerCommand(new KeklistCommand());
-        }
+        // Manage commands are handled in the command itself
+        registerCommand(new KeklistCommand());
 
         PluginManager pm = getServer().getPluginManager();
         pm.registerEvents(new ListPingEvent(), this);
         pm.registerEvents(new PreLoginKickEvent(), this);
         pm.registerEvents(new BlacklistRemoveMotd(), this);
+
+        // GUI Listener
+        pm.registerEvents(new MainGUIEvent(), this);
+        pm.registerEvents(new SettingsEvent(), this);
+
+        pm.registerEvents(new WhitelistEvent(), this);
+        pm.registerEvents(new WhitelistEntryEvent(), this);
+
+        pm.registerEvents(new BlacklistEvent(), this);
+        pm.registerEvents(new BlacklistEntryEvent(), this);
+
 
         // Register plugin channel for API usage
         this.getServer().getMessenger().registerIncomingPluginChannel(this, "keklist:api", new KeklistChannelListener(api));
@@ -188,8 +207,8 @@ public final class Keklist extends JavaPlugin {
             out.writeUTF(data.toString());
 
             Iterables.getFirst(Bukkit.getOnlinePlayers(), null).sendPluginMessage(this, "keklist:data", out.toByteArray());
-        } catch (NullPointerException | IllegalArgumentException ex) {
-            getLogger().warning(language.get("limbo.error"));
+        }catch (NullPointerException | IllegalArgumentException ex){
+            getLogger().warning(translations.get("limbo.error"));
         }
     }
 
@@ -213,7 +232,7 @@ public final class Keklist extends JavaPlugin {
     public static KeklistAPI getApi() {
         if (database.isConnected()) {
             return api;
-        } else
-            throw new IllegalStateException(language.get("api.database-not-connected"));
+        }else
+            throw new IllegalStateException(translations.get("api.database-not-connected"));
     }
 }
