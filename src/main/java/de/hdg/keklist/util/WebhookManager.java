@@ -74,7 +74,7 @@ public class WebhookManager {
                 embedBuilder.setColor(1545123);
                 embedBuilder.setTitle(new WebhookEmbed.EmbedTitle("Whitelist Add", null));
                 embedBuilder.setThumbnailUrl("https://cdn.discordapp.com/attachments/1056727727991959673/1101488230240616500/check-button.png");
-                embedBuilder.setDescription(Keklist.getLanguage().get("discord.whitelist.added", entry, from, "<t:" + (unix/1000) + ":f>"));
+                embedBuilder.setDescription(Keklist.getTranslations().get("discord.whitelist.added", entry, from, "<t:" + (unix/1000) + ":f>"));
                 sendWebhookMessage(embedBuilder.build());
             }
             case WHITELIST_REMOVE -> {
@@ -84,7 +84,7 @@ public class WebhookManager {
                 embedBuilder.setColor(11553045);
                 embedBuilder.setTitle(new WebhookEmbed.EmbedTitle("Whitelist Remove", null));
                 embedBuilder.setThumbnailUrl("https://cdn.discordapp.com/attachments/1056727727991959673/1101489868162465802/minus-taste.png");
-                embedBuilder.setDescription(Keklist.getLanguage().get("discord.whitelist.removed", entry, from, "<t:" + (unix/1000) + ":f>"));
+                embedBuilder.setDescription(Keklist.getTranslations().get("discord.whitelist.removed", entry, from, "<t:" + (unix/1000) + ":f>"));
                 sendWebhookMessage(embedBuilder.build());
             }
             case WHITELIST_KICK -> {
@@ -94,7 +94,7 @@ public class WebhookManager {
                 embedBuilder.setColor(13418516);
                 embedBuilder.setTitle(new WebhookEmbed.EmbedTitle("Whitelist Kick", null));
                 embedBuilder.setThumbnailUrl("https://cdn.discordapp.com/attachments/1056727727991959673/1102636063761125496/alarm.png");
-                embedBuilder.setDescription(Keklist.getLanguage().get("discord.whitelist.kicked", entry, from, "<t:" + (unix/1000) + ":f>"));
+                embedBuilder.setDescription(Keklist.getTranslations().get("discord.whitelist.kicked", entry, from, "<t:" + (unix/1000) + ":f>"));
                 sendWebhookMessage(embedBuilder.build());
             }
         }
@@ -109,7 +109,7 @@ public class WebhookManager {
                 embedBuilder.setColor(2005449);
                 embedBuilder.setTitle(new WebhookEmbed.EmbedTitle("Blacklist Add", null));
                 embedBuilder.setThumbnailUrl("https://cdn.discordapp.com/attachments/1056727727991959673/1102633373236740198/info-button.png");
-                embedBuilder.setDescription(Keklist.getLanguage().get("discord.blacklist.added", entry, from, reason, "<t:" + (unix/1000) + ":f>"));
+                embedBuilder.setDescription(Keklist.getTranslations().get("discord.blacklist.added", entry, from, reason, "<t:" + (unix/1000) + ":f>"));
                 sendWebhookMessage(embedBuilder.build());
             }
             case BLACKLIST_REMOVE -> {
@@ -119,7 +119,7 @@ public class WebhookManager {
                 embedBuilder.setColor(15226380);
                 embedBuilder.setTitle(new WebhookEmbed.EmbedTitle("Blacklist Remove", null));
                 embedBuilder.setThumbnailUrl("https://cdn.discordapp.com/attachments/1056727727991959673/1102633372867625001/schaltflache-loschen.png");
-                embedBuilder.setDescription(Keklist.getLanguage().get("discord.blacklist.removed", entry, from, "<t:" + (unix/1000) + ":f>"));
+                embedBuilder.setDescription(Keklist.getTranslations().get("discord.blacklist.removed", entry, from, "<t:" + (unix/1000) + ":f>"));
                 sendWebhookMessage(embedBuilder.build());
             }
             case BLACKLIST_KICK -> {
@@ -129,7 +129,7 @@ public class WebhookManager {
                 embedBuilder.setColor(13418516);
                 embedBuilder.setTitle(new WebhookEmbed.EmbedTitle("Blacklist Kick", null));
                 embedBuilder.setThumbnailUrl("https://cdn.discordapp.com/attachments/1056727727991959673/1102636063761125496/alarm.png");
-                embedBuilder.setDescription(Keklist.getLanguage().get("discord.blacklist.kicked", entry, from, "<t:" + (unix/1000) + ":f>"));
+                embedBuilder.setDescription(Keklist.getTranslations().get("discord.blacklist.kicked", entry, from, "<t:" + (unix/1000) + ":f>"));
                 sendWebhookMessage(embedBuilder.build());
             }
         }
@@ -144,7 +144,7 @@ public class WebhookManager {
                 embedBuilder.setColor(208180);
                 embedBuilder.setTitle(new WebhookEmbed.EmbedTitle("Limbo", null));
                 embedBuilder.setThumbnailUrl("https://cdn.discordapp.com/attachments/1056727727991959673/1102636063761125496/alarm.png");
-                embedBuilder.setDescription(Keklist.getLanguage().get("discord.limbo.kicked", user, "<t:" + (unix/1000) + ":f>"));
+                embedBuilder.setDescription(Keklist.getTranslations().get("discord.limbo.kicked", user, "<t:" + (unix/1000) + ":f>"));
                 sendWebhookMessage(embedBuilder.build());
             }
         }

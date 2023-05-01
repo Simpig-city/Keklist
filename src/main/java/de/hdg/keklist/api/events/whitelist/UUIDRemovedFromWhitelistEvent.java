@@ -1,6 +1,7 @@
 package de.hdg.keklist.api.events.whitelist;
 
 import de.hdg.keklist.Keklist;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
@@ -19,19 +20,25 @@ public class UUIDRemovedFromWhitelistEvent extends Event {
     public UUIDRemovedFromWhitelistEvent(@NotNull Player player) {
         this.uuid = player.getUniqueId();
 
-        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
-            caller.updatePlayerData(uuid, null);
-            caller.updateServerData();
-        });
+        Bukkit.getOfflinePlayer(uuid).setWhitelisted(false);
+
+        if (Keklist.getPlanHook() != null)
+            Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+                caller.updatePlayerData(uuid, null);
+                caller.updateServerData();
+            });
     }
 
     public UUIDRemovedFromWhitelistEvent(@NotNull UUID uuid) {
         this.uuid = uuid;
 
-        Keklist.getPlanHook().getCaller().ifPresent(caller -> {
-            caller.updatePlayerData(uuid, null);
-            caller.updateServerData();
-        });
+        Bukkit.getOfflinePlayer(uuid).setWhitelisted(false);
+
+        if (Keklist.getPlanHook() != null)
+            Keklist.getPlanHook().getCaller().ifPresent(caller -> {
+                caller.updatePlayerData(uuid, null);
+                caller.updateServerData();
+            });
     }
 
     /**

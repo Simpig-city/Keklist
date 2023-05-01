@@ -24,7 +24,7 @@ public class KeklistMetrics {
 
     private void initChars() {
         metrics.addCustomChart(new SimplePie("keklist_language", () -> {
-            return Keklist.getLanguage().getLanguageCode();
+            return Keklist.getTranslations().getLanguageCode();
         }));
 
         metrics.addCustomChart(new SimplePie("keklist_whitelist", () -> {
@@ -67,6 +67,6 @@ public class KeklistMetrics {
             return 0;
         }));
 
-        plugin.getLogger().info(Keklist.getLanguage().get("bstats.done"));
+        plugin.getLogger().info(Keklist.getTranslations().get("bstats.done"));
     }
 }

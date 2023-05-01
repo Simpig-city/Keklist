@@ -228,7 +228,7 @@ public class PreLoginKickEvent implements Listener {
 
         @Override
         public void onFailure(@NotNull Call call, IOException e) {
-            Keklist.getInstance().getLogger().warning(Keklist.getLanguage().get("discord.http.namefetch", e.getMessage()));
+            Keklist.getInstance().getLogger().warning(Keklist.getTranslations().get("discord.http.namefetch", e.getMessage()));
         }
     }
 
@@ -240,10 +240,10 @@ public class PreLoginKickEvent implements Listener {
             if (responseElement.getAsJsonObject().get("error") != null ||
                     !responseElement.getAsJsonObject().has("id") ||
                     !responseElement.getAsJsonObject().has("name")) {
-                return Keklist.getLanguage().get("discord.http.uuid-error", responseElement.getAsJsonObject().get("error").getAsString());
+                return Keklist.getTranslations().get("discord.http.uuid-error", responseElement.getAsJsonObject().get("error").getAsString());
             }
         } else {
-            return Keklist.getLanguage().get("http.null-response");
+            return Keklist.getTranslations().get("http.null-response");
         }
 
         return null;

@@ -37,7 +37,7 @@ public class ListPingEvent implements Listener {
             event.motd(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedMotd(Keklist.RandomType.BLACKLISTED)));
 
             if (!new File(Keklist.getInstance().getConfig().getString("blacklist.icon-file")).exists()) {
-                Keklist.getInstance().getLogger().warning(Keklist.getLanguage().get("blacklist.icon.error"));
+                Keklist.getInstance().getLogger().warning(Keklist.getTranslations().get("blacklist.icon.error"));
             } else {
                 try {
                     event.setServerIcon(Keklist.getInstance().getServer().loadServerIcon(new File(Keklist.getInstance().getConfig().getString("blacklist.icon-file"))));
