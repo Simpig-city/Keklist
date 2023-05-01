@@ -196,7 +196,7 @@ public class Blacklist extends Command {
             //User is not blacklisted
             if (!rs.next()) {
                 if (rsUserFix.next()) {
-                    Keklist.getDatabase().onUpdate("UPDATE blacklist SET name = ? WHERE name = ?", playerName, playerName + " (Old Name)");
+                    Keklist.getDatabase().onUpdate("UPDATE blacklist SET name = ? WHERE name = ?", playerName + " (Old Name)", playerName);
                 }
 
                 if (reason == null) {

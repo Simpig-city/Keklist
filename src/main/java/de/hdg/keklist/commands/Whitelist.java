@@ -161,7 +161,7 @@ public class Whitelist extends Command {
 
             if (!rs.next()) {
                 if (rsUserFix.next()) {
-                    Keklist.getDatabase().onUpdate("UPDATE whitelist SET name = ? WHERE name = ?", playerName, playerName + " (Old Name)");
+                    Keklist.getDatabase().onUpdate("UPDATE whitelist SET name = ? WHERE name = ?", playerName + " (Old Name)", playerName);
                 }
 
                 Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToWhitelistEvent(uuid).callEvent());
