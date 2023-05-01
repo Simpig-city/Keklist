@@ -28,13 +28,37 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <licenses>
+        <license>
+            <name>GNU General Public License v3.0</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.en.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <distributionManagement>
         <repository>
             <id>github</id>
             <name>GitHub Simpcity Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/Simpig-city/Keklist</url>
         </repository>
+
+        <!--repository>
+            <id>keklist-releases</id>
+            <name>Keklist release versions</name>
+            <url>https://repo.sageee.xyz/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>keklist-snapshots</id>
+            <name>Keklist snapshot versions</name>
+            <url>https://repo.sageee.xyz/snapshots</url>
+        </snapshotRepository-->
     </distributionManagement>
+
+    <issueManagement>
+        <system>Github</system>
+        <url>https://maven.pkg.github.com/Simpig-city/Keklist/issues</url>
+    </issueManagement>
 
     <build>
         <plugins>
