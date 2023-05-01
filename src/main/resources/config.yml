@@ -32,11 +32,11 @@ floodgate:
 
 discord:
   enabled: false
-  webhook-url: https://discord.com
-  username: "Keklist"
-  avatar-url: "https://avatars.githubusercontent.com/u/81553878?s=200&v=4"
-  events: ["blacklist_add", "blacklist_remove", "whitelist_add", "whitelist_remove", "limbo", "prelogin_kick"]
-  ping-roles: ["214809157574983681"]
+  webhook-url: https://discord.com # Webhook url for the discord webhook
+  username: "Keklist"  # Username for the webhook
+  avatar-url: https://cdn.discordapp.com/attachments/1056727727991959673/1102655035290157176/keklist.png # This is the default avatar
+  events: ["blacklist_add", "blacklist_remove", "blacklist_kick", "whitelist_add", "whitelist_remove", "whitelist_kick", "limbo"] # List of events which trigger a message
+  ping-roles: ["214809157574983681"] # Pings this role on any event. NOTE: Can be empty
 
 # Settings for the database
 # This is useful to share the blacklist and whitelist between multiple servers

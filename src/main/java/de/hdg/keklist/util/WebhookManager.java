@@ -58,7 +58,7 @@ public class WebhookManager {
 
         StringBuilder rolesBuilder = new StringBuilder();
         for(String role : keklist.getConfig().getStringList("discord.ping-roles")){
-            rolesBuilder.append("<@&").append(role).append(">,");
+            rolesBuilder.append("<@&").append(role).append("> ");
         }
 
         builder.setContent(rolesBuilder.toString());

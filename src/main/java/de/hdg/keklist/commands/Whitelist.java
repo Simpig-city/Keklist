@@ -24,7 +24,7 @@ import java.util.*;
 
 public class Whitelist extends Command {
 
-    private static final OkHttpClient client = new OkHttpClient();
+    private final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().create();
     private static final TypeToken<Map<String, String>> token = new TypeToken<>() {
     };
