@@ -192,7 +192,7 @@ public class WhitelistEntryEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            LanguageUtil lang = Keklist.getTranslations();
+            LanguageUtil translations = Keklist.getTranslations();
 
             if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
@@ -200,7 +200,7 @@ public class WhitelistEntryEvent implements Listener {
 
                 Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", username);
                 player.sendMessage(
-                        Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.player.removed", username))
+                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.removed", username))
                 );
 
                 player.openInventory(WhitelistEvent.getPage(0, 0, false, false)); // We can't use the back arrow here because the player is not in the inventory anymore and values may change
@@ -211,14 +211,14 @@ public class WhitelistEntryEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            LanguageUtil lang = Keklist.getTranslations();
+            LanguageUtil translations = Keklist.getTranslations();
 
             if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
                 String ip = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
 
                 Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", ip);
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(lang.get("gui.whitelist.entry.ip.removed", ip)));
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.ip.removed", ip)));
 
                 player.openInventory(WhitelistEvent.getPage(0, 0, false, false)); // We can't use the back arrow here because the player is not in the inventory anymore and values may change
             }
