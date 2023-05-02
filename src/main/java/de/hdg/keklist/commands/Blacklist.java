@@ -89,13 +89,19 @@ public class Blacklist extends Command {
                         if (!rs.next()) {
                             if (reason == null) {
                                 new IpAddToBlacklistEvent(args[1], null).callEvent();
-                                Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, args[1], senderName, null, System.currentTimeMillis());
                                 Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
+
+                                if (Keklist.getWebhookManager() != null)
+                                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, args[1], senderName, null, System.currentTimeMillis());
+
                             } else {
                                 if (reason.length() <= 1500) {
                                     new IpAddToBlacklistEvent(args[1], reason).callEvent();
                                     Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix, reason) VALUES (?, ?, ?, ?)", args[1], senderName, System.currentTimeMillis(), reason);
-                                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, args[1], senderName, reason, System.currentTimeMillis());
+
+                                    if (Keklist.getWebhookManager() != null)
+                                        Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, args[1], senderName, reason, System.currentTimeMillis());
+
                                 } else {
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.reason-too-long")));
                                     return true;
@@ -124,16 +130,20 @@ public class Blacklist extends Command {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1]);
                         if (rs.next()) {
                             new PlayerRemovedFromBlacklist(args[1]).callEvent();
-                            Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_REMOVE, args[1], senderName, null, System.currentTimeMillis());
                             Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", args[1]);
+
+                            if (Keklist.getWebhookManager() != null)
+                                Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_REMOVE, args[1], senderName, null, System.currentTimeMillis());
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.removed", args[1])));
                         } else {
                             ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
                             if (rsUserFix.next()) {
                                 new PlayerRemovedFromBlacklist(args[1]).callEvent();
-                                Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_REMOVE, args[1], senderName, null, System.currentTimeMillis());
                                 Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
+
+                                if (Keklist.getWebhookManager() != null)
+                                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_REMOVE, args[1], senderName, null, System.currentTimeMillis());
 
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.removed", args[1]) + " (Old Name)"));
                             } else {
@@ -198,13 +208,17 @@ public class Blacklist extends Command {
 
                 if (reason == null) {
                     Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToBlacklistEvent(uuid, null).callEvent());
-                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, playerName, from.getName(), "No reason given!", System.currentTimeMillis());
                     Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis());
+
+                    if (Keklist.getWebhookManager() != null)
+                        Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, playerName, from.getName(), "No reason given!", System.currentTimeMillis());
                 } else {
                     if (reason.length() <= 1500) {
                         Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToBlacklistEvent(uuid, reason).callEvent());
-                        Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, playerName, from.getName(), reason, System.currentTimeMillis());
                         Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix, reason) VALUES (?, ?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis(), reason);
+
+                        if (Keklist.getWebhookManager() != null)
+                            Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, playerName, from.getName(), reason, System.currentTimeMillis());
                     } else {
                         from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.reason-too-long")));
                         return;

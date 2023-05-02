@@ -147,14 +147,14 @@ public final class Keklist extends JavaPlugin {
             webhookManager = new WebhookManager(this);
 
         // BStats Metrics
-        if(getConfig().getBoolean("bstats"))
+        if (getConfig().getBoolean("bstats"))
             metrics = new KeklistMetrics(new Metrics(this, bstatsID), this);
     }
 
     @Override
     public void onDisable() {
         // Shutdown metrics
-        if(getConfig().getBoolean("bstats") && metrics != null)
+        if (getConfig().getBoolean("bstats") && metrics != null)
             metrics.shutdown();
 
         // Disconnect from database
@@ -213,7 +213,10 @@ public final class Keklist extends JavaPlugin {
             out.writeUTF(data.toString());
 
             Iterables.getFirst(Bukkit.getOnlinePlayers(), null).sendPluginMessage(this, "keklist:data", out.toByteArray());
-        }catch (NullPointerException | IllegalArgumentException ex){
+
+            if (Keklist.getWebhookManager() != null)
+                Keklist.getWebhookManager().fireEvent(WebhookManager.EVENT_TYPE.LIMBO, uuid.toString(), System.currentTimeMillis());
+        } catch (NullPointerException | IllegalArgumentException ex) {
             getLogger().warning(translations.get("limbo.error"));
         }
     }
@@ -238,7 +241,7 @@ public final class Keklist extends JavaPlugin {
     public static KeklistAPI getApi() {
         if (database.isConnected()) {
             return api;
-        }else
+        } else
             throw new IllegalStateException(translations.get("api.database-not-connected"));
     }
 }
