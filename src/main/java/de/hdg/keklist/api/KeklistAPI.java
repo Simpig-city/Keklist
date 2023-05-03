@@ -33,6 +33,13 @@ public class KeklistAPI {
     private final Keklist plugin;
     private final String API_INFO = "ADDED_BY_API";
 
+    /**
+     * Creates the keklist api instance
+     * <p>
+     * Only used internally
+     *
+     * @param plugin Main plugin instance
+     */
     private KeklistAPI(Keklist plugin) {
         this.plugin = plugin;
     }
@@ -205,8 +212,8 @@ public class KeklistAPI {
 
         Keklist.getDatabase().onUpdate("INSERT INTO whitelist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName == null ? API_INFO : playerName, API_INFO, System.currentTimeMillis());
 
-        if(Keklist.getWebhookManager() != null)
-            Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, playerName==null?uuid.toString():playerName, "API", System.currentTimeMillis());
+        if (Keklist.getWebhookManager() != null)
+            Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, playerName == null ? uuid.toString() : playerName, "API", System.currentTimeMillis());
     }
 
     /**
@@ -224,7 +231,7 @@ public class KeklistAPI {
 
         Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", ip, API_INFO, System.currentTimeMillis());
 
-        if(Keklist.getWebhookManager() != null)
+        if (Keklist.getWebhookManager() != null)
             Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, ip, "API", System.currentTimeMillis());
     }
 
@@ -248,13 +255,20 @@ public class KeklistAPI {
     public void blacklist(@NotNull UUID uuid, @Nullable String playerName, @Nullable String reason) {
         if (isBlacklisted(uuid)) return;
 
+        String webhookEntry = playerName == null ? uuid.toString() : playerName;
         if (reason == null) {
             awaitSync(() -> new UUIDAddToBlacklistEvent(uuid, null).callEvent());
             Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix, reason) VALUES (?, ?, ?, ?, ?)", uuid.toString(), playerName == null ? API_INFO : playerName, API_INFO, System.currentTimeMillis(), reason);
+
+            if (Keklist.getWebhookManager() != null)
+                Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, webhookEntry, "API", null, System.currentTimeMillis());
         } else {
             if (reason.length() <= 1500) {
                 awaitSync(() -> new UUIDAddToBlacklistEvent(uuid, reason).callEvent());
                 Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix) VALUES (?, ?, ?, ?)", uuid.toString(), playerName == null ? API_INFO : playerName, API_INFO, System.currentTimeMillis());
+
+                if (Keklist.getWebhookManager() != null)
+                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, webhookEntry, "API", reason, System.currentTimeMillis());
             } else {
                 throw new IllegalArgumentException("Reason is too long! (Max. 1500 characters)");
             }
@@ -277,10 +291,16 @@ public class KeklistAPI {
         if (reason == null) {
             awaitSync(() -> new IpAddToBlacklistEvent(ip, null).callEvent());
             Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", ip, API_INFO, System.currentTimeMillis());
+
+            if (Keklist.getWebhookManager() != null)
+                Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, ip, "API", null, System.currentTimeMillis());
         } else {
             if (reason.length() <= 1500) {
                 awaitSync(() -> new IpAddToBlacklistEvent(ip, reason).callEvent());
                 Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix, reason) VALUES (?, ?, ?, ?)", ip, API_INFO, System.currentTimeMillis(), reason);
+
+                if (Keklist.getWebhookManager() != null)
+                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, ip, "API", reason, System.currentTimeMillis());
             } else {
                 throw new IllegalArgumentException("Reason is too long! (Max. 1500 characters)");
             }
@@ -322,6 +342,9 @@ public class KeklistAPI {
         awaitSync(() -> new UUIDRemovedFromWhitelistEvent(uuid).callEvent());
 
         Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE uuid = ?", uuid.toString());
+
+        if (Keklist.getWebhookManager() != null)
+            Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, uuid.toString(), "API", System.currentTimeMillis());
     }
 
     /**
@@ -338,6 +361,9 @@ public class KeklistAPI {
         awaitSync(() -> new IpRemovedFromWhitelistEvent(ip).callEvent());
 
         Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", ip);
+
+        if (Keklist.getWebhookManager() != null)
+            Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, ip, "API", System.currentTimeMillis());
     }
 
     /**
@@ -359,6 +385,9 @@ public class KeklistAPI {
         awaitSync(() -> new UUIDRemovedFromBlacklistEvent(uuid).callEvent());
 
         Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE uuid = ?", uuid.toString());
+
+        if (Keklist.getWebhookManager() != null)
+            Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_REMOVE, uuid.toString(), "API", null, System.currentTimeMillis());
     }
 
     /**
@@ -375,6 +404,9 @@ public class KeklistAPI {
         awaitSync(() -> new IpRemovedFromBlacklistEvent(ip).callEvent());
 
         Keklist.getDatabase().onUpdate("DELETE FROM blacklistIp WHERE ip = ?", ip);
+
+        if (Keklist.getWebhookManager() != null)
+            Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_REMOVE, ip, "API", null, System.currentTimeMillis());
     }
 
     /**
@@ -396,10 +428,20 @@ public class KeklistAPI {
 
     /* Config values */
 
+    /**
+     * Return whenever the whitelist is enabled
+     *
+     * @return true if enabled
+     */
     public boolean isWhitelistEnabled() {
         return plugin.getConfig().getBoolean("whitelist.enabled");
     }
 
+    /**
+     * Return whenever the blacklist is enabled
+     *
+     * @return true if enabled
+     */
     public boolean isBlacklistEnabled() {
         return plugin.getConfig().getBoolean("blacklist.enabled");
     }
@@ -414,6 +456,11 @@ public class KeklistAPI {
         return Objects.requireNonNull(plugin.getConfig().getString("floodgate.prefix"));
     }
 
+    /**
+     * Return whenever mariadb is enabled
+     *
+     * @return true if enabled
+     */
     public boolean isMariaDB() {
         return plugin.getConfig().getBoolean("mariadb.enabled");
     }
