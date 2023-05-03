@@ -1,0 +1,25 @@
+version: 2
+registries:
+  maven-artifactory:
+    type: maven-repository
+    url: https://maven.pkg.github.com/Simpig-city/Keklist
+    username: SageSphinx63920
+    password: ${{secrets.GPG_PASSPHRASE}}
+updates:
+  - package-ecosystem: "maven" 
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    assignees:
+      - "SageSphinx63920"
+    commit-message:
+      prefix: "mvn"
+    labels:
+      - "maven"
+    open-pull-requests-limit: 3
+    
+  - package-ecosystem: "github-actions" 
+    directory: "/"
+    open-pull-requests-limit: 1
+    schedule:
+      interval: "weekly"
