@@ -56,6 +56,11 @@
   "blacklist.already-allow-blacklisted": "<red>Blacklisted players are already allowed to join with an admin online!",
   "blacklist.disallow-blacklisted": "<green>Blacklisted players are now not allowed to join with an admin online!",
   "blacklist.already-disallow-blacklisted": "<red>Blacklisted players are already not allowed to join with an admin online!",
+  "blacklist.info": "<gray><b><u>Blacklist Info",
+  "blacklist.info.entry": "<gold>Entry: <white>%s",
+  "blacklist.info.by": "<green>By: <white>%s",
+  "blacklist.info.at": "<red>At: <white>%s",
+  "blacklist.info.reason": "<green>Reason: <white>%s",
 
   "whitelist.usage": "/whitelist <add/remove> <Player/IPv4/IPv6>",
   "whitelist.usage.command": "Please use: /whitelist <add/remove> <Player/IPv4/IPv6>",
@@ -69,6 +74,10 @@
   "whitelist.already-enabled": "<red>Whitelist is already enabled!",
   "whitelist.disabled": "<green>Whitelist is now disabled!",
   "whitelist.already-disabled": "<red>Whitelist is already disabled!",
+  "whitelist.info": "<gray><b><u>Whitelist Info",
+  "whitelist.info.entry": "<gold>Entry: <white>%s",
+  "whitelist.info.by": "<green>By: <white>%s",
+  "whitelist.info.at": "<red>At: <white>%s",
 
   "gui.whitelist.title": "<gold><b>Whitelist",
   "gui.whitelist.description": "<gray><i>Menu for the whitelist",

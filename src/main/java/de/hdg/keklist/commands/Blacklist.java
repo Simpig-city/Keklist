@@ -7,8 +7,10 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.api.events.blacklist.*;
+import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.util.WebhookManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import okhttp3.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -20,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Blacklist extends Command {
@@ -182,6 +185,43 @@ public class Blacklist extends Command {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.motd.syntax")));
                 }
 
+                case "info" -> {
+                    if (type.equals(BlacklistType.IPv4) || type.equals(BlacklistType.IPv6)) {
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
+                        ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
+
+                        SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
+                        LanguageUtil translations = Keklist.getTranslations();
+                        MiniMessage miniMessage = Keklist.getInstance().getMiniMessage();
+
+                        if (rs.next()) {
+                           sendInfo(rs, sender, args[1]);
+                        } else if (rsMotd.next()) {
+                            String byPlayer = rsMotd.getString("byPlayer");
+                            String unix = sdf.format(rsMotd.getLong("unix"));
+
+                            sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info")));
+                            sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info.entry", args[1])));
+                            sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info.by", byPlayer)));
+                            sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info.at", unix)));
+                        } else
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.not-blacklisted", args[1])));
+
+                    } else if (type.equals(BlacklistType.JAVA) || type.equals(BlacklistType.BEDROCK)) {
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1]);
+
+                        if (rs.next()) {
+                            sendInfo(rs, sender, args[1]);
+                        } else {
+                            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
+                            if (rsUserFix.next()) {
+                                sendInfo(rsUserFix, sender, args[1]);
+                            } else
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.not-blacklisted", args[1])));
+                        }
+                    }
+                }
+
                 default -> {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("invalid-syntax")));
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.usage.command")));
@@ -193,6 +233,27 @@ public class Blacklist extends Command {
         }
 
         return true;
+    }
+
+    private void sendInfo(@NotNull ResultSet resultSet, @NotNull CommandSender sender, @NotNull String entry) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
+
+            String byPlayer = resultSet.getString("byPlayer");
+            String blacklistedReason = resultSet.getString("reason");
+            String unix = sdf.format(resultSet.getLong("unix"));
+
+            LanguageUtil translations = Keklist.getTranslations();
+            MiniMessage miniMessage = Keklist.getInstance().getMiniMessage();
+
+            sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info")));
+            sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info.entry", entry)));
+            sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info.by", byPlayer)));
+            sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info.at", unix)));
+            sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info.reason", blacklistedReason)));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void blacklistUser(CommandSender from, UUID uuid, String playerName, String reason) {
@@ -303,11 +364,11 @@ public class Blacklist extends Command {
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length < 2) {
-            return List.of("add", "remove", "motd");
+            return List.of("add", "remove", "motd", "info");
         } else if (args.length == 2) {
             try {
                 switch (args[0]) {
-                    case "remove" -> {
+                    case "remove", "info" -> {
                         List<String> list = new ArrayList<>();
 
                         ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM blacklist");

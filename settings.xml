@@ -20,6 +20,25 @@
                 </repository>
             </repositories>
         </profile>
+        <profile>
+            <id>own</id>
+            <repositories>
+                <repository>
+                    <id>keklist-releases</id>
+                    <url>https://repo.sageee.xyz/releases</url>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                <id>keklist-snapshots</id>
+                <url>https://repo.sageee.xyz/snapshots</url>
+                <snapshots>
+                    <enabled>true</enabled>
+                </snapshots>
+            </repository>
+            </repositories>
+        </profile>
     </profiles>
 
     <servers>

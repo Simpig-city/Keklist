@@ -7,12 +7,15 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.api.events.whitelist.*;
+import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.util.WebhookManager;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import okhttp3.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -20,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 public class Whitelist extends Command {
@@ -141,6 +145,30 @@ public class Whitelist extends Command {
                     return true;
                 }
 
+                case "info" -> {
+                    if (type.equals(Whitelist.WhiteListType.IPv4) || type.equals(Whitelist.WhiteListType.IPv6)) {
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
+
+                        if (rs.next()) {
+                            sendInfo(rs, sender, args[1]);
+                        } else
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.not-blacklisted", args[1])));
+
+                    } else if (type.equals(Whitelist.WhiteListType.JAVA) || type.equals(Whitelist.WhiteListType.BEDROCK)) {
+                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
+
+                        if (rs.next()) {
+                           sendInfo(rs, sender, args[1]);
+                        } else {
+                            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
+                            if (rsUserFix.next()) {
+                               sendInfo(rsUserFix, sender, args[1] + " (Old Name)");
+                            } else
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                        }
+                    }
+                }
+
                 default -> {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("invalid-syntax")));
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.usage.command")));
@@ -152,6 +180,25 @@ public class Whitelist extends Command {
         }
 
         return false;
+    }
+
+    private void sendInfo(@NotNull ResultSet resultSet, @NotNull CommandSender sender, @NotNull String entry) {
+        try {
+            SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
+
+            String byPlayer = resultSet.getString("byPlayer");
+            String unix = sdf.format(resultSet.getLong("unix"));
+
+            LanguageUtil translations = Keklist.getTranslations();
+            MiniMessage miniMessage = Keklist.getInstance().getMiniMessage();
+
+            sender.sendMessage(miniMessage.deserialize(translations.get("whitelist.info")));
+            sender.sendMessage(miniMessage.deserialize(translations.get("whitelist.info.entry", entry)));
+            sender.sendMessage(miniMessage.deserialize(translations.get("whitelist.info.by", byPlayer)));
+            sender.sendMessage(miniMessage.deserialize(translations.get("whitelist.info.at", unix)));
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     private void whitelistUser(CommandSender from, UUID uuid, String playerName) {
@@ -239,11 +286,11 @@ public class Whitelist extends Command {
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length < 2) {
-            return List.of("add", "remove");
+            return List.of("add", "remove", "info");
         } else if (args.length == 2) {
             try {
                 switch (args[0]) {
-                    case "remove" -> {
+                    case "remove", "info" -> {
                         List<String> list = new ArrayList<>();
 
                         ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM whitelist");
