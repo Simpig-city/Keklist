@@ -4,6 +4,7 @@ import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import de.hdg.keklist.Keklist;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
 import java.io.File;
@@ -13,7 +14,7 @@ import java.util.Random;
 
 public class ListPingEvent implements Listener {
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onListPing(PaperServerListPingEvent event) {
         String playerIP = event.getAddress().getHostAddress();
 

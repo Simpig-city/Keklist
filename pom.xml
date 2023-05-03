@@ -13,6 +13,14 @@
     <description>Custom made black and whitelist with many different features</description>
     <url>https://github.com/simpig-city/keklist</url>
 
+    <licenses>
+        <license>
+            <name>GNU General Public License v3.0</name>
+            <url>https://www.gnu.org/licenses/gpl-3.0.en.html</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <developers>
         <developer>
             <name>SageSphinx63920</name>
@@ -28,13 +36,38 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
+    <scm>
+        <connection>scm:git:https://github.com/Simpig-city/Keklist.git</connection>
+        <developerConnection>scm:git:https://github.com/Simpig-city/Keklist.git</developerConnection>
+        <url>https://github.com/Simpig-city/Keklist</url>
+    </scm>
+
     <distributionManagement>
         <repository>
             <id>github</id>
             <name>GitHub Simpcity Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/Simpig-city/Keklist</url>
         </repository>
+
+        <!--repository>
+            <id>keklist-releases</id>
+            <name>Keklist release versions</name>
+            <url>https://repo.sageee.xyz/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>keklist-snapshots</id>
+            <name>Keklist snapshot versions</name>
+            <url>https://repo.sageee.xyz/snapshots</url>
+        </snapshotRepository-->
     </distributionManagement>
+    <issueManagement>
+        <system>Github</system>
+        <url>https://maven.pkg.github.com/Simpig-city/Keklist/issues</url>
+    </issueManagement>
+    <ciManagement>
+        <system>Teamcity</system>
+        <url>https://teamcity.lptp.systems/project/Keklist</url>
+    </ciManagement>
 
     <build>
         <plugins>
@@ -144,7 +177,7 @@
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.13.0</version>
+            <version>4.13.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -190,13 +223,19 @@
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>3.1.3</version>
+            <version>3.1.4</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>
             <artifactId>okhttp</artifactId>
             <version>5.0.0-alpha.11</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>club.minnced</groupId>
+            <artifactId>discord-webhooks</artifactId>
+            <version>0.8.2</version>
             <scope>provided</scope>
         </dependency>
 
