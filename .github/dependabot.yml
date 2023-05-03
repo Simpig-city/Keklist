@@ -1,10 +1,4 @@
 version: 2
-registries:
-  maven-artifactory:
-    type: maven-repository
-    url: https://maven.pkg.github.com/Simpig-city/Keklist
-    username: SageSphinx63920
-    password: ${{secrets.GPG_PASSPHRASE}}
 updates:
   - package-ecosystem: "maven" 
     directory: "/"
