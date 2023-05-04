@@ -44,7 +44,7 @@
     <servers>
         <server>
             <id>github</id>
-            <username>SageSphinx63920</username>
+            <username>${env.GPG_USERNAME}</username>
             <password>${env.GPG_PASSPHRASE}</password>
         </server>
         <server>
