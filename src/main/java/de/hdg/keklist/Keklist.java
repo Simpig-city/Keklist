@@ -62,19 +62,8 @@ public final class Keklist extends JavaPlugin {
     private static @Getter Keklist instance;
     private static KeklistAPI api;
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
-            TagResolver.builder()
-                    .resolver(StandardTags.color())
-                    .resolver(StandardTags.decorations())
-                    .resolver(StandardTags.gradient())
-                    .resolver(StandardTags.font())
-                    .resolver(StandardTags.reset())
-                    .resolver(StandardTags.rainbow())
-                    .resolver(StandardTags.translatable())
-                    .resolver(StandardTags.hoverEvent())
-                    .resolver(StandardTags.clickEvent())
-                    .resolver(StandardTags.insertion())
-                    .resolver(StandardTags.reset())
-                    .build()).build();
+                    TagResolver.builder().resolver(StandardTags.defaults()).build())
+            .build();
 
     @Override
     public void onLoad() {
@@ -157,7 +146,7 @@ public final class Keklist extends JavaPlugin {
             metrics = new KeklistMetrics(new Metrics(this, bstatsID), this);
 
         // Placeholder updates
-        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null && getConfig().getBoolean("placeholderapi")){
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null && getConfig().getBoolean("placeholderapi")) {
             placeholders = new PlaceholderAPIExtension(this);
             placeholders.register();
         }
@@ -167,11 +156,11 @@ public final class Keklist extends JavaPlugin {
     @Override
     public void onDisable() {
         // Shutdown metrics
-        if (getConfig().getBoolean("bstats") && metrics != null)
+        if (metrics != null)
             metrics.shutdown();
 
         // Shutdown placeholders
-        if (placeholders != null && getConfig().getBoolean("placeholderapi"))
+        if (placeholders != null)
             placeholders.unregister();
 
         // Disconnect from database
