@@ -5,6 +5,8 @@
   "config-reloaded": "<green>Config reloaded!",
   "bstats.done": "Successfully enabled bStats!",
   "placeholder.registered": "Successfully registered PlaceholderAPI expansion!",
+  "no-permission": "<red>You don't have permission to do that!",
+  "notify.kick": "<orange>%s <white>was kicked during the login process!",
 
   "api.database-not-connected": "Database is not connected!",
   "api.proxy-send-fail": "Could not send response to proxy!",
@@ -62,6 +64,9 @@
   "blacklist.info.by": "<green>By: <white>%s",
   "blacklist.info.at": "<red>At: <white>%s",
   "blacklist.info.reason": "<green>Reason: <white>%s",
+  "blacklist.notify.add": "<gold>%s <aqua>was added by <white>%s <aqua>to the blacklist!",
+  "blacklist.notify.motd": "<gold>%s <aqua>was added by <white>%s <aqua>to the motd-blacklist!",
+  "blacklist.notify.remove": "<gold>%s <blue>was removed by <white>%s <blue>from the blacklist!",
 
   "whitelist.usage": "/whitelist <add/remove> <Player/IPv4/IPv6>",
   "whitelist.usage.command": "Please use: /whitelist <add/remove> <Player/IPv4/IPv6>",
@@ -79,6 +84,8 @@
   "whitelist.info.entry": "<gold>Entry: <white>%s",
   "whitelist.info.by": "<green>By: <white>%s",
   "whitelist.info.at": "<red>At: <white>%s",
+  "whitelist.notify.remove": "<gold>%s <blue>was removed by <white>%s <blue>from the whitelist!",
+  "whitelist.notify.add": "<gold>%s <aqua>was added by <white>%s <aqua>to the whitelist!",
 
   "gui.whitelist.title": "<gold><b>Whitelist",
   "gui.whitelist.description": "<gray><i>Menu for the whitelist",

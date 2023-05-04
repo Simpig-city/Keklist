@@ -3,6 +3,7 @@
 language: "en-us" # Language for the plugin
 enable-manage-command: false # Enable the /keklist command to enable/disable the blacklist/whitelist
 date-format: "dd-MM-yyyy HH:mm" # Date format for the blacklist/whitelist GUI
+chat-notify: true # Notify the player if someone joins the server and is blacklisted/whitelisted
 
 # Settings for the blacklist feature
 blacklist:

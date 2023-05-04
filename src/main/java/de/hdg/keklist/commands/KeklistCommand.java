@@ -30,6 +30,11 @@ public class KeklistCommand extends Command {
         if (args.length >= 2 && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
             switch (args[0]) {
                 case "blacklist" -> {
+                    if(!sender.hasPermission("keklist.manage.blacklist")) {
+                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                        return false;
+                    }
+
                     switch (args[1]) {
                         case "enable" -> {
                             if (!Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
@@ -110,6 +115,11 @@ public class KeklistCommand extends Command {
                 }
 
                 case "whitelist" -> {
+                    if(!sender.hasPermission("keklist.manage.whitelist")) {
+                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                        return false;
+                    }
+
                     switch (args[1]) {
                         case "enable" -> {
                             if (!Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
@@ -158,6 +168,11 @@ public class KeklistCommand extends Command {
 
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("reload")) {
+                if(!sender.hasPermission("keklist.manage.reload")) {
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                    return false;
+                }
+
                 try {
                     Keklist.getInstance().getConfig().load(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("config-reloaded")));
@@ -165,6 +180,11 @@ public class KeklistCommand extends Command {
                     throw new RuntimeException(e);
                 }
             } else if (args[0].equalsIgnoreCase("gui")) {
+                if(!sender.hasPermission("keklist.gui.open")) {
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                    return false;
+                }
+
                 GuiManager.openMainGUI((Player) sender);
             } else
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
