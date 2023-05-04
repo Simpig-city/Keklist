@@ -1,4 +1,4 @@
-package de.hdg.keklist.util;
+package de.hdg.keklist.extentions;
 
 import club.minnced.discord.webhook.WebhookClient;
 import club.minnced.discord.webhook.WebhookClientBuilder;

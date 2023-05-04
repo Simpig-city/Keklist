@@ -14,6 +14,7 @@ import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.BlacklistRemoveMotd;
 import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
+import de.hdg.keklist.extentions.PlaceholderAPIExtension;
 import de.hdg.keklist.gui.events.MainGUIEvent;
 import de.hdg.keklist.gui.events.SettingsEvent;
 import de.hdg.keklist.gui.events.blacklist.BlacklistEntryEvent;
@@ -21,8 +22,8 @@ import de.hdg.keklist.gui.events.blacklist.BlacklistEvent;
 import de.hdg.keklist.gui.events.whitelist.WhitelistEntryEvent;
 import de.hdg.keklist.gui.events.whitelist.WhitelistEvent;
 import de.hdg.keklist.util.LanguageUtil;
-import de.hdg.keklist.util.PlanHook;
-import de.hdg.keklist.util.WebhookManager;
+import de.hdg.keklist.extentions.PlanHook;
+import de.hdg.keklist.extentions.WebhookManager;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -43,17 +44,23 @@ import java.util.UUID;
 
 public final class Keklist extends JavaPlugin {
 
+    /* Intern */
     private final int bstatsID = 18279;
     private KeklistMetrics metrics;
-    private static KeklistAPI api;
-    private static @Getter Keklist instance;
+    private static final Random random = new Random();
+
+    /* Extensions */
     private @Getter
     @Nullable FloodgateApi floodgateApi = null;
-    private static @Getter DB database;
     private static @Getter PlanHook planHook;
+    private PlaceholderAPIExtension placeholders;
+
+    /* Global */
+    private static @Getter DB database;
     private static @Getter LanguageUtil translations;
     private static @Getter WebhookManager webhookManager;
-    private static final Random random = new Random();
+    private static @Getter Keklist instance;
+    private static KeklistAPI api;
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
             TagResolver.builder()
                     .resolver(StandardTags.color())
@@ -83,9 +90,8 @@ public final class Keklist extends JavaPlugin {
             return;
         }
 
-        if (Bukkit.getPluginManager().getPlugin("floodgate") != null) {
+        if (Bukkit.getPluginManager().getPlugin("floodgate") != null)
             floodgateApi = FloodgateApi.getInstance();
-        }
 
 
         //Plugin channel for limbo connections
@@ -149,6 +155,13 @@ public final class Keklist extends JavaPlugin {
         // BStats Metrics
         if (getConfig().getBoolean("bstats"))
             metrics = new KeklistMetrics(new Metrics(this, bstatsID), this);
+
+        // Placeholder updates
+        if (Bukkit.getPluginManager().getPlugin("PlaceholderAPI") != null && getConfig().getBoolean("placeholderapi")){
+            placeholders = new PlaceholderAPIExtension(this);
+            placeholders.register();
+        }
+
     }
 
     @Override
@@ -156,6 +169,10 @@ public final class Keklist extends JavaPlugin {
         // Shutdown metrics
         if (getConfig().getBoolean("bstats") && metrics != null)
             metrics.shutdown();
+
+        // Shutdown placeholders
+        if (placeholders != null && getConfig().getBoolean("placeholderapi"))
+            placeholders.unregister();
 
         // Disconnect from database
         database.disconnect();

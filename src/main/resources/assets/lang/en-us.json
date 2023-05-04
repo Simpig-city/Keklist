@@ -4,6 +4,7 @@
   "invalid-syntax": "<red>Invalid syntax!",
   "config-reloaded": "<green>Config reloaded!",
   "bstats.done": "Successfully enabled bStats!",
+  "placeholder.registered": "Successfully registered PlaceholderAPI expansion!",
 
   "api.database-not-connected": "Database is not connected!",
   "api.proxy-send-fail": "Could not send response to proxy!",

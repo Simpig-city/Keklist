@@ -1,4 +1,4 @@
-package de.hdg.keklist.util;
+package de.hdg.keklist.extentions;
 
 import com.djrapitops.plan.extension.CallEvents;
 import com.djrapitops.plan.extension.DataExtension;

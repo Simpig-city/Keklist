@@ -164,6 +164,11 @@
             <id>jitpack</id>
             <url>https://jitpack.io</url>
         </repository>
+        <!-- PlaceholderAPI -->
+        <repository>
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -210,6 +215,12 @@
             <groupId>com.github.plan-player-analytics</groupId>
             <artifactId>Plan</artifactId>
             <version>5.5.2335</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.11.3</version>
             <scope>provided</scope>
         </dependency>
 

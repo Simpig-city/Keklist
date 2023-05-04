@@ -15,3 +15,7 @@ dependencies:
   - name: Plan
     required: false
     bootstrap: false
+
+  - name: PlaceholderAPI
+    required: false
+    bootstrap: false

@@ -1,9 +1,10 @@
-package de.hdg.keklist.util;
+package de.hdg.keklist.extentions;
 
 import com.djrapitops.plan.capability.CapabilityService;
 import com.djrapitops.plan.extension.Caller;
 import com.djrapitops.plan.extension.ExtensionService;
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.extentions.KekDataExtension;
 import lombok.Getter;
 
 import java.util.Optional;

@@ -1,7 +1,6 @@
 # Settings for every feature of the Keklist Paper plugin
 
 language: "en-us" # Language for the plugin
-plan-support: false # Enable support for the Plan plugin
 enable-manage-command: false # Enable the /keklist command to enable/disable the blacklist/whitelist
 date-format: "dd-MM-yyyy HH:mm" # Date format for the blacklist/whitelist GUI
 
@@ -25,6 +24,10 @@ whitelist:
     - LPTP1
   fake-max-range: 20-40 # Please use the format: INTEGER-INTEGER
   fake-online-range: 0-10 # Please use the format: INTEGER-INTEGER
+
+# Extentions for the plugin
+placeholderapi: false # Enable PlaceholderAPI support
+plan-support: false # Enable support for the Plan plugin
 
 # Note: If you use a proxy you need to enable 'send-floodgate-data' on the proxy's config
 # More: https://wiki.geysermc.org/floodgate/setup/

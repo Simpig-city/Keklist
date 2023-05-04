@@ -8,7 +8,7 @@ import com.google.gson.reflect.TypeToken;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.api.events.blacklist.*;
 import de.hdg.keklist.util.LanguageUtil;
-import de.hdg.keklist.util.WebhookManager;
+import de.hdg.keklist.extentions.WebhookManager;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import okhttp3.*;

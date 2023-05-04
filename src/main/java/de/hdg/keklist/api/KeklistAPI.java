@@ -7,7 +7,7 @@ import de.hdg.keklist.api.events.whitelist.IpRemovedFromWhitelistEvent;
 import de.hdg.keklist.api.events.whitelist.UUIDAddToWhitelistEvent;
 import de.hdg.keklist.api.events.whitelist.UUIDRemovedFromWhitelistEvent;
 import de.hdg.keklist.database.DB;
-import de.hdg.keklist.util.WebhookManager;
+import de.hdg.keklist.extentions.WebhookManager;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Contract;

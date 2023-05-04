@@ -3,7 +3,7 @@ package de.hdg.keklist.events;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.hdg.keklist.Keklist;
-import de.hdg.keklist.util.WebhookManager;
+import de.hdg.keklist.extentions.WebhookManager;
 import net.kyori.adventure.text.Component;
 import okhttp3.*;
 import org.bukkit.Bukkit;
