@@ -32,7 +32,9 @@ Keklist includes many diffrent features to make your whitelist experience as goo
 You can download the latest version of Keklist on [github releases](https://github.com/Simpig-city/Keklist/releases/latest) or on [modrinth](https://modrinth.com/plugin/keklist). 
 All versions including beta releases can be found [here](https://github.com/Simpig-city/Keklist/releases/). Alpha build are soon available for download but this is still WiP. 
 <br> <br>
-To install Keklist you just need to drop the jar file into your plugins folder and restart your server. Keklist will automatically create a config file . You can find the config file in the `plugins/Keklist` folder. **Keklist requires Paper 1.19.4+ or forks i.e. Purpur**. More about the config file and other features can be found [here](https://github.com/simpig-city/Keklist/wiki/config).
+To install Keklist you just need to drop the jar file into your plugins folder and restart your server. Keklist will automatically create a config file . You can find the config file in the `plugins/Keklist` folder. **Keklist requires Paper 1.19.4+ or forks i.e. Purpur**. More about the config file and other features can be found [here](https://github.com/simpig-city/Keklist/wiki/config). 
+<br> <br>
+Keklist offically supports the following server softwares: Paper, Pufferfish, Purpur
 
 ## Wiki
 If you have any problems or need documentation about the plugin you can just contact us or visit our wiki here on github! Every feature and the entire config is documented and explain, but feel free to ask anything! Our wiki can be found [here](https://github.com/simpig-city/Keklist/wiki)
