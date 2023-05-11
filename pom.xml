@@ -89,7 +89,7 @@
                     <source>${java.version}</source>
                     <encoding>${project.build.sourceEncoding}</encoding>
                     <show>protected</show>
-                    <outputDirectory>src/javadoc</outputDirectory>
+                    <doclint>all,-missing</doclint>
                 </configuration>
             </plugin>
             <plugin>

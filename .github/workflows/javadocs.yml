@@ -18,6 +18,7 @@ jobs:
       with:
         java-version: 17
         distribution: 'corretto'
+        cache: 'maven'
         
     - name: Setup Maven 3.9.1 🔮
       uses: stCarolas/setup-maven@v4.5

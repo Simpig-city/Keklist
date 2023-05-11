@@ -8,7 +8,7 @@ import org.jetbrains.annotations.NotNull;
 
 /**
  * This event is called when a player is removed from the whitelist.
- * <b>Only called when removed by Plugin itself. This can be a floodgate name {@link KeklistAPI#getFloodgatePrefix()}/b>
+ * <b>Only called when removed by Plugin itself. This can be a floodgate name {@link KeklistAPI#getFloodgatePrefix()}</b>
  */
 public class PlayerRemovedFromWhitelistEvent extends Event {
 
