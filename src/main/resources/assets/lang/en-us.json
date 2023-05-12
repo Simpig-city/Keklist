@@ -208,9 +208,9 @@
 
   "discord.whitelist.added": "Added **%s** to the whitelist! \n \n **From:** %s \n **Timestamp:** %s",
   "discord.whitelist.removed": "Removed **%s** from the whitelist! \n \n **From:** %s \n **Timestamp:** %s",
-  "discord.whitelist.kicked": "Kicked **%s** from the server cause of whitelist! \n \n **Added by:** %s \n **Kicked at:** %s",
+  "discord.whitelist.kicked": "Kicked **%s** from the server cause of whitelist! \n \n **Kicked at:** %s",
   "discord.blacklist.added": "Added **%s** to the blacklist! \n \n **From:** %s \n **Reason:** %s \n **Timestamp:** %s",
-  "discord.blacklist.removed": "Added **%s** to the blacklist! \n \n **From:** %s \n **Timestamp:** %s",
+  "discord.blacklist.removed": "Removed **%s** from the blacklist! \n \n **From:** %s \n **Timestamp:** %s",
   "discord.blacklist.kicked": "Kicked **%s** from the server cause of blacklist! \n \n **Added by:** %s \n **Kicked at:** %s",
   "discord.limbo.kicked": "Sent **%s** to the limbo! \n \n **Kicked at:** %s",
   "discord.http.namefetch": "Failed to get name from Mojang API: %s",

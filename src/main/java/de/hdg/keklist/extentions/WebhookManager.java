@@ -65,7 +65,7 @@ public class WebhookManager {
         client.send(builder.build());
     }
 
-    public void fireWhitelistEvent(@NotNull EVENT_TYPE type, @NotNull String entry, @NotNull String from, long unix ) {
+    public void fireWhitelistEvent(@NotNull EVENT_TYPE type, @NotNull String entry, @Nullable String from, long unix ) {
         switch (type){
             case WHITELIST_ADD -> {
                 if(!triggerEvents.contains(EVENT_TYPE.WHITELIST_ADD)) return;
@@ -94,13 +94,13 @@ public class WebhookManager {
                 embedBuilder.setColor(13418516);
                 embedBuilder.setTitle(new WebhookEmbed.EmbedTitle("Whitelist Kick", null));
                 embedBuilder.setThumbnailUrl("https://cdn.discordapp.com/attachments/1056727727991959673/1102636063761125496/alarm.png");
-                embedBuilder.setDescription(Keklist.getTranslations().get("discord.whitelist.kicked", entry, from, "<t:" + (unix/1000) + ":f>"));
+                embedBuilder.setDescription(Keklist.getTranslations().get("discord.whitelist.kicked", entry, "<t:" + (unix/1000) + ":f>"));
                 sendWebhookMessage(embedBuilder.build());
             }
         }
     }
 
-    public void fireBlacklistEvent(@NotNull EVENT_TYPE type, @NotNull String entry, @NotNull String from, @Nullable String reason, long unix ) {
+    public void fireBlacklistEvent(@NotNull EVENT_TYPE type, @NotNull String entry, @Nullable String from, @Nullable String reason, long unix ) {
         switch (type){
             case BLACKLIST_ADD -> {
                 if(!triggerEvents.contains(EVENT_TYPE.BLACKLIST_ADD)) return;
@@ -129,7 +129,7 @@ public class WebhookManager {
                 embedBuilder.setColor(13418516);
                 embedBuilder.setTitle(new WebhookEmbed.EmbedTitle("Blacklist Kick", null));
                 embedBuilder.setThumbnailUrl("https://cdn.discordapp.com/attachments/1056727727991959673/1102636063761125496/alarm.png");
-                embedBuilder.setDescription(Keklist.getTranslations().get("discord.blacklist.kicked", entry, from, "<t:" + (unix/1000) + ":f>"));
+                embedBuilder.setDescription(Keklist.getTranslations().get("discord.blacklist.kicked", entry, "<t:" + (unix/1000) + ":f>"));
                 sendWebhookMessage(embedBuilder.build());
             }
         }
