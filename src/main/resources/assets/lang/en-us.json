@@ -86,6 +86,7 @@
   "whitelist.info.at": "<red>At: <white>%s",
   "whitelist.notify.remove": "<gold>%s <blue>was removed by <white>%s <blue>from the whitelist!",
   "whitelist.notify.add": "<gold>%s <aqua>was added by <white>%s <aqua>to the whitelist!",
+  "whitelist.imported": "<blue>Successfully imported whitelist entries!",
 
   "gui.whitelist.title": "<gold><b>Whitelist",
   "gui.whitelist.description": "<gray><i>Menu for the whitelist",

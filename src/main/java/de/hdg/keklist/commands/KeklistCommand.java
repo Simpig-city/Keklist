@@ -3,6 +3,7 @@ package de.hdg.keklist.commands;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.gui.GuiManager;
 import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.InvalidConfigurationException;
@@ -27,138 +28,156 @@ public class KeklistCommand extends Command {
 
     @Override
     public boolean execute(@NotNull CommandSender sender, @NotNull String commandLabel, @NotNull String[] args) {
-        if (args.length >= 2 && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
+        if (args.length >= 2) {
             switch (args[0]) {
                 case "blacklist" -> {
-                    if(!sender.hasPermission("keklist.manage.blacklist")) {
+                    if (!sender.hasPermission("keklist.manage.blacklist")) {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                         return false;
                     }
 
-                    switch (args[1]) {
-                        case "enable" -> {
-                            if (!Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
-                                Keklist.getInstance().getConfig().set("blacklist.enabled", true);
-                                try {
-                                    Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
-                                    for (Player player : Bukkit.getOnlinePlayers()) {
-                                        if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.enabled")));
+                    if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
+                        switch (args[1]) {
+                            case "enable" -> {
+                                if (!Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
+                                    Keklist.getInstance().getConfig().set("blacklist.enabled", true);
+                                    try {
+                                        Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+                                        for (Player player : Bukkit.getOnlinePlayers()) {
+                                            if (player.hasPermission("keklist.manage")) {
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.enabled")));
+                                            }
                                         }
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
                                     }
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
+                                } else {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-enabled")));
                                 }
-                            } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-enabled")));
                             }
-                        }
 
-                        case "disable" -> {
-                            if (Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
-                                Keklist.getInstance().getConfig().set("blacklist.enabled", false);
-                                try {
-                                    Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
-                                    for (Player player : Bukkit.getOnlinePlayers()) {
-                                        if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.disabled")));
+                            case "disable" -> {
+                                if (Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
+                                    Keklist.getInstance().getConfig().set("blacklist.enabled", false);
+                                    try {
+                                        Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+                                        for (Player player : Bukkit.getOnlinePlayers()) {
+                                            if (player.hasPermission("keklist.manage")) {
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.disabled")));
+                                            }
                                         }
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
                                     }
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
+                                } else {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-disabled")));
                                 }
-                            } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-disabled")));
                             }
-                        }
 
-                        case "allow-blacklisted" -> {
-                            if (!Keklist.getInstance().getConfig().getBoolean("blacklist.allow-join-with-admin")) {
-                                Keklist.getInstance().getConfig().set("blacklist.allow-join-with-admin", true);
-                                try {
-                                    Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
-                                    for (Player player : Bukkit.getOnlinePlayers()) {
-                                        if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.allow-blacklisted")));
+                            case "allow-blacklisted" -> {
+                                if (!Keklist.getInstance().getConfig().getBoolean("blacklist.allow-join-with-admin")) {
+                                    Keklist.getInstance().getConfig().set("blacklist.allow-join-with-admin", true);
+                                    try {
+                                        Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+                                        for (Player player : Bukkit.getOnlinePlayers()) {
+                                            if (player.hasPermission("keklist.manage")) {
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.allow-blacklisted")));
+                                            }
                                         }
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
                                     }
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
+                                } else {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-allow-blacklisted")));
                                 }
-                            } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-allow-blacklisted")));
                             }
-                        }
 
-                        case "disallow-blacklisted" -> {
-                            if (Keklist.getInstance().getConfig().getBoolean("blacklist.allow-join-with-admin")) {
-                                Keklist.getInstance().getConfig().set("blacklist.allow-join-with-admin", false);
-                                try {
-                                    Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
-                                    for (Player player : Bukkit.getOnlinePlayers()) {
-                                        if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.disallow-blacklisted")));
+                            case "disallow-blacklisted" -> {
+                                if (Keklist.getInstance().getConfig().getBoolean("blacklist.allow-join-with-admin")) {
+                                    Keklist.getInstance().getConfig().set("blacklist.allow-join-with-admin", false);
+                                    try {
+                                        Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+                                        for (Player player : Bukkit.getOnlinePlayers()) {
+                                            if (player.hasPermission("keklist.manage")) {
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.disallow-blacklisted")));
+                                            }
                                         }
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
                                     }
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
+                                } else {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-disallow-blacklisted")));
                                 }
-                            } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.already-disallow-blacklisted")));
                             }
-                        }
 
-                        default -> {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
+                            default -> {
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
+                            }
                         }
                     }
                 }
 
                 case "whitelist" -> {
-                    if(!sender.hasPermission("keklist.manage.whitelist")) {
+                    if (!sender.hasPermission("keklist.manage.whitelist")) {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                         return false;
                     }
 
                     switch (args[1]) {
-                        case "enable" -> {
-                            if (!Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
-                                Keklist.getInstance().getConfig().set("whitelist.enabled", true);
-                                try {
-                                    Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
-                                    for (Player player : Bukkit.getOnlinePlayers()) {
-                                        if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.enabled")));
-                                        }
+                        case "import" -> {
+                            if (args.length == 3) {
+                                if (args[2].equalsIgnoreCase("vanilla")) {
+                                    for (OfflinePlayer player : Bukkit.getWhitelistedPlayers()) {
+                                        Bukkit.dispatchCommand(sender, "keklist whitelist add " + player.getName());
                                     }
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
+
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.imported")));
                                 }
-                            } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-enabled")));
                             }
                         }
+                    }
 
-                        case "disable" -> {
-                            if (Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
-                                Keklist.getInstance().getConfig().set("whitelist.enabled", false);
-                                try {
-                                    Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
-                                    for (Player player : Bukkit.getOnlinePlayers()) {
-                                        if (player.hasPermission("keklist.manage")) {
-                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.disabled")));
+                    if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
+                        switch (args[1]) {
+                            case "enable" -> {
+                                if (!Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
+                                    Keklist.getInstance().getConfig().set("whitelist.enabled", true);
+                                    try {
+                                        Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+                                        for (Player player : Bukkit.getOnlinePlayers()) {
+                                            if (player.hasPermission("keklist.manage")) {
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.enabled")));
+                                            }
                                         }
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
                                     }
-                                } catch (IOException e) {
-                                    throw new RuntimeException(e);
+                                } else {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-enabled")));
                                 }
-                            } else {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-disabled")));
                             }
-                        }
 
-                        default ->
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
+                            case "disable" -> {
+                                if (Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
+                                    Keklist.getInstance().getConfig().set("whitelist.enabled", false);
+                                    try {
+                                        Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+                                        for (Player player : Bukkit.getOnlinePlayers()) {
+                                            if (player.hasPermission("keklist.manage")) {
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.disabled")));
+                                            }
+                                        }
+                                    } catch (IOException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                } else {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-disabled")));
+                                }
+                            }
+
+                            default ->
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
+                        }
                     }
                 }
 
@@ -166,9 +185,10 @@ public class KeklistCommand extends Command {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
             }
 
+
         } else if (args.length == 1) {
             if (args[0].equalsIgnoreCase("reload")) {
-                if(!sender.hasPermission("keklist.manage.reload")) {
+                if (!sender.hasPermission("keklist.manage.reload")) {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                     return false;
                 }
@@ -180,7 +200,7 @@ public class KeklistCommand extends Command {
                     throw new RuntimeException(e);
                 }
             } else if (args[0].equalsIgnoreCase("gui")) {
-                if(!sender.hasPermission("keklist.gui.open")) {
+                if (!sender.hasPermission("keklist.gui.open")) {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                     return false;
                 }
@@ -189,27 +209,44 @@ public class KeklistCommand extends Command {
             } else
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
         } else
-            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
+            sender.sendMessage(Keklist.getInstance().
+
+                    getMiniMessage().
+
+                    deserialize(Keklist.getTranslations().
+
+                            get("keklist.usage.command")));
 
         return false;
     }
 
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+        List<String> suggestions = new ArrayList<>();
+
         if (args.length < 2) {
-            List<String> suggestions = new ArrayList<>(List.of("reload", "gui"));
+            suggestions.addAll(List.of("reload", "gui", "whitelist"));
+
             if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
-                suggestions.add("whitelist");
                 suggestions.add("blacklist");
             }
-            return suggestions;
-        } else if (args.length == 2 && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
+
+        } else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("whitelist")) {
-                return List.of("enable", "disable");
-            } else if (args[0].equalsIgnoreCase("blacklist")) {
-                return List.of("enable", "disable", "allow-blacklisted", "disallow-blacklisted");
+                if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
+                    suggestions.addAll(List.of("enable", "disable"));
+                }
+
+                suggestions.add("import");
+            } else if (args[0].equalsIgnoreCase("blacklist") && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
+                suggestions.addAll(List.of("enable", "disable", "allow-blacklisted", "disallow-blacklisted"));
+            }
+        } else if (args.length == 3) {
+            if (args[0].equalsIgnoreCase("whitelist") && args[1].equalsIgnoreCase("import")) {
+                suggestions.add("vanilla");
             }
         }
-        return Collections.emptyList();
+
+        return suggestions;
     }
 }
