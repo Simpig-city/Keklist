@@ -214,7 +214,7 @@
         <dependency>
             <groupId>com.github.plan-player-analytics</groupId>
             <artifactId>Plan</artifactId>
-            <version>5.5.2335</version>
+            <version>5.5.2379</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
