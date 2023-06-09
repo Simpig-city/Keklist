@@ -2,10 +2,9 @@ name: Keklist
 version: '1.0.0'
 main: de.hdg.keklist.Keklist
 api-version: '1.19'
-description: Block all the Keks and accept the nice people
+description: Custom made white and blacklist with many features!
 authors: ["hdgamer1404Jonas", "SageSphinx63920"]
-website: https://simp.sasp.gq
-database: true
+website: https://keklist.pages.dev
 loader: de.hdg.keklist.KeklistLoader
 dependencies:
   - name: floodgate
@@ -18,4 +17,8 @@ dependencies:
 
   - name: PlaceholderAPI
     required: false
+    bootstrap: false
+
+load-after:
+  - name: Plan
     bootstrap: false
