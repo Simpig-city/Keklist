@@ -182,7 +182,7 @@
         <dependency>
             <groupId>net.kyori</groupId>
             <artifactId>adventure-text-minimessage</artifactId>
-            <version>4.13.1</version>
+            <version>4.14.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -214,7 +214,7 @@
         <dependency>
             <groupId>com.github.plan-player-analytics</groupId>
             <artifactId>Plan</artifactId>
-            <version>5.5.2335</version>
+            <version>5.5.2391</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
