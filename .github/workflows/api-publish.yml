@@ -31,6 +31,9 @@ jobs:
       run: mvn -s $GITHUB_WORKSPACE/settings.xml clean deploy  
       env:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
+        GPG_USERNAME:  ${{ secrets.GPG_USERNAME }}
+        REPO_USER: ${{ secrets.REPO_USER }}
+        REPO_PASSWORD: ${{ secrets.REPO_PASSWORD }}
     
     - name: Delete old Packages
       uses: actions/delete-package-versions@v4
