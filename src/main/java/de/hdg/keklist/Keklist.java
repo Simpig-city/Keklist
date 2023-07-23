@@ -14,6 +14,7 @@ import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.BlacklistRemoveMotd;
 import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
+import de.hdg.keklist.events.ServerWhitelistChangeEvent;
 import de.hdg.keklist.extentions.PlaceholderAPIExtension;
 import de.hdg.keklist.gui.events.MainGUIEvent;
 import de.hdg.keklist.gui.events.SettingsEvent;
@@ -97,7 +98,7 @@ public final class Keklist extends JavaPlugin {
 
         database.connect();
 
-        //Needs to be called after database
+        //Needs to be called after the connection to the database
         api = KeklistAPI.makeApi(this);
     }
 
@@ -110,9 +111,11 @@ public final class Keklist extends JavaPlugin {
         registerCommand(new KeklistCommand());
 
         PluginManager pm = getServer().getPluginManager();
+
         pm.registerEvents(new ListPingEvent(), this);
         pm.registerEvents(new PreLoginKickEvent(), this);
         pm.registerEvents(new BlacklistRemoveMotd(), this);
+        pm.registerEvents(new ServerWhitelistChangeEvent(), this);
 
         // GUI Listener
         pm.registerEvents(new MainGUIEvent(), this);
@@ -163,7 +166,7 @@ public final class Keklist extends JavaPlugin {
         if (placeholders != null)
             placeholders.unregister();
 
-        // Disconnect from database
+        // Disconnect from the database
         database.disconnect();
 
         // Unregister plugin channel
@@ -189,6 +192,7 @@ public final class Keklist extends JavaPlugin {
         }
     }
 
+    @NotNull
     public String getRandomizedKickMessage(@NotNull RandomType type) {
         switch (type) {
             case BLACKLISTED -> {
@@ -227,15 +231,15 @@ public final class Keklist extends JavaPlugin {
         }
     }
 
+    private void registerCommand(Command command) {
+        getServer().getCommandMap().register("keklist", command);
+    }
+
     /**
      * Enum for the different messages
      */
     public enum RandomType {
         BLACKLISTED, WHITELISTED, NORMAL
-    }
-
-    private void registerCommand(Command command) {
-        getServer().getCommandMap().register("keklist", command);
     }
 
     /**

@@ -474,6 +474,17 @@ public class KeklistAPI {
         return isMariaDB() ? DB.DBType.MARIADB : DB.DBType.SQLITE;
     }
 
+
+    /**
+     *  Returns the language for the plugin set in the config
+     *
+     * @return the language code
+     */
+    @NotNull
+    public String getLanguage() {
+        return Keklist.getTranslations().getLanguageCode();
+    }
+
     /**
      * This is used to execute a runnable on the main thread and await the result
      * <p>
