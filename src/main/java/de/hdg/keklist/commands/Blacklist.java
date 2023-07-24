@@ -35,7 +35,6 @@ public class Blacklist extends Command {
     public Blacklist() {
         super("blacklist");
         setAliases(List.of("bl"));
-        setPermission("keklist.blacklist");
         setUsage(Keklist.getTranslations().get("blacklist.usage"));
         setDescription(Keklist.getTranslations().get("blacklist.description"));
     }
@@ -83,7 +82,7 @@ public class Blacklist extends Command {
 
             switch (args[0]) {
                 case "add" -> {
-                    if(!sender.hasPermission("keklist.blacklist.add")) {
+                    if (!sender.hasPermission("keklist.blacklist.add")) {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                         return false;
                     }
@@ -124,7 +123,7 @@ public class Blacklist extends Command {
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.added", args[1])));
 
-                            if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                 Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.notify.add", args[1], senderName)), "keklist.notify.blacklist");
 
                         } else {
@@ -138,7 +137,7 @@ public class Blacklist extends Command {
                 }
 
                 case "remove" -> {
-                    if(!sender.hasPermission("keklist.blacklist.remove")) {
+                    if (!sender.hasPermission("keklist.blacklist.remove")) {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                         return false;
                     }
@@ -154,7 +153,7 @@ public class Blacklist extends Command {
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.removed", args[1])));
 
-                            if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                 Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.notify.remove", args[1], senderName)), "keklist.notify.blacklist");
 
                         } else {
@@ -168,7 +167,7 @@ public class Blacklist extends Command {
 
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.removed", args[1]) + " (Old Name)"));
 
-                                if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                                if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.notify.remove", args[1], senderName + "(Old Name)")), "keklist.notify.blacklist");
 
                             } else {
@@ -187,8 +186,8 @@ public class Blacklist extends Command {
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.ip.removed", args[1])));
 
-                            if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
-                                Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.notify.remove", args[1],senderName)), "keklist.notify.blacklist");
+                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                                Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.notify.remove", args[1], senderName)), "keklist.notify.blacklist");
 
                         } else {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.not-blacklisted", args[1])));
@@ -198,7 +197,7 @@ public class Blacklist extends Command {
                 }
 
                 case "motd" -> {
-                    if(!sender.hasPermission("keklist.blacklist.motd")) {
+                    if (!sender.hasPermission("keklist.blacklist.motd")) {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                         return false;
                     }
@@ -212,7 +211,7 @@ public class Blacklist extends Command {
                             Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.motd.added", args[1])));
 
-                            if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                 Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.notify.motd", args[1], senderName)), "keklist.notify.blacklist");
                         }
                     } else
@@ -220,7 +219,7 @@ public class Blacklist extends Command {
                 }
 
                 case "info" -> {
-                    if(!sender.hasPermission("keklist.blacklist.info")) {
+                    if (!sender.hasPermission("keklist.blacklist.info")) {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                         return false;
                     }
@@ -234,7 +233,7 @@ public class Blacklist extends Command {
                         MiniMessage miniMessage = Keklist.getInstance().getMiniMessage();
 
                         if (rs.next()) {
-                           sendInfo(rs, sender, args[1]);
+                            sendInfo(rs, sender, args[1]);
                         } else if (rsMotd.next()) {
                             String byPlayer = rsMotd.getString("byPlayer");
                             String unix = sdf.format(rsMotd.getLong("unix"));
@@ -317,7 +316,7 @@ public class Blacklist extends Command {
                         Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToBlacklistEvent(uuid, reason).callEvent());
                         Keklist.getDatabase().onUpdate("INSERT INTO blacklist (uuid, name, byPlayer, unix, reason) VALUES (?, ?, ?, ?, ?)", uuid.toString(), playerName, from.getName(), System.currentTimeMillis(), reason);
 
-                         if (Keklist.getWebhookManager() != null)
+                        if (Keklist.getWebhookManager() != null)
                             Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_ADD, playerName, from.getName(), reason, System.currentTimeMillis());
                     } else {
                         from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.reason-too-long")));
@@ -336,7 +335,7 @@ public class Blacklist extends Command {
 
                 from.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.added", playerName)));
 
-                if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.notify.add", playerName, from.getName())), "keklist.notify.blacklist");
 
             } else
@@ -412,6 +411,10 @@ public class Blacklist extends Command {
             try {
                 switch (args[0]) {
                     case "remove", "info" -> {
+                        if (!sender.hasPermission("keklist.blacklist.info")
+                                || !sender.hasPermission("keklist.blacklist.remove")) return Collections.emptyList();
+
+
                         List<String> list = new ArrayList<>();
 
                         ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM blacklist");
@@ -437,6 +440,8 @@ public class Blacklist extends Command {
                     }
 
                     case "add" -> {
+                        if (!sender.hasPermission("keklist.blacklist.add")) return Collections.emptyList();
+
                         List<String> completions = new ArrayList<>();
 
                         Bukkit.getOnlinePlayers().forEach(player -> {
@@ -466,6 +471,8 @@ public class Blacklist extends Command {
                     }
 
                     case "motd" -> {
+                        if (!sender.hasPermission("keklist.blacklist.motd")) return Collections.emptyList();
+
                         List<String> completions = new ArrayList<>();
                         Bukkit.getOnlinePlayers().forEach(player -> {
                             ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", player.getAddress().getAddress().getHostAddress());

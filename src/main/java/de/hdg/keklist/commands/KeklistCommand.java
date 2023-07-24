@@ -13,7 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 public class KeklistCommand extends Command {
@@ -21,7 +20,6 @@ public class KeklistCommand extends Command {
     public KeklistCommand() {
         super("keklist");
         setAliases(List.of("kek"));
-        setPermission("keklist.manage");
         setUsage(Keklist.getTranslations().get("keklist.usage"));
         setDescription(Keklist.getTranslations().get("keklist.description"));
     }
@@ -200,7 +198,7 @@ public class KeklistCommand extends Command {
                     throw new RuntimeException(e);
                 }
             } else if (args[0].equalsIgnoreCase("gui")) {
-                if (!sender.hasPermission("keklist.gui.open")) {
+                if (!sender.hasPermission("keklist.manage.gui")) {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                     return false;
                 }
@@ -209,13 +207,7 @@ public class KeklistCommand extends Command {
             } else
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
         } else
-            sender.sendMessage(Keklist.getInstance().
-
-                    getMiniMessage().
-
-                    deserialize(Keklist.getTranslations().
-
-                            get("keklist.usage.command")));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
 
         return false;
     }
@@ -225,24 +217,39 @@ public class KeklistCommand extends Command {
         List<String> suggestions = new ArrayList<>();
 
         if (args.length < 2) {
-            suggestions.addAll(List.of("reload", "gui", "whitelist"));
+            if (sender.hasPermission("keklist.manage.gui"))
+                suggestions.add("gui");
+
+            if (sender.hasPermission("keklist.manage.reload"))
+                suggestions.add("reload");
+
 
             if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
-                suggestions.add("blacklist");
+                if (sender.hasPermission("keklist.manage.blacklist"))
+                    suggestions.add("blacklist");
+
+                if (sender.hasPermission("keklist.manage.whitelist"))
+                    suggestions.add("whitelist");
             }
 
         } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("whitelist")) {
+            if (args[0].equalsIgnoreCase("whitelist") && sender.hasPermission("keklist.manage.whitelist")) {
                 if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
                     suggestions.addAll(List.of("enable", "disable"));
                 }
 
                 suggestions.add("import");
-            } else if (args[0].equalsIgnoreCase("blacklist") && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
+            } else if (args[0].equalsIgnoreCase("blacklist")
+                    && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")
+                    && sender.hasPermission("keklist.manage.blacklist")) {
+
                 suggestions.addAll(List.of("enable", "disable", "allow-blacklisted", "disallow-blacklisted"));
             }
         } else if (args.length == 3) {
-            if (args[0].equalsIgnoreCase("whitelist") && args[1].equalsIgnoreCase("import")) {
+            if (args[0].equalsIgnoreCase("whitelist")
+                    && args[1].equalsIgnoreCase("import")
+                    && sender.hasPermission("keklist.manage.whitelist")) {
+
                 suggestions.add("vanilla");
             }
         }

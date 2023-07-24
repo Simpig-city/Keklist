@@ -34,7 +34,6 @@ public class Whitelist extends Command {
 
     public Whitelist() {
         super("whitelist");
-        setPermission("keklist.whitelist");
         setDescription(Keklist.getTranslations().get("whitelist.description"));
         setAliases(List.of("wl"));
         setUsage(Keklist.getTranslations().get("whitelist.usage"));
@@ -79,7 +78,7 @@ public class Whitelist extends Command {
 
             switch (args[0]) {
                 case "add" -> {
-                    if(!sender.hasPermission("keklist.whitelist.add")) {
+                    if (!sender.hasPermission("keklist.whitelist.add")) {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                         return false;
                     }
@@ -98,7 +97,7 @@ public class Whitelist extends Command {
                             if (Keklist.getWebhookManager() != null)
                                 Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, args[1], senderName, System.currentTimeMillis());
 
-                            if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                 Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.add", args[1], senderName)), "keklist.notify.whitelist");
                         } else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-whitelisted", args[1])));
@@ -111,7 +110,7 @@ public class Whitelist extends Command {
                 }
 
                 case "remove" -> {
-                    if(!sender.hasPermission("keklist.whitelist.remove")) {
+                    if (!sender.hasPermission("keklist.whitelist.remove")) {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                         return false;
                     }
@@ -126,7 +125,7 @@ public class Whitelist extends Command {
                             if (Keklist.getWebhookManager() != null)
                                 Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
 
-                            if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                 Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1], senderName)), "keklist.notify.whitelist");
 
                         } else {
@@ -138,7 +137,7 @@ public class Whitelist extends Command {
                                 if (Keklist.getWebhookManager() != null)
                                     Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
 
-                                if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                                if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1] + "(Old Name)", senderName)), "keklist.notify.whitelist");
 
                             } else {
@@ -155,7 +154,7 @@ public class Whitelist extends Command {
                             if (Keklist.getWebhookManager() != null)
                                 Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
 
-                            if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                 Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1], senderName)), "keklist.notify.whitelist");
 
                         } else {
@@ -167,7 +166,7 @@ public class Whitelist extends Command {
                 }
 
                 case "info" -> {
-                    if(!sender.hasPermission("keklist.whitelist.info")) {
+                    if (!sender.hasPermission("keklist.whitelist.info")) {
                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                         return false;
                     }
@@ -184,11 +183,11 @@ public class Whitelist extends Command {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
 
                         if (rs.next()) {
-                           sendInfo(rs, sender, args[1]);
+                            sendInfo(rs, sender, args[1]);
                         } else {
                             ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
                             if (rsUserFix.next()) {
-                               sendInfo(rsUserFix, sender, args[1] + " (Old Name)");
+                                sendInfo(rsUserFix, sender, args[1] + " (Old Name)");
                             } else
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
                         }
@@ -244,7 +243,7 @@ public class Whitelist extends Command {
                 if (Keklist.getWebhookManager() != null)
                     Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, playerName, from.getName(), System.currentTimeMillis());
 
-                if(Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.add", playerName, from.getName())), "keklist.notify.whitelist");
 
             } else
@@ -320,6 +319,9 @@ public class Whitelist extends Command {
             try {
                 switch (args[0]) {
                     case "remove", "info" -> {
+                        if (!sender.hasPermission("keklist.whitelist.remove")
+                                || !sender.hasPermission("keklist.whitelist.info")) return Collections.emptyList();
+
                         List<String> list = new ArrayList<>();
 
                         ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM whitelist");
@@ -336,6 +338,8 @@ public class Whitelist extends Command {
                     }
 
                     case "add" -> {
+                        if (!sender.hasPermission("keklist.whitelist.add")) return Collections.emptyList();
+
                         List<String> completions = new ArrayList<>();
 
                         Bukkit.getOnlinePlayers().forEach(player -> {
