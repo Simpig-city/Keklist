@@ -1,23 +1,22 @@
 name: Keklist
 version: '1.0.0'
 main: de.hdg.keklist.Keklist
-api-version: '1.19'
+api-version: '1.20'
 description: Custom made white and blacklist with many features!
-authors: ["hdgamer1404Jonas", "SageSphinx63920"]
+authors: [ "hdgamer1404Jonas", "SageSphinx63920" ]
 website: https://keklist.pages.dev
 loader: de.hdg.keklist.KeklistLoader
 dependencies:
-  - name: floodgate
-    required: false
-    bootstrap: false
+  server:
+    floodgate:
+      load: BEFORE
+      required: false
 
-  - name: Plan
-    required: false
-    bootstrap: false
+    Plan:
+      required: false
 
-  - name: PlaceholderAPI
-    required: false
-    bootstrap: false
+    PlaceholderAPI:
+      required: false
 
 load-after:
   - name: Plan
