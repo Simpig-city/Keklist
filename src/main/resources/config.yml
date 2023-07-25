@@ -79,3 +79,10 @@ messages:
 # Enable bstats
 # This is used to collect anonymous data about the plugin, which helps me to improve the plugin
 bstats: true
+
+# Debug mode
+# This will enable debug messages in the console
+debug: false
+
+# Don't touch it!
+config_version: 1

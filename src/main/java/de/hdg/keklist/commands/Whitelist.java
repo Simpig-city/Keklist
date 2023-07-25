@@ -357,7 +357,7 @@ public class Whitelist extends Command {
                             try {
                                 if (!rs.next())
                                     completions.add(player.getAddress().getAddress().getHostAddress() + "(" + player.getName() + ")");
-                                ;
+
                             } catch (SQLException e) {
                                 e.printStackTrace();
                             }

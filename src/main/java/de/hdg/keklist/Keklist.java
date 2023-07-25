@@ -22,6 +22,7 @@ import de.hdg.keklist.gui.events.blacklist.BlacklistEntryEvent;
 import de.hdg.keklist.gui.events.blacklist.BlacklistEvent;
 import de.hdg.keklist.gui.events.whitelist.WhitelistEntryEvent;
 import de.hdg.keklist.gui.events.whitelist.WhitelistEvent;
+import de.hdg.keklist.util.KeklistConfigUtil;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.extentions.PlanHook;
 import de.hdg.keklist.extentions.WebhookManager;
@@ -49,6 +50,7 @@ public final class Keklist extends JavaPlugin {
     private final int bstatsID = 18279;
     private KeklistMetrics metrics;
     private static final Random random = new Random();
+    private KeklistConfigUtil configUtil;
 
     /* Extensions */
     private @Getter
@@ -65,6 +67,7 @@ public final class Keklist extends JavaPlugin {
     private final @Getter MiniMessage miniMessage = MiniMessage.builder().tags(
                     TagResolver.builder().resolver(StandardTags.defaults()).build())
             .build();
+    private static @Getter boolean debug = false;
 
     @Override
     public void onLoad() {
@@ -80,15 +83,24 @@ public final class Keklist extends JavaPlugin {
             return;
         }
 
+        //Init utilities after paper checkÏ
+        configUtil = new KeklistConfigUtil(this);
+
+        //Check for bedrock support
         if (Bukkit.getPluginManager().getPlugin("floodgate") != null)
             floodgateApi = FloodgateApi.getInstance();
-
 
         //Plugin channel for limbo connections
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:data");
 
         //save config for custom messages
         this.saveDefaultConfig();
+
+        //update config
+        configUtil.updateConfig();
+
+        //set debug mode
+        debug = getConfig().getBoolean("debug");
 
         //SQL
         if (getConfig().getBoolean("mariadb.enabled")) {
