@@ -16,9 +16,9 @@ public class KeklistLoader implements PluginLoader {
         resolver.addRepository(new RemoteRepository.Builder("maven", "default", "https://repo.maven.apache.org/maven2").build());
 
         resolver.addDependency(new Dependency(new DefaultArtifact("com.squareup.okhttp3:okhttp:5.0.0-alpha.11"), "compile"));
-        resolver.addDependency(new Dependency(new DefaultArtifact("org.xerial:sqlite-jdbc:3.42.0.0"), "compile"));
-        resolver.addDependency(new Dependency(new DefaultArtifact("org.mariadb.jdbc:mariadb-java-client:3.1.2"), "compile"));
-        resolver.addDependency(new Dependency(new DefaultArtifact("club.minnced:discord-webhooks:0.8.2"), "compile"));
+        resolver.addDependency(new Dependency(new DefaultArtifact("org.xerial:sqlite-jdbc:3.42.0.1"), "compile"));
+        resolver.addDependency(new Dependency(new DefaultArtifact("org.mariadb.jdbc:mariadb-java-client:3.2.0"), "compile"));
+        resolver.addDependency(new Dependency(new DefaultArtifact("club.minnced:discord-webhooks:0.8.4"), "compile"));
 
         pluginClasspathBuilder.addLibrary(resolver);
     }

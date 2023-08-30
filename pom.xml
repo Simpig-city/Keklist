@@ -43,13 +43,13 @@
     </scm>
 
     <distributionManagement>
-        <repository>
+        <!--repository>
             <id>github</id>
             <name>GitHub Simpcity Apache Maven Packages</name>
             <url>https://maven.pkg.github.com/Simpig-city/Keklist</url>
-        </repository>
+        </repository-->
 
-        <!--repository>
+        <repository>
             <id>keklist-releases</id>
             <name>Keklist release versions</name>
             <url>https://repo.sageee.xyz/releases</url>
@@ -58,7 +58,7 @@
             <id>keklist-snapshots</id>
             <name>Keklist snapshot versions</name>
             <url>https://repo.sageee.xyz/snapshots</url>
-        </snapshotRepository-->
+        </snapshotRepository>
     </distributionManagement>
     <issueManagement>
         <system>Github</system>
@@ -79,6 +79,14 @@
                     <release>${java.version}</release>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.28</version>
+                        </path>
+                    </annotationProcessorPaths>
                 </configuration>
             </plugin>
             <plugin>

@@ -25,14 +25,14 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Whitelist extends Command {
+public class WhitelistCommand extends Command {
 
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().create();
     private static final TypeToken<Map<String, String>> token = new TypeToken<>() {
     };
 
-    public Whitelist() {
+    public WhitelistCommand() {
         super("whitelist");
         setDescription(Keklist.getTranslations().get("whitelist.description"));
         setAliases(List.of("wl"));
@@ -85,7 +85,7 @@ public class Whitelist extends Command {
 
                     if (type.equals(WhiteListType.JAVA)) {
                         Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
-                        client.newCall(request).enqueue(new Whitelist.UserWhitelistAddCallback(sender));
+                        client.newCall(request).enqueue(new WhitelistCommand.UserWhitelistAddCallback(sender));
                     } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
@@ -171,7 +171,7 @@ public class Whitelist extends Command {
                         return false;
                     }
 
-                    if (type.equals(Whitelist.WhiteListType.IPv4) || type.equals(Whitelist.WhiteListType.IPv6)) {
+                    if (type.equals(WhitelistCommand.WhiteListType.IPv4) || type.equals(WhitelistCommand.WhiteListType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
                         if (rs.next()) {
@@ -179,7 +179,7 @@ public class Whitelist extends Command {
                         } else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.not-blacklisted", args[1])));
 
-                    } else if (type.equals(Whitelist.WhiteListType.JAVA) || type.equals(Whitelist.WhiteListType.BEDROCK)) {
+                    } else if (type.equals(WhitelistCommand.WhiteListType.JAVA) || type.equals(WhitelistCommand.WhiteListType.BEDROCK)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
 
                         if (rs.next()) {

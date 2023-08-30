@@ -25,14 +25,14 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-public class Blacklist extends Command {
+public class BlacklistCommand extends Command {
 
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().create();
     private static final TypeToken<Map<String, String>> token = new TypeToken<>() {
     };
 
-    public Blacklist() {
+    public BlacklistCommand() {
         super("blacklist");
         setAliases(List.of("bl"));
         setUsage(Keklist.getTranslations().get("blacklist.usage"));
