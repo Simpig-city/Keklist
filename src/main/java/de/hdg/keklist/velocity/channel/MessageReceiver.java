@@ -47,8 +47,9 @@ public class MessageReceiver {
                 String fromServer = data.getAsJsonObject().get("from").getAsString();
 
                 KeklistVelocity.getInstance().getServer().getPlayer(uuid).ifPresentOrElse(player -> {
-                    if (KeklistVelocity.getInstance().getConfig().getOption(false, "limbo.enabled")) {
-                        Limbo limbo = KeklistVelocity.getInstance().getLimbo();
+                    if (KeklistVelocity.getInstance().getConfig().getOption(false, "limbo.enabled")
+                            && KeklistVelocity.getInstance().getLimboUtil().getLimbo() != null) {
+                        Limbo limbo = KeklistVelocity.getInstance().getLimboUtil().getLimbo();
 
                         limbo.spawnPlayer(player, new KeklistSessionHandler());
 
