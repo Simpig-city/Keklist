@@ -103,7 +103,7 @@ public class Whitelist extends Command {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-whitelisted", args[1])));
 
                     } else if (type.equals(WhiteListType.BEDROCK)) {
-                        whitelistUser(sender, bedrockUUID, senderName);
+                        whitelistUser(sender, bedrockUUID, args[1]);
                     }
 
                     return true;
