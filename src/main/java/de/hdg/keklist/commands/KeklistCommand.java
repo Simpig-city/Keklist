@@ -135,7 +135,7 @@ public class KeklistCommand extends Command {
                             if (args.length == 3) {
                                 if (args[2].equalsIgnoreCase("vanilla")) {
                                     for (OfflinePlayer player : Bukkit.getWhitelistedPlayers()) {
-                                        Bukkit.dispatchCommand(sender, "keklist whitelist add " + player.getName());
+                                        Bukkit.dispatchCommand(sender, "keklist whitelist add: " + player.getName());
                                     }
 
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.imported")));

@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -50,12 +51,13 @@ public class BlacklistEvent implements Listener {
                     player.getWorld().setBlockData(location, Material.DARK_OAK_SIGN.createBlockData());
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
+                    sign.setWaxed(false);
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "blacklistMode"), PersistentDataType.STRING, "add");
-                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.sign.line")));
-                    sign.line(1, Component.empty());
+                    sign.getSide(Side.FRONT).line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.sign.line")));
+                    sign.getSide(Side.FRONT).line(1, Component.empty());
                     sign.update();
 
-                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign), 5);
+                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
                 }
                 case DARK_PRISMARINE -> {
                     Location location = player.getLocation();
@@ -65,12 +67,13 @@ public class BlacklistEvent implements Listener {
                     player.getWorld().setBlockData(location, Material.DARK_OAK_SIGN.createBlockData());
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
+                    sign.setWaxed(false);
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "blacklistMode"), PersistentDataType.STRING, "remove");
-                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.sign.line")));
-                    sign.line(1, Component.empty());
+                    sign.getSide(Side.FRONT).line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.sign.line")));
+                    sign.getSide(Side.FRONT).line(1, Component.empty());
                     sign.update();
 
-                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign), 5);
+                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
 
                 }
                 case PLAYER_HEAD -> player.openInventory(getPage(0, 0, false, false, false));

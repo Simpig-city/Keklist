@@ -83,6 +83,12 @@ public final class Keklist extends JavaPlugin {
             return;
         }
 
+        if(Bukkit.getServer().getMinecraftVersion().equals("1.20")) {
+            getLogger().severe(translations.get("paper.version.unsupported"));
+            Bukkit.getPluginManager().disablePlugin(this);
+            return;
+        }
+
         //Init utilities after paper checkÏ
         configUtil = new KeklistConfigUtil(this);
 

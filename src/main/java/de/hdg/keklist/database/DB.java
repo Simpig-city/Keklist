@@ -64,6 +64,7 @@ public class DB {
             count.incrementAndGet();
         } catch (SQLException | java.io.IOException ex) {
             ex.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(plugin);
         } catch (ClassNotFoundException e) {
             plugin.getLogger().severe(Keklist.getTranslations().get("database.driver-missing"));
             Bukkit.getPluginManager().disablePlugin(plugin);
@@ -114,7 +115,7 @@ public class DB {
     public ResultSet onQuery(@NotNull @Language("SQL") final String query, Object... preparedArgs) {
         if (isConnected()) {
             try {
-                FutureTask<ResultSet> task = new FutureTask<>(new Callable<ResultSet>() {
+                FutureTask<ResultSet> task = new FutureTask<>(new Callable<>() {
                     PreparedStatement ps;
 
                     public ResultSet call() throws Exception {

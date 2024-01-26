@@ -1,6 +1,7 @@
 {
   "limbo.error": "No Player online to limbo player! Waiting for next event...",
   "paper.required": "This plugin requires a modern version of Paper to run!",
+  "paper.version.unsupported": "1.20 is not supported! Please use a version newer than 1.20 and come on... 1.20 is not even supported by Paper!",
   "invalid-syntax": "<red>Invalid syntax!",
   "config-reloaded": "<green>Config reloaded!",
   "bstats.done": "Successfully enabled bStats!",

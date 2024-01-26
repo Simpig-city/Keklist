@@ -10,6 +10,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -50,12 +51,13 @@ public class WhitelistEvent implements Listener {
                     player.getWorld().setBlockData(location, Material.SPRUCE_SIGN.createBlockData());
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
+                    sign.setWaxed(false);
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING, "add");
-                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.line")));
-                    sign.line(1, Component.empty());
+                    sign.getSide(Side.FRONT).line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.line")));
+                    sign.getSide(Side.FRONT).line(1, Component.empty());
                     sign.update();
 
-                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign), 5);
+                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
                 }
                 case PRISMARINE_SHARD -> {
                     Location location = player.getLocation();
@@ -65,12 +67,13 @@ public class WhitelistEvent implements Listener {
                     player.getWorld().setBlockData(location, Material.SPRUCE_SIGN.createBlockData());
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
+                    sign.setWaxed(false);
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING, "remove");
-                    sign.line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.line")));
-                    sign.line(1, Component.empty());
+                    sign.getSide(Side.FRONT).line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.line")));
+                    sign.getSide(Side.FRONT).line(1, Component.empty());
                     sign.update();
 
-                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign), 5);
+                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
                 }
                 case PLAYER_HEAD -> player.openInventory(getPage(0, 0, false, false));
                 case ARROW -> GuiManager.openMainGUI(player);
@@ -242,7 +245,7 @@ public class WhitelistEvent implements Listener {
             // Next Page
             if (onlyIP) {
                 ResultSet ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
-                List<ItemStack> skippedIPs = new ArrayList<>();
+                List<ItemStack> skippedIPs;
 
                 while (ips.next()) {
                     ItemStack ip = new ItemStack(Material.BOOK);
@@ -281,18 +284,18 @@ public class WhitelistEvent implements Listener {
                 }
 
 
-                // Last page must be only IPs
+                // The Last page must be only IPs
                 if (skipIndex > 18) {
                     previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER, 1); // Workaround for missing boolean
                     previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, skipIndex - 18); // We must start at skipIndex - 18 for the page before
                 } else
                     previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, -1); // We must start at 0 for the page before
 
-                // NOTE : pageIndex*18 = player heads to skip if not onlyIP mode is active
+                // NOTE: pageIndex*18 = player heads to skip if not onlyIP mode is active
             } else {
                 ResultSet players = Keklist.getDatabase().onQuery("SELECT * FROM whitelist");
                 ResultSet isIPThere = Keklist.getDatabase().onQuery("SELECT ip FROM whitelistIp LIMIT 1");
-                List<ItemStack> skippedHeads = new ArrayList<>();
+                List<ItemStack> skippedHeads;
 
                 while (players.next()) {
                     ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
@@ -372,14 +375,14 @@ public class WhitelistEvent implements Listener {
                     }
                 }
 
-                // Last page must be only Players
+                // The Last page must be only Players
                 if (skipIndex > 18 && onlyPlayer) {
                     previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER, 1); // Workaround for missing boolean
                     previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, skipIndex - 18); // We must start at skipIndex - 18 for the page before
                 } else
                     previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, -1); // We must start at 0 for the page before
 
-                // NOTE : pageIndex shows if it's the first page
+                // NOTE: pageIndex shows if it's the first page
             }
 
 
