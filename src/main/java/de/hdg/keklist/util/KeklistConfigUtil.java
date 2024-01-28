@@ -26,6 +26,7 @@ public class KeklistConfigUtil {
 
             YamlConfiguration newConfig = new YamlConfiguration();
             InputStreamReader reader = new InputStreamReader(this.getClass().getResourceAsStream("/config.yml"));
+
             newConfig.load(reader);
             FileConfigurationOptions newOptions = newConfig.options();
 

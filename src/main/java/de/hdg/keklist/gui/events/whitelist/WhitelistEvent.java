@@ -42,6 +42,9 @@ public class WhitelistEvent implements Listener {
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Whitelist"))) {
             event.setCancelled(true);
 
+            if(!player.hasPermission("keklist.gui.whitelist"))
+                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
+
             switch (event.getCurrentItem().getType()) {
                 case SPRUCE_SIGN -> {
                     Location location = player.getLocation();

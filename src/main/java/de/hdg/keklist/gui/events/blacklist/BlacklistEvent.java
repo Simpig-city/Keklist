@@ -16,6 +16,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -41,6 +42,9 @@ public class BlacklistEvent implements Listener {
 
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Blacklist"))) {
             event.setCancelled(true);
+
+            if(!player.hasPermission("keklist.gui.blacklist"))
+                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
             switch (event.getCurrentItem().getType()) {
                 case DARK_OAK_SIGN -> {

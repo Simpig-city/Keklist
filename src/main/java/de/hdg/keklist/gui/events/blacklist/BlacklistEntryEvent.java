@@ -10,6 +10,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -32,6 +33,9 @@ public class BlacklistEntryEvent implements Listener {
 
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
+
+            if(!player.hasPermission("keklist.gui.blacklist"))
+                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
             PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
             LanguageUtil translations = Keklist.getTranslations();
@@ -222,6 +226,9 @@ public class BlacklistEntryEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
+            if(!player.hasPermission("keklist.gui.blacklist"))
+                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
+
             if (event.getCurrentItem().getType() == Material.ARROW) {
                 int pageIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
                 int skipIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER);
@@ -256,6 +263,9 @@ public class BlacklistEntryEvent implements Listener {
 
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
+
+            if(!player.hasPermission("keklist.gui.blacklist"))
+                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
             LanguageUtil translations = Keklist.getTranslations();
 
