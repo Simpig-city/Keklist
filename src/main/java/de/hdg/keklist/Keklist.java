@@ -26,6 +26,7 @@ import de.hdg.keklist.util.KeklistConfigUtil;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.extentions.PlanHook;
 import de.hdg.keklist.extentions.WebhookManager;
+import de.sage.util.UpdateChecker;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -40,9 +41,11 @@ import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public final class Keklist extends JavaPlugin {
 
@@ -51,6 +54,8 @@ public final class Keklist extends JavaPlugin {
     private KeklistMetrics metrics;
     private static final Random random = new Random();
     private KeklistConfigUtil configUtil;
+    private UpdateChecker updateChecker;
+    private final ScheduledThreadPoolExecutor updateExecutor = new ScheduledThreadPoolExecutor(1);
 
     /* Extensions */
     private @Getter
@@ -107,6 +112,8 @@ public final class Keklist extends JavaPlugin {
 
         //set debug mode
         debug = getConfig().getBoolean("debug");
+
+        updateChecker = new UpdateChecker("simpig-city", "Keklist", getPluginMeta().getVersion(), true, getLogger());
 
         //SQL
         if (getConfig().getBoolean("mariadb.enabled")) {
@@ -171,6 +178,20 @@ public final class Keklist extends JavaPlugin {
             placeholders = new PlaceholderAPIExtension(this);
             placeholders.register();
         }
+
+        // Update checker
+        // TODO : Uncomment this when the plugin is *publicly* released
+        /*if (getConfig().getBoolean("update.check"))
+            updateExecutor.scheduleAtFixedRate(() -> {
+                try {
+                    updateChecker.check();
+                } catch (IOException e) {
+                    getLogger().severe("There was an error while checking for updates! Please report this to the developer!");
+                    getLogger().severe(e.getMessage());
+                }
+            }, 0, getConfig().getInt("update.interval"), java.util.concurrent.TimeUnit.HOURS);*/
+
+        updateChecker.setUpdateMessage(translations.get("update.message", getPluginMeta().getVersion()));
 
     }
 

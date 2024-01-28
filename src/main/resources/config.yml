@@ -5,6 +5,10 @@ enable-manage-command: false # Enable the /keklist command to enable/disable the
 date-format: "dd-MM-yyyy HH:mm" # Date format for the blacklist/whitelist GUI
 chat-notify: false # Notify the player if someone joins the server and is blacklisted/whitelisted
 
+update:
+  check: true # Check for updates
+  interval: 12 # Check for updates every x hours
+
 # Settings for the blacklist feature
 blacklist:
   enabled: true # Enable the blacklist feature

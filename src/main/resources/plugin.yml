@@ -1,7 +1,7 @@
 name: Keklist
 version: 1.0.0
 main: de.hdg.keklist.Keklist
-api-version: 1.19
+api-version: 1.20
 description: Block all the Keks and accept the nice people
 authors: ["hdgamer1404Jonas", "SageSphinx63920"]
 website: https://swc.sasp.gq

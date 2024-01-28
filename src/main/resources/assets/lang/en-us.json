@@ -8,6 +8,7 @@
   "placeholder.registered": "Successfully registered PlaceholderAPI expansion!",
   "no-permission": "<red>You don't have permission to do that!",
   "notify.kick": "<orange>%s <white>was kicked during the login process!",
+  "update.message": "There is a new version of Keklist available! You're using version %s and the newest version is @latestVersion! Please update to get the newest features and bugfixes!",
 
   "api.database-not-connected": "Database is not connected!",
   "api.proxy-send-fail": "Could not send response to proxy!",

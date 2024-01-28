@@ -177,6 +177,11 @@
             <id>placeholderapi</id>
             <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
         </repository>
+        <!-- Update Checker -->
+        <repository>
+            <id>sage-repository-snapshots</id>
+            <url>https://repo.sageee.xyz/snapshots</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -269,6 +274,12 @@
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
             <version>3.0.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>de.sage.util</groupId>
+            <artifactId>updatechecker</artifactId>
+            <version>1.0.2-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
