@@ -89,6 +89,8 @@
   "whitelist.notify.remove": "<gold>%s <blue>was removed by <white>%s <blue>from the whitelist!",
   "whitelist.notify.add": "<gold>%s <aqua>was added by <white>%s <aqua>to the whitelist!",
   "whitelist.imported": "<blue>Successfully imported whitelist entries!",
+  "whitelist.invalid-domain": "<red>Invalid domain! Please use a valid domain to add to the whitelist!",
+  "whitelist.domain-added": "<green>Successfully added <white>%s <green>to the whitelist! Current IP: <white>%s",
 
   "gui.whitelist.title": "<gold><b>Whitelist",
   "gui.whitelist.description": "<gray><i>Menu for the whitelist",

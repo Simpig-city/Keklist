@@ -20,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.sql.ResultSet;
 
 public class PreLoginKickEvent implements Listener {
@@ -105,6 +106,19 @@ public class PreLoginKickEvent implements Listener {
                     return;
 
                 if (!rsIp.next()) {
+                    ResultSet rsDDNS = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain");
+
+                    while (rsDDNS.next()) {
+                        InetAddress address = InetAddress.getByName( rsDDNS.getString("domain"));
+
+                       if(address.getHostAddress().equals(event.getAddress().getHostAddress()) ||
+                               address.getHostName().equals(event.getAddress().getHostName()) ||
+                               address.getHostAddress().equals(event.getAddress().getHostName()) ||
+                               address.getHostName().equals(event.getAddress().getHostAddress())) {
+                            return;
+                        }
+                    }
+
                     if (Keklist.getWebhookManager() != null)
                         Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getRawAddress().getHostAddress(), null, System.currentTimeMillis());
 
