@@ -36,7 +36,7 @@ jobs:
         REPO_PASSWORD: ${{ secrets.REPO_PASSWORD }}
     
     - name: Delete old Packages
-      uses: actions/delete-package-versions@v4
+      uses: actions/delete-package-versions@v5
       with:
         package-name: "de.sage.minecraft.keklist"
         package-type: maven
