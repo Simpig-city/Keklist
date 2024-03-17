@@ -64,6 +64,9 @@ public class PreLoginKickEvent implements Listener {
 
                         if (Keklist.getWebhookManager() != null)
                             Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getRawAddress().getHostName(), rsIp.getString("byPlayer"), null, System.currentTimeMillis());
+
+                        event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)));
+                        return;
                     }
 
                     if (isUserBanned) {
@@ -84,7 +87,7 @@ public class PreLoginKickEvent implements Listener {
                         }
                     }
 
-                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)));
+                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)));
                     return;
                 }
             } catch (Exception e) {
@@ -109,12 +112,12 @@ public class PreLoginKickEvent implements Listener {
                     ResultSet rsDDNS = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain");
 
                     while (rsDDNS.next()) {
-                        InetAddress address = InetAddress.getByName( rsDDNS.getString("domain"));
+                        InetAddress address = InetAddress.getByName(rsDDNS.getString("domain"));
 
-                       if(address.getHostAddress().equals(event.getAddress().getHostAddress()) ||
-                               address.getHostName().equals(event.getAddress().getHostName()) ||
-                               address.getHostAddress().equals(event.getAddress().getHostName()) ||
-                               address.getHostName().equals(event.getAddress().getHostAddress())) {
+                        if (address.getHostAddress().equals(event.getAddress().getHostAddress()) ||
+                                address.getHostName().equals(event.getAddress().getHostName()) ||
+                                address.getHostAddress().equals(event.getAddress().getHostName()) ||
+                                address.getHostName().equals(event.getAddress().getHostAddress())) {
                             return;
                         }
                     }
@@ -182,20 +185,13 @@ public class PreLoginKickEvent implements Listener {
             ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress());
 
             try {
-                if (!rsUser.next()) {
-                    if (Keklist.getWebhookManager() != null)
-                        Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getPlayer().getName(), null, System.currentTimeMillis());
+                if (rsIp.next()) return;
+                if (rsUser.next()) return;
 
-                    event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.WHITELISTED)));
-                } else
-                    return;
+                if (Keklist.getWebhookManager() != null)
+                    Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getPlayer().getName() + "/" + event.getAddress().getHostAddress(), null, System.currentTimeMillis());
 
-                if (!rsIp.next()) {
-                    if (Keklist.getWebhookManager() != null)
-                        Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getAddress().getHostAddress(), null, System.currentTimeMillis());
-
-                    event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.WHITELISTED)));
-                }
+                event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.WHITELISTED)));
             } catch (Exception e) {
                 e.printStackTrace();
             }

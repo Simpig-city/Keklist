@@ -57,11 +57,13 @@ public class WebhookManager {
         builder.setUsername(keklist.getConfig().getString("discord.username"));
 
         StringBuilder rolesBuilder = new StringBuilder();
-        for(String role : keklist.getConfig().getStringList("discord.ping-roles")){
-            rolesBuilder.append("<@&").append(role).append("> ");
+        if(keklist.getConfig().getStringList("discord.ping-roles").isEmpty()) {
+            for(String role : keklist.getConfig().getStringList("discord.ping-roles")){
+                rolesBuilder.append("<@&").append(role).append("> ");
+            }
         }
 
-        builder.setContent(rolesBuilder.toString());
+        builder.setContent(rolesBuilder.toString().trim());
         client.send(builder.build());
     }
 
