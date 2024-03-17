@@ -37,8 +37,10 @@ public class WhitelistEntryEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            if(!player.hasPermission("keklist.gui.whitelist"))
-                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
+            if (!player.hasPermission("keklist.whitelist.info")) {
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                return;
+            }
 
             PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
             LanguageUtil translations = Keklist.getTranslations();
@@ -167,8 +169,10 @@ public class WhitelistEntryEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            if(!player.hasPermission("keklist.gui.whitelist"))
-                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
+            if (!player.hasPermission("keklist.whitelist.info")) {
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                return;
+            }
 
             if (event.getCurrentItem().getType() == Material.ARROW) {
                 int pageIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
@@ -199,8 +203,10 @@ public class WhitelistEntryEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            if(!player.hasPermission("keklist.gui.whitelist"))
-                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
+            if (!player.hasPermission("keklist.whitelist.remove")) {
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                return;
+            }
 
             LanguageUtil translations = Keklist.getTranslations();
 

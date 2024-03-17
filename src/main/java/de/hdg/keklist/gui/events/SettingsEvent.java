@@ -47,7 +47,7 @@ public class SettingsEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            if(!player.hasPermission("keklist.gui.settings.whitelist"))
+            if(!player.hasPermission("keklist.manage.whitelist"))
                 player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
             switch (event.getCurrentItem().getType()) {
@@ -159,7 +159,7 @@ public class SettingsEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            if(!player.hasPermission("keklist.gui.settings.blacklist"))
+            if(!player.hasPermission("keklist.gui.use"))
                 player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
             switch (event.getCurrentItem().getType()) {

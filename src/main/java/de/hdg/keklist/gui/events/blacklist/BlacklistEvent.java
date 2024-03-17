@@ -43,8 +43,10 @@ public class BlacklistEvent implements Listener {
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Blacklist"))) {
             event.setCancelled(true);
 
-            if(!player.hasPermission("keklist.gui.blacklist"))
-                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
+            if (!player.hasPermission("keklist.gui.blacklist")) {
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                return;
+            }
 
             switch (event.getCurrentItem().getType()) {
                 case DARK_OAK_SIGN -> {

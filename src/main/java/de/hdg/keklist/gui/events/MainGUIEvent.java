@@ -21,7 +21,7 @@ public class MainGUIEvent implements Listener {
         if(event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Keklist"))) {
             event.setCancelled(true);
 
-            if(!player.hasPermission("keklist.gui.general"))
+            if(!player.hasPermission("keklist.gui.use"))
                 player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
             ItemMeta meta = event.getCurrentItem().getItemMeta();

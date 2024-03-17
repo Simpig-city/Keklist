@@ -212,7 +212,7 @@ public class KeklistCommand extends Command {
                     throw new RuntimeException(e);
                 }
             } else if (args[0].equalsIgnoreCase("gui")) {
-                if (!sender.hasPermission("keklist.manage.gui")) {
+                if (!sender.hasPermission("keklist.gui.use")) {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                     return false;
                 }

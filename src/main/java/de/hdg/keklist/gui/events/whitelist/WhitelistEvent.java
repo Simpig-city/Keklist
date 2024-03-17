@@ -42,8 +42,10 @@ public class WhitelistEvent implements Listener {
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Whitelist"))) {
             event.setCancelled(true);
 
-            if(!player.hasPermission("keklist.gui.whitelist"))
-                player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
+            if (!player.hasPermission("keklist.gui.use")) {
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                return;
+            }
 
             switch (event.getCurrentItem().getType()) {
                 case SPRUCE_SIGN -> {
