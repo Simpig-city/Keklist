@@ -4,7 +4,7 @@
 
 ![License](https://img.shields.io/badge/license-GPLv3-blue)
 [![Crowdin](https://badges.crowdin.net/keklist/localized.svg)](https://crowdin.com/project/Keklist)
-![TeamCity](https://teamcity.lptp.systems/app/rest/builds/buildType:(id:Keklist_build)/statusIcon)
+![TeamCity](https://teamcity.sageee.xyz/app/rest/builds/buildType:(id:Keklist_build)/statusIcon)
 [![Contributors](https://img.shields.io/github/contributors/simpig-city/keklist)](https://github.com/Simpig-city/Keklist/graphs/contributors)
 [![Discord](https://img.shields.io/discord/1064505564870230106?color=blue&label=discord)](https://discord.gg/Vseq6Sqcau)
 
@@ -21,20 +21,28 @@ Keklist includes many different features to make your whitelist experience as go
 - Fully customizable messages
   - Including minimessage support
 - Discord webhook notifications
-- PlaceholderAPI support
+- Plan hook
 - ~~MySQL~~ MariaDB support for syncing your whitelist across multiple servers
 - **Ingame GUI**
 - Velocity plugin
   - Adds limbo support
   - API for plugin developers
+ <br>
+
+ Keklist also hooks into the following plugins and provides informations and add featurs:
+ - Luckperms contexts
+ - PlaceholderAPI
+ - Plan player analytics
+
+*Informations about implementations of these can be found in the wiki*
 
 ## Installation & Download
 You can download the latest version of Keklist on [github releases](https://github.com/Simpig-city/Keklist/releases/latest) or on [modrinth](https://modrinth.com/plugin/keklist). 
 All versions including beta releases can be found [here](https://github.com/Simpig-city/Keklist/releases/). Alpha builds are soon available for download, but this is still WiP. 
 <br> <br>
-To install Keklist you just need to drop the jar file into your plugins folder and restart your server. Keklist will automatically create a config file. You can find the config file in the `plugins/Keklist` folder. **Keklist requires Paper 1.20.1+ (build: 94+) or forks i.g. Purpur**. More about the config file and other features can be found [here](https://github.com/simpig-city/Keklist/wiki/config). 
+To install Keklist you just need to drop the jar file into your plugins folder and restart your server. Keklist will automatically create a config file. You can find the config file in the `plugins/Keklist` folder. **Keklist requires Paper 1.20.1+ (build: 94+) or forks e.g. Purpur**. More about the config file and other features can be found [here](https://github.com/simpig-city/Keklist/wiki/config). 
 <br> <br>
-Keklist officially supports the following server software: Paper, Pufferfish, Purpur
+Keklist officially supports the following server software: Paper, Purpur
 
 ## Wiki
 If you have any problems or need documentation about the plugin, you can just contact us
@@ -55,6 +63,12 @@ Our maven/gradle dependency:
 
 Maven
 ```xml
+<repository>
+  <id>keklist-releases</id>
+  <name>Keklist release versions</name>
+  <url>https://repo.sageee.xyz/releases</url>
+</repository>
+
 <dependency>
   <groupId>de.sage.minecraft</groupId>
   <artifactId>keklist</artifactId>
@@ -64,6 +78,12 @@ Maven
 ```
 Gradle
 ```kotlin
+repositories {
+    maven {
+        url = uri("https://repo.sageee.xyz/releases")
+    }
+}
+
 dependencies{
     compileOnly("de.sage.minecraft:keklist:version")
 }
