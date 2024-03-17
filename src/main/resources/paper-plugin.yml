@@ -22,6 +22,9 @@ dependencies:
     PlaceholderAPI:
       required: false
 
+    Luckperms:
+      required: false
+
 permissions:
   keklist.gui.use:
     description: Allows the player to use general the GUI

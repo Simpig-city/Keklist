@@ -16,6 +16,8 @@ import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
 import de.hdg.keklist.events.ServerWhitelistChangeEvent;
 import de.hdg.keklist.extentions.PlaceholderAPIExtension;
+import de.hdg.keklist.extentions.context.BlacklistedCalculator;
+import de.hdg.keklist.extentions.context.WhitelistedCalculator;
 import de.hdg.keklist.gui.events.MainGUIEvent;
 import de.hdg.keklist.gui.events.SettingsEvent;
 import de.hdg.keklist.gui.events.blacklist.BlacklistEntryEvent;
@@ -31,6 +33,9 @@ import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
+import net.luckperms.api.LuckPerms;
+import net.luckperms.api.context.ContextCalculator;
+import net.luckperms.api.context.ContextManager;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -42,9 +47,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
-import java.util.Objects;
-import java.util.Random;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public final class Keklist extends JavaPlugin {
@@ -62,6 +65,8 @@ public final class Keklist extends JavaPlugin {
     @Nullable FloodgateApi floodgateApi = null;
     private static @Getter PlanHook planHook;
     private PlaceholderAPIExtension placeholders;
+    private ContextManager contextManager;
+    private final List<ContextCalculator<Player>> registeredCalculators = new ArrayList<>();
 
     /* Global */
     private static @Getter DB database;
@@ -88,7 +93,7 @@ public final class Keklist extends JavaPlugin {
             return;
         }
 
-        if(Bukkit.getServer().getMinecraftVersion().equals("1.20")) {
+        if (Bukkit.getServer().getMinecraftVersion().equals("1.20")) {
             getLogger().severe(translations.get("paper.version.unsupported"));
             Bukkit.getPluginManager().disablePlugin(this);
             return;
@@ -100,6 +105,10 @@ public final class Keklist extends JavaPlugin {
         //Check for bedrock support
         if (Bukkit.getPluginManager().getPlugin("floodgate") != null)
             floodgateApi = FloodgateApi.getInstance();
+
+        // LuckPerms contexts
+        if (Bukkit.getPluginManager().getPlugin("LuckPerms") != null)
+            contextManager = getServer().getServicesManager().load(LuckPerms.class).getContextManager();
 
         //Plugin channel for limbo connections
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:data");
@@ -179,6 +188,12 @@ public final class Keklist extends JavaPlugin {
             placeholders.register();
         }
 
+        // LuckPerms contexts
+        if (contextManager != null) {
+            registeredCalculators.addAll(List.of(new WhitelistedCalculator(), new BlacklistedCalculator()));
+            registeredCalculators.forEach(contextManager::registerCalculator);
+        }
+
         // Update checker
         // TODO : Uncomment this when the plugin is *publicly* released
         /*if (getConfig().getBoolean("update.check"))
@@ -200,6 +215,12 @@ public final class Keklist extends JavaPlugin {
         // Shutdown metrics
         if (metrics != null)
             metrics.shutdown();
+
+        // Disable context calculators
+        if (contextManager != null) {
+            registeredCalculators.forEach(contextManager::unregisterCalculator);
+            registeredCalculators.clear();
+        }
 
         // Shutdown placeholders
         if (placeholders != null)
