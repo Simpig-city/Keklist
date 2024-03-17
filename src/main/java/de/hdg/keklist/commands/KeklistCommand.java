@@ -231,7 +231,7 @@ public class KeklistCommand extends Command {
         List<String> suggestions = new ArrayList<>();
 
         if (args.length < 2) {
-            if (sender.hasPermission("keklist.manage.gui"))
+            if (sender.hasPermission("keklist.gui.use"))
                 suggestions.add("gui");
 
             if (sender.hasPermission("keklist.manage.reload"))
@@ -247,12 +247,13 @@ public class KeklistCommand extends Command {
             }
 
         } else if (args.length == 2) {
-            if (args[0].equalsIgnoreCase("whitelist") && sender.hasPermission("keklist.manage.whitelist")) {
-                if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
-                    suggestions.addAll(List.of("enable", "disable"));
-                }
+            if (args[0].equalsIgnoreCase("whitelist")
+                    && sender.hasPermission("keklist.manage.whitelist")
+                    && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
 
+                suggestions.addAll(List.of("enable", "disable"));
                 suggestions.add("import");
+
             } else if (args[0].equalsIgnoreCase("blacklist")
                     && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")
                     && sender.hasPermission("keklist.manage.blacklist")) {
@@ -262,7 +263,8 @@ public class KeklistCommand extends Command {
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("whitelist")
                     && args[1].equalsIgnoreCase("import")
-                    && sender.hasPermission("keklist.manage.whitelist")) {
+                    && sender.hasPermission("keklist.manage.whitelist")
+                    && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
 
                 suggestions.add("vanilla");
             }

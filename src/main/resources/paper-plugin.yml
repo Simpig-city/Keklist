@@ -6,6 +6,9 @@ description: Custom made white and blacklist with many features!
 authors: [ "hdgamer1404Jonas", "SageSphinx63920" ]
 website: https://keklist.pages.dev
 loader: de.hdg.keklist.KeklistLoader
+contributors: [ "LPTP1" ]
+default-perm: false
+
 dependencies:
   server:
     floodgate:
@@ -13,11 +16,57 @@ dependencies:
       required: false
 
     Plan:
+      load: BEFORE
       required: false
 
     PlaceholderAPI:
       required: false
 
-load-after:
-  - name: Plan
-    bootstrap: false
+permissions:
+  keklist.gui.use:
+    description: Allows the player to use general the GUI
+    default: false
+
+  keklist.gui.settings:
+    description: Allows the player to use the settings GUI
+    default: false
+
+  keklist.manage.reload:
+    description: Allows the player to reload the plugin
+    default: false
+
+  keklist.manage.whitelist:
+    description: Allows the player to manage the whitelist
+    default: false
+
+  keklist.manage.blacklist:
+    description: Allows the player to manage the blacklist
+    default: false
+
+  keklist.blacklist.info:
+    description: Allows the player to see the blacklist
+    default: op
+
+  keklist.blacklist.add:
+    description: Allows the player to add entries to the blacklist
+    default: op
+
+  keklist.blacklist.remove:
+    description: Allows the player to remove entries from the blacklist
+    default: op
+
+  keklist.blacklist.motd:
+    description: Allows the player to add entries the motd blacklist
+    default: false
+
+  keklist.whitelist.info:
+    description: Allows the player to see the whitelist
+    default: op
+
+  keklist.whitelist.add:
+    description: Allows the player to add entries to the whitelist
+    default: op
+
+  keklist.whitelist.remove:
+    description: Allows the player to remove entries from the whitelist
+    default: op
