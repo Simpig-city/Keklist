@@ -47,7 +47,6 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.*;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public final class Keklist extends JavaPlugin {
 
@@ -57,7 +56,7 @@ public final class Keklist extends JavaPlugin {
     private static final Random random = new Random();
     private KeklistConfigUtil configUtil;
     private UpdateChecker updateChecker;
-    private final ScheduledThreadPoolExecutor updateExecutor = new ScheduledThreadPoolExecutor(1);
+    //private final ScheduledThreadPoolExecutor updateExecutor = new ScheduledThreadPoolExecutor(1); // TODO : Uncomment this when the plugin is *publicly* released
 
     /* Extensions */
     private @Getter
@@ -104,10 +103,6 @@ public final class Keklist extends JavaPlugin {
         //Check for bedrock support
         if (Bukkit.getPluginManager().getPlugin("floodgate") != null)
             floodgateApi = FloodgateApi.getInstance();
-
-        // LuckPerms contexts
-        if (Bukkit.getPluginManager().getPlugin("LuckPerms") != null)
-            contextManager = getServer().getServicesManager().load(LuckPerms.class).getContextManager();
 
         //Plugin channel for limbo connections
         this.getServer().getMessenger().registerOutgoingPluginChannel(this, "keklist:data");
@@ -187,8 +182,9 @@ public final class Keklist extends JavaPlugin {
             placeholders.register();
         }
 
-        // LuckPerms contexts
-        if (contextManager != null) {
+        // LuckPerms contexts (no config option, always enabled)
+        if (Bukkit.getPluginManager().getPlugin("LuckPerms") != null) {
+            contextManager = getServer().getServicesManager().load(LuckPerms.class).getContextManager();
             registeredCalculators.addAll(List.of(new WhitelistedCalculator(), new BlacklistedCalculator()));
             registeredCalculators.forEach(contextManager::registerCalculator);
         }

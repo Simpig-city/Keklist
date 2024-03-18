@@ -19,11 +19,13 @@ dependencies:
       load: BEFORE
       required: false
 
+    Luckperms:
+      load: BEFORE
+      required: false
+
     PlaceholderAPI:
       required: false
 
-    Luckperms:
-      required: false
 
 permissions:
   keklist.gui.use:
