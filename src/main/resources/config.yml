@@ -15,10 +15,10 @@ blacklist:
   allow-join-with-admin: false # Allows blacklisted player to join if a player with the admin-permission is online
   admin-permission: "blacklist.admin"
   limbo: false # May let the player join if nobody is online but fallback kicked; Needs velocity plugin
-  icon-file: "icon.png" # The icon for the server if player is blacklisted. Put the file in the same folder as the config
+  icon-file: "default" # The icon for the server if player is blacklisted. Put the file in the same folder as the config
 
 # Settings for the whitelist feature
-# Note: THIS WILL OVERRIDE THE DEFAULT WHITELIST; it works the same way as the default whitelist but does not import the players
+# Note: THIS WILL OVERRIDE THE DEFAULT WHITELIST; It works the same way as the default whitelist but does not import the players automatically
 whitelist:
   enabled: false # Enable the whitelist feature
   change-motd: true # Change the motd if the server is in whitelist mode
