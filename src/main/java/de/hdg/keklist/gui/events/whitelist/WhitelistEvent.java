@@ -2,14 +2,12 @@ package de.hdg.keklist.gui.events.whitelist;
 
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.gui.GuiManager;
-import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.sign.Side;
@@ -19,7 +17,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.*;
-import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -96,7 +93,7 @@ public class WhitelistEvent implements Listener {
                     // Used as backup if the player never exists the sign
                     executor.schedule(() -> {
                         if (!signMap.containsKey(location)) return;
-                        player.getWorld().setBlockData(location, signMap.get(location));
+                        location.getWorld().setBlockData(location, signMap.get(location));
                         signMap.remove(location);
                     }, 2, TimeUnit.MINUTES);
 
@@ -114,7 +111,7 @@ public class WhitelistEvent implements Listener {
         if (event.getBlock().getType().equals(Material.SPRUCE_SIGN)) {
             Sign sign = (Sign) event.getBlock().getState();
 
-            if (sign.getPersistentDataContainer().has(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING)) {
+            if (signMap.containsKey(sign.getLocation())) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.destroy")));
             }

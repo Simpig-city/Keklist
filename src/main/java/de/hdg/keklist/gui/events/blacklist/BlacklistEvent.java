@@ -8,7 +8,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
-import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.sign.Side;
@@ -18,7 +17,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -99,7 +97,7 @@ public class BlacklistEvent implements Listener {
 
                     executor.schedule(() -> {
                         if (!signMap.containsKey(location)) return;
-                        player.getWorld().setBlockData(location, signMap.get(location));
+                        location.getWorld().setBlockData(location, signMap.get(location));
                         signMap.remove(location);
                     }, 2, TimeUnit.MINUTES);
 
@@ -157,7 +155,7 @@ public class BlacklistEvent implements Listener {
         if (event.getBlock().getType().equals(Material.SPRUCE_SIGN)) {
             Sign sign = (Sign) event.getBlock().getState();
 
-            if (sign.getPersistentDataContainer().has(new NamespacedKey(Keklist.getInstance(), "blacklistMode"), PersistentDataType.STRING)) {
+            if (signMap.containsKey(sign.getLocation())) {
                 event.setCancelled(true);
                 event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.destroy")));
             }
