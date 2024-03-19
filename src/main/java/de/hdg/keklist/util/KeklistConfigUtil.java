@@ -16,7 +16,7 @@ public class KeklistConfigUtil {
     private static Keklist plugin;
 
     public KeklistConfigUtil(Keklist plugin) {
-        this.plugin = plugin;
+        KeklistConfigUtil.plugin = plugin;
     }
 
     public void updateConfig() {

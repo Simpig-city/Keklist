@@ -89,7 +89,7 @@ public class BlacklistCommand extends Command {
 
                     if (type.equals(BlacklistType.JAVA)) {
                         Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
-                        client.newCall(request).enqueue(new UserBlacklistAddCallback((sender instanceof Player) ? (Player) sender : null, reason));
+                        client.newCall(request).enqueue(new UserBlacklistAddCallback((sender instanceof Player) ? sender : null, reason));
                     } else if (type.equals(BlacklistType.IPv4) || type.equals(BlacklistType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
 

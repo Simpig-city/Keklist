@@ -1,7 +1,6 @@
 package de.hdg.keklist.api.events.whitelist;
 
 import de.hdg.keklist.api.KeklistAPI;
-import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
 import org.jetbrains.annotations.NotNull;

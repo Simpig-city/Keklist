@@ -23,17 +23,11 @@ public class KeklistMetrics {
     }
 
     private void initChars() {
-        metrics.addCustomChart(new SimplePie("keklist_language", () -> {
-            return Keklist.getTranslations().getLanguageCode();
-        }));
+        metrics.addCustomChart(new SimplePie("keklist_language", () -> Keklist.getTranslations().getLanguageCode()));
 
-        metrics.addCustomChart(new SimplePie("keklist_whitelist", () -> {
-            return plugin.getConfig().getBoolean("whitelist.enabled") ? "enabled" : "disabled";
-        }));
+        metrics.addCustomChart(new SimplePie("keklist_whitelist", () -> plugin.getConfig().getBoolean("whitelist.enabled") ? "enabled" : "disabled"));
 
-        metrics.addCustomChart(new SimplePie("keklist_blacklist", () -> {
-            return plugin.getConfig().getBoolean("blacklist.enabled") ? "enabled" : "disabled";
-        }));
+        metrics.addCustomChart(new SimplePie("keklist_blacklist", () -> plugin.getConfig().getBoolean("blacklist.enabled") ? "enabled" : "disabled"));
 
         metrics.addCustomChart(new SingleLineChart("keklist_whitelisted", () -> {
             ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");

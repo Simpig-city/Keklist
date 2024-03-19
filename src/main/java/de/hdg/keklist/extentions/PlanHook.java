@@ -9,9 +9,10 @@ import lombok.Getter;
 
 import java.util.Optional;
 
+@Getter
 public class PlanHook {
 
-    private @Getter Optional<Caller> caller;
+    private Optional<Caller> caller;
 
     public PlanHook() {
 

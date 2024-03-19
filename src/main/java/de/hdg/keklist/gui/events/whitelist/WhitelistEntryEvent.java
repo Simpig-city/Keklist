@@ -72,7 +72,7 @@ public class WhitelistEntryEvent implements Listener {
                                 meta.lore(List.of(
                                         Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.name", username)),
                                         Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.uuid")),
-                                        Keklist.getInstance().getMiniMessage().deserialize("<white>" + uuid.toString()),
+                                        Keklist.getInstance().getMiniMessage().deserialize("<white>" + uuid),
                                         Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.by", byPlayer)),
                                         Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.player.date", sdf.format(new Date(unix))))
                                 ));
@@ -87,7 +87,7 @@ public class WhitelistEntryEvent implements Listener {
                             });
 
                             overview.setItem(15, removeItem);
-                            overview.setItem(18, getBackArrow(event.getClickedInventory()));
+                            overview.setItem(18, getBackArrow());
 
                             player.openInventory(overview);
                         } else {
@@ -141,7 +141,7 @@ public class WhitelistEntryEvent implements Listener {
                             });
 
                             overview.setItem(15, removeItem);
-                            overview.setItem(18, getBackArrow(event.getClickedInventory()));
+                            overview.setItem(18, getBackArrow());
 
                             player.openInventory(overview);
                         } else {
@@ -210,7 +210,7 @@ public class WhitelistEntryEvent implements Listener {
 
             if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
-                String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());;
+                String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
 
                 Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", username);
                 player.sendMessage(
@@ -239,7 +239,7 @@ public class WhitelistEntryEvent implements Listener {
         }
     }
 
-    private ItemStack getBackArrow(Inventory inventory) {
+    private ItemStack getBackArrow() {
         int pageIndex = 0;
         int skipIndex = 0;
         boolean onlyPlayer = false;

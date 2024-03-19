@@ -71,7 +71,7 @@ public class BlacklistEntryEvent implements Listener {
                                 meta.lore(List.of(
                                         Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.name", username)),
                                         Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.uuid")),
-                                        Keklist.getInstance().getMiniMessage().deserialize("<white>" + uuid.toString()),
+                                        Keklist.getInstance().getMiniMessage().deserialize("<white>" + uuid),
                                         Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.by", byPlayer)),
                                         Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.date", sdf.format(new Date(unix)))),
                                         Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.reason", reason))
