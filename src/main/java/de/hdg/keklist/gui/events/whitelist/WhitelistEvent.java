@@ -2,6 +2,7 @@ package de.hdg.keklist.gui.events.whitelist;
 
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.gui.GuiManager;
+import io.papermc.paper.event.block.BlockBreakBlockEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -10,12 +11,15 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.*;
+import org.bukkit.inventory.AnvilInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -24,14 +28,14 @@ import org.bukkit.persistence.PersistentDataType;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class WhitelistEvent implements Listener {
 
-    private final HashMap<Player, Block> signMap = new HashMap<>();
+    private final HashMap<Location, BlockData> signMap = new HashMap<>();
+    private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
     @EventHandler
     public void onWhitelistClick(InventoryClickEvent event) throws SQLException {
@@ -50,25 +54,36 @@ public class WhitelistEvent implements Listener {
             switch (event.getCurrentItem().getType()) {
                 case SPRUCE_SIGN -> {
                     Location location = player.getLocation();
-                    location.setY(location.getWorld().getMaxHeight() - 1);
+                    location.setY(location.y() + 2);
+                    location.setPitch(0);
+                    location.setYaw(0);
 
-                    signMap.put(player, location.getBlock());
+                    signMap.put(location.toBlockLocation(), location.getBlock().getBlockData());
                     player.getWorld().setBlockData(location, Material.SPRUCE_SIGN.createBlockData());
 
-                    Sign sign = (Sign) player.getWorld().getBlockState(location);
+                    Sign sign = (Sign) location.getBlock().getState();
                     sign.setWaxed(false);
                     sign.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING, "add");
                     sign.getSide(Side.FRONT).line(0, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.line")));
                     sign.getSide(Side.FRONT).line(1, Component.empty());
                     sign.update();
 
+                    executor.schedule(() -> {
+                        if (!signMap.containsKey(location)) return;
+                        player.getWorld().setBlockData(location, signMap.get(location));
+                        signMap.remove(location);
+                    }, 2, TimeUnit.MINUTES);
+
+                    Bukkit.getOnlinePlayers().forEach(p -> p.sendBlockChange(location, Material.AIR.createBlockData()));
                     Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
                 }
                 case PRISMARINE_SHARD -> {
                     Location location = player.getLocation();
-                    location.setY(location.getWorld().getMaxHeight() - 1);
+                    location.setY(location.y() + 2);
+                    location.setPitch(0);
+                    location.setYaw(0);
 
-                    signMap.put(player, location.getBlock());
+                    signMap.put(location.toBlockLocation(), location.getBlock().getBlockData());
                     player.getWorld().setBlockData(location, Material.SPRUCE_SIGN.createBlockData());
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
@@ -78,10 +93,30 @@ public class WhitelistEvent implements Listener {
                     sign.getSide(Side.FRONT).line(1, Component.empty());
                     sign.update();
 
+                    // Used as backup if the player never exists the sign
+                    executor.schedule(() -> {
+                        if (!signMap.containsKey(location)) return;
+                        player.getWorld().setBlockData(location, signMap.get(location));
+                        signMap.remove(location);
+                    }, 2, TimeUnit.MINUTES);
+
+                    Bukkit.getOnlinePlayers().forEach(p -> p.sendBlockChange(location, Material.AIR.createBlockData()));
                     Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
                 }
                 case PLAYER_HEAD -> player.openInventory(getPage(0, 0, false, false));
                 case ARROW -> GuiManager.openMainGUI(player);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onSignDestroy(BlockBreakEvent event) {
+        if (event.getBlock().getType().equals(Material.SPRUCE_SIGN)) {
+            Sign sign = (Sign) event.getBlock().getState();
+
+            if (sign.getPersistentDataContainer().has(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING)) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.destroy")));
             }
         }
     }
@@ -99,9 +134,8 @@ public class WhitelistEvent implements Listener {
                             Bukkit.dispatchCommand(event.getPlayer(), "whitelist remove " + PlainTextComponentSerializer.plainText().serialize(event.lines().get(1)));
                 }
 
-                Block block = signMap.get(event.getPlayer());
-                block.getWorld().setBlockData(block.getLocation(), block.getBlockData());
-                signMap.remove(event.getPlayer());
+                sign.getWorld().setBlockData(sign.getLocation(), signMap.get(sign.getLocation()));
+                signMap.remove(sign.getLocation());
 
                 GuiManager.handleMainGUICLick("whitelist", event.getPlayer());
             }
@@ -174,7 +208,11 @@ public class WhitelistEvent implements Listener {
                 skullMeta.lore(Collections.singletonList(
                         Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
                 ));
-                skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(players.getString("name")));
+
+                if(Bukkit.getOfflinePlayerIfCached(players.getString("name")) != null)
+                    skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getString("name")));
+
+
                 skull.setItemMeta(skullMeta);
                 playerHeads.add(skull);
             }
@@ -311,7 +349,10 @@ public class WhitelistEvent implements Listener {
                     skullMeta.lore(Collections.singletonList(
                             Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
                     ));
-                    skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(players.getString("name")));
+
+                    if(Bukkit.getOfflinePlayerIfCached(players.getString("name")) != null)
+                        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getString("name")));
+
                     skull.setItemMeta(skullMeta);
                     playerHeads.add(skull);
                 }

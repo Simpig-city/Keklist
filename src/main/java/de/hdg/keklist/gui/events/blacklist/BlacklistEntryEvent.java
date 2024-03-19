@@ -10,11 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -48,7 +46,7 @@ public class BlacklistEntryEvent implements Listener {
                     Inventory overview = Bukkit.createInventory(player, 27, Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted Player"));
                     ItemStack item = event.getCurrentItem();
 
-                    String username = ((SkullMeta) item.getItemMeta()).getOwningPlayer().getName();
+                    String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
                     ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", username);
 
                     try {
@@ -56,7 +54,7 @@ public class BlacklistEntryEvent implements Listener {
                             long unix = rs.getLong("unix");
                             String byPlayer = rs.getString("byPlayer");
                             UUID uuid = UUID.fromString(rs.getString("uuid"));
-                            String reason = Objects.equals(rs.getString("reason").trim(), "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
+                            String reason = Objects.equals(rs.getString("reason") == null ? "No reason given" : "Some reason", "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
@@ -112,7 +110,7 @@ public class BlacklistEntryEvent implements Listener {
                         if (rs.next()) {
                             long unix = rs.getLong("unix");
                             String byPlayer = rs.getString("byPlayer");
-                            String reason = Objects.equals(rs.getString("reason").trim(), "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
+                            String reason = Objects.equals(rs.getString("reason") == null ? "No reason given" : "Some reason", "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
@@ -278,7 +276,7 @@ public class BlacklistEntryEvent implements Listener {
 
             if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
-                String username = ((SkullMeta) item.getItemMeta()).getOwningPlayer().getName();
+                String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
 
                 Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", username);
                 player.sendMessage(

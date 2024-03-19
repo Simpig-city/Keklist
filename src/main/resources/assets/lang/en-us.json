@@ -100,6 +100,7 @@
   "gui.whitelist.remove.description": "<gray><i>Type in a username/IP to remove from the whitelist",
   "gui.whitelist.sign": "<i><gray>Type in a username/IP",
   "gui.whitelist.sign.line": "<gray>Username/IP:",
+  "gui.whitelist.sign.destroy": "<red><i>This sign is currently used by an admin to configure the whitelist! You can not destroy it!",
   "gui.whitelist.list.title": "<blue>List Entries",
   "gui.whitelist.list.description": "<gray><i>List all entries on the whitelist",
   "gui.whitelist.list.next": "<gray><i>Click to see the next page",

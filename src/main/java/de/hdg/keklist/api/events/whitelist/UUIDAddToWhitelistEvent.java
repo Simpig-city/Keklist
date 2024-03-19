@@ -20,8 +20,6 @@ public class UUIDAddToWhitelistEvent extends Event {
     public UUIDAddToWhitelistEvent(@NotNull Player player) {
         this.uuid = player.getUniqueId();
 
-        Bukkit.getOfflinePlayer(uuid).setWhitelisted(true);
-
         if (Keklist.getPlanHook() != null)
             Keklist.getPlanHook().getCaller().ifPresent(caller -> {
                 caller.updatePlayerData(uuid, null);
@@ -31,8 +29,6 @@ public class UUIDAddToWhitelistEvent extends Event {
 
     public UUIDAddToWhitelistEvent(@NotNull UUID uuid) {
         this.uuid = uuid;
-
-        Bukkit.getOfflinePlayer(uuid).setWhitelisted(true);
 
         if (Keklist.getPlanHook() != null)
             Keklist.getPlanHook().getCaller().ifPresent(caller -> {

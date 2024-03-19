@@ -10,10 +10,12 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.sign.Side;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
@@ -29,10 +31,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class BlacklistEvent implements Listener {
 
-    private final HashMap<Player, Block> signMap = new HashMap<>();
+    private final HashMap<Location, BlockData> signMap = new HashMap<>();
+    private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
     @EventHandler
     public void onBlacklistClick(InventoryClickEvent event) throws SQLException {
@@ -51,9 +56,11 @@ public class BlacklistEvent implements Listener {
             switch (event.getCurrentItem().getType()) {
                 case DARK_OAK_SIGN -> {
                     Location location = player.getLocation();
-                    location.setY(location.getWorld().getMaxHeight() - 1);
+                    location.setY(location.y() + 2);
+                    location.setPitch(0);
+                    location.setYaw(0);
 
-                    signMap.put(player, location.getBlock());
+                    signMap.put(location.toBlockLocation(), location.getBlock().getBlockData());
                     player.getWorld().setBlockData(location, Material.DARK_OAK_SIGN.createBlockData());
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
@@ -63,13 +70,24 @@ public class BlacklistEvent implements Listener {
                     sign.getSide(Side.FRONT).line(1, Component.empty());
                     sign.update();
 
+                    player.getWorld().setBlockData(location, sign.getBlockData());
+
+                    executor.schedule(() -> {
+                        if (!signMap.containsKey(location)) return;
+                        player.getWorld().setBlockData(location, signMap.get(location));
+                        signMap.remove(location);
+                    }, 2, TimeUnit.MINUTES);
+
+                    Bukkit.getOnlinePlayers().forEach(p -> p.sendBlockChange(location, Material.AIR.createBlockData()));
                     Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
                 }
                 case DARK_PRISMARINE -> {
                     Location location = player.getLocation();
-                    location.setY(location.getWorld().getMaxHeight() - 1);
+                    location.setY(location.y() + 2);
+                    location.setPitch(0);
+                    location.setYaw(0);
 
-                    signMap.put(player, location.getBlock());
+                    signMap.put(location.toBlockLocation(), location.getBlock().getBlockData());
                     player.getWorld().setBlockData(location, Material.DARK_OAK_SIGN.createBlockData());
 
                     Sign sign = (Sign) player.getWorld().getBlockState(location);
@@ -79,8 +97,14 @@ public class BlacklistEvent implements Listener {
                     sign.getSide(Side.FRONT).line(1, Component.empty());
                     sign.update();
 
-                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
+                    executor.schedule(() -> {
+                        if (!signMap.containsKey(location)) return;
+                        player.getWorld().setBlockData(location, signMap.get(location));
+                        signMap.remove(location);
+                    }, 2, TimeUnit.MINUTES);
 
+                    Bukkit.getOnlinePlayers().forEach(p -> p.sendBlockChange(location, Material.AIR.createBlockData()));
+                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
                 }
                 case PLAYER_HEAD -> player.openInventory(getPage(0, 0, false, false, false));
                 case ARROW -> GuiManager.openMainGUI(player);
@@ -129,6 +153,18 @@ public class BlacklistEvent implements Listener {
     }
 
     @EventHandler
+    public void onSignDestroy(BlockBreakEvent event) {
+        if (event.getBlock().getType().equals(Material.SPRUCE_SIGN)) {
+            Sign sign = (Sign) event.getBlock().getState();
+
+            if (sign.getPersistentDataContainer().has(new NamespacedKey(Keklist.getInstance(), "blacklistMode"), PersistentDataType.STRING)) {
+                event.setCancelled(true);
+                event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.destroy")));
+            }
+        }
+    }
+
+    @EventHandler
     public void onSign(SignChangeEvent event) {
         if (event.getBlock().getType().equals(Material.DARK_OAK_SIGN)) {
             Sign sign = (Sign) event.getBlock().getWorld().getBlockState(event.getBlock().getLocation());
@@ -146,9 +182,8 @@ public class BlacklistEvent implements Listener {
                             Bukkit.dispatchCommand(event.getPlayer(), "blacklist remove " + PlainTextComponentSerializer.plainText().serialize(event.lines().get(1)));
                 }
 
-                Block block = signMap.get(event.getPlayer());
-                block.getWorld().setBlockData(block.getLocation(), block.getBlockData());
-                signMap.remove(event.getPlayer());
+                sign.getWorld().setBlockData(sign.getLocation(), signMap.get(sign.getLocation()));
+                signMap.remove(sign.getLocation());
 
                 GuiManager.handleMainGUICLick("blacklist", event.getPlayer());
             }
@@ -190,7 +225,10 @@ public class BlacklistEvent implements Listener {
                 skullMeta.lore(Collections.singletonList(
                         Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
                 ));
-                skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(players.getString("name")));
+
+                if(Bukkit.getOfflinePlayerIfCached(players.getString("name")) != null)
+                    skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getString("name")));
+
                 skull.setItemMeta(skullMeta);
                 playerHeads.add(skull);
             }
@@ -394,7 +432,7 @@ public class BlacklistEvent implements Listener {
                 // NOTE : pageIndex*18 = player heads to skip if not onlyIP mode is active
             } else if (onlyMOTD) {
                 ResultSet motds = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd");
-                List<ItemStack> skippedMOTDs = new ArrayList<>();
+                List<ItemStack> skippedMOTDs;
 
                 while (motds.next()) {
                     ItemStack motd = new ItemStack(Material.WRITABLE_BOOK);
@@ -446,7 +484,7 @@ public class BlacklistEvent implements Listener {
                 ResultSet isIPThere = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistIp LIMIT 1");
                 ResultSet isMOTDthere = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistMotd LIMIT 1");
 
-                List<ItemStack> skippedHeads = new ArrayList<>();
+                List<ItemStack> skippedHeads;
 
                 while (players.next()) {
                     ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
@@ -457,7 +495,10 @@ public class BlacklistEvent implements Listener {
                     skullMeta.lore(Collections.singletonList(
                             Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
                     ));
-                    skullMeta.setOwningPlayer(Bukkit.getOfflinePlayer(players.getString("name")));
+
+                    if(Bukkit.getOfflinePlayerIfCached(players.getString("name")) != null)
+                        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getString("name")));
+
                     skull.setItemMeta(skullMeta);
                     playerHeads.add(skull);
                 }

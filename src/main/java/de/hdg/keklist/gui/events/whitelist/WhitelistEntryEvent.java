@@ -10,11 +10,9 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
@@ -50,7 +48,7 @@ public class WhitelistEntryEvent implements Listener {
                     Inventory overview = Bukkit.createInventory(player, 27, Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Whitelisted Player"));
                     ItemStack item = event.getCurrentItem();
 
-                    String username = ((SkullMeta) item.getItemMeta()).getOwningPlayer().getName();
+                    String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
                     ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", username);
 
                     try {
@@ -212,7 +210,7 @@ public class WhitelistEntryEvent implements Listener {
 
             if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
-                String username = ((SkullMeta) item.getItemMeta()).getOwningPlayer().getName();
+                String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());;
 
                 Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", username);
                 player.sendMessage(

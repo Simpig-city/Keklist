@@ -17,8 +17,6 @@ public class PlayerRemovedFromWhitelistEvent extends Event {
 
     public PlayerRemovedFromWhitelistEvent(@NotNull String playerName) {
         this.playerName = playerName;
-
-        Bukkit.getOfflinePlayer(playerName).setWhitelisted(false);
     }
 
     /**

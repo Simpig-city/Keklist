@@ -279,6 +279,7 @@ public class BlacklistCommand extends Command {
 
             String byPlayer = resultSet.getString("byPlayer");
             String blacklistedReason = resultSet.getString("reason");
+            blacklistedReason = blacklistedReason == null ? "No reason given" : blacklistedReason;
             String unix = sdf.format(resultSet.getLong("unix"));
 
             LanguageUtil translations = Keklist.getTranslations();
