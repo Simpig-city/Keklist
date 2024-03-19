@@ -28,7 +28,7 @@ public class PreLoginKickEvent implements Listener {
     private final FileConfiguration config = Keklist.getInstance().getConfig();
     private final OkHttpClient client = new OkHttpClient();
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPreLogin(AsyncPlayerPreLoginEvent event) {
         if (config.getBoolean("blacklist.enabled")) {
             ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getUniqueId().toString());
@@ -136,7 +136,7 @@ public class PreLoginKickEvent implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onLogin(PlayerLoginEvent event) {
         if (config.getBoolean("blacklist.enabled")) {
             ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
@@ -198,7 +198,7 @@ public class PreLoginKickEvent implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.MONITOR)
+    @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(PlayerJoinEvent event) {
         if (config.getBoolean("blacklist.enabled")) {
             ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());

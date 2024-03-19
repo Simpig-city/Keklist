@@ -7,7 +7,7 @@ authors: [ "hdgamer1404Jonas", "SageSphinx63920" ]
 website: https://keklist.pages.dev
 loader: de.hdg.keklist.KeklistLoader
 contributors: [ "LPTP1" ]
-default-perm: false
+default-perm: op
 
 dependencies:
   server:
@@ -38,15 +38,15 @@ permissions:
 
   keklist.manage.reload:
     description: Allows the player to reload the plugin
-    default: false
+    default: op
 
   keklist.manage.whitelist:
     description: Allows the player to manage the whitelist
-    default: false
+    default: op
 
   keklist.manage.blacklist:
     description: Allows the player to manage the blacklist
-    default: false
+    default: op
 
   keklist.blacklist.info:
     description: Allows the player to see the blacklist
@@ -62,7 +62,7 @@ permissions:
 
   keklist.blacklist.motd:
     description: Allows the player to add entries the motd blacklist
-    default: false
+    default: op
 
   keklist.whitelist.info:
     description: Allows the player to see the whitelist
@@ -75,3 +75,11 @@ permissions:
   keklist.whitelist.remove:
     description: Allows the player to remove entries from the whitelist
     default: op
+
+  keklist.notify.blacklist:
+    description: Allows the player to see blacklist notifications
+    default: false
+
+  keklist.notify.whitelist:
+    description: Allows the player to see whitelist notifications
+    default: false

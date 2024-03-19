@@ -36,16 +36,18 @@ public class ListPingEvent implements Listener {
 
             event.motd(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedMotd(Keklist.RandomType.BLACKLISTED)));
 
-            if (!new File(Keklist.getInstance().getConfig().getString("blacklist.icon-file")).exists() && !Keklist.getInstance().getConfig().getString("blacklist.icon-file").equals("default")) {
-                Keklist.getInstance().getLogger().warning(Keklist.getTranslations().get("blacklist.icon.error"));
-            } else {
-                try {
-                    if (!Keklist.getInstance().getConfig().getString("blacklist.icon-file").equals("default"))
-                        event.setServerIcon(Keklist.getInstance().getServer().loadServerIcon(new File(Keklist.getInstance().getConfig().getString("blacklist.icon-file"))));
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
+            if (!Keklist.getInstance().getConfig().getString("blacklist.icon-file").equals("default"))
+                if (!new File(Keklist.getInstance().getConfig().getString("blacklist.icon-file")).exists()) {
+                    Keklist.getInstance().getLogger().warning(Keklist.getTranslations().get("blacklist.icon.error"));
+                } else {
+                    try {
+                        if (!Keklist.getInstance().getConfig().getString("blacklist.icon-file").equals("default"))
+                            event.setServerIcon(Keklist.getInstance().getServer().loadServerIcon(new File(Keklist.getInstance().getConfig().getString("blacklist.icon-file"))));
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
                 }
-            }
+
         } else if (Keklist.getInstance().getConfig().getBoolean("whitelist.enabled") && (Keklist.getInstance().getConfig().getBoolean("whitelist.change-motd") || Keklist.getInstance().getConfig().getBoolean("whitelist.hide-online-players"))) {
             if (Keklist.getInstance().getConfig().getBoolean("whitelist.change-motd"))
                 event.motd(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedMotd(Keklist.RandomType.WHITELISTED)));

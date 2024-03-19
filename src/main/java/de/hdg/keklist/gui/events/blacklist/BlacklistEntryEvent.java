@@ -56,7 +56,7 @@ public class BlacklistEntryEvent implements Listener {
                             long unix = rs.getLong("unix");
                             String byPlayer = rs.getString("byPlayer");
                             UUID uuid = UUID.fromString(rs.getString("uuid"));
-                            String reason = Objects.equals(rs.getString("reason"), "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
+                            String reason = Objects.equals(rs.getString("reason").trim(), "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
@@ -112,7 +112,7 @@ public class BlacklistEntryEvent implements Listener {
                         if (rs.next()) {
                             long unix = rs.getLong("unix");
                             String byPlayer = rs.getString("byPlayer");
-                            String reason = Objects.equals(rs.getString("reason"), "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
+                            String reason = Objects.equals(rs.getString("reason").trim(), "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
