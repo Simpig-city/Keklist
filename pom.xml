@@ -281,6 +281,12 @@
             <version>0.8.4</version>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>de.sage.util</groupId>
+            <artifactId>updatechecker</artifactId>
+            <version>1.0.3-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
 
         <!-- Other -->
         <dependency>
@@ -293,12 +299,6 @@
             <groupId>org.bstats</groupId>
             <artifactId>bstats-bukkit</artifactId>
             <version>3.0.2</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>de.sage.util</groupId>
-            <artifactId>updatechecker</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>
