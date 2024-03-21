@@ -52,7 +52,6 @@ public class WhitelistCommand extends Command {
         try {
             String senderName = sender.getName();
             WhiteListType type;
-            UUID bedrockUUID = null;
 
             if (args[1].matches("^[a-zA-Z0-9_]{2,16}$")) {
                 type = WhiteListType.JAVA;
@@ -61,16 +60,11 @@ public class WhitelistCommand extends Command {
             } else if (args[1].matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) {
                 type = WhiteListType.IPv6;
             } else if (args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))) {
-                if (Keklist.getInstance().getFloodgateApi() != null) {
-
-                    FloodgateApi api = Keklist.getInstance().getFloodgateApi();
-
-                    bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
-                    type = WhiteListType.BEDROCK;
-                } else {
+                if (Keklist.getInstance().getFloodgateApi() == null) {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-argument")));
                     return true;
-                }
+                } else
+                    type = WhiteListType.BEDROCK;
             } else if (args[1].matches("^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,}\\.?((xn--)?([a-z0-9\\-.]{1,61}|[a-z0-9-]{1,30})\\.?[a-z]{2,})$")) {
                 type = WhiteListType.DOMAIN;
             } else {
@@ -88,7 +82,7 @@ public class WhitelistCommand extends Command {
 
                     if (type.equals(WhiteListType.JAVA)) {
                         Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
-                        client.newCall(request).enqueue(new WhitelistCommand.UserWhitelistAddCallback(sender));
+                        client.newCall(request).enqueue(new WhitelistCommand.UserWhitelistAddCallback(sender, type));
                     } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
@@ -106,7 +100,26 @@ public class WhitelistCommand extends Command {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-whitelisted", args[1])));
 
                     } else if (type.equals(WhiteListType.BEDROCK)) {
-                        whitelistUser(sender, bedrockUUID, args[1]);
+                        FloodgateApi api = Keklist.getInstance().getFloodgateApi();
+
+                        try {
+                            UUID bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
+                            whitelistUser(sender, bedrockUUID, args[1]);
+                        } catch (IllegalStateException ex) {
+
+                            if (Keklist.getInstance().getConfig().getString("floodgate.api-key") != null) {
+                                Request request = new Request.Builder()
+                                        .url("https://mcprofile.io/api/v1/bedrock/gamertag/" + args[1].replace(".", ""))
+                                        .header("x-api-key", Keklist.getInstance().getConfig().getString("floodgate.api-key"))
+                                        .build();
+
+                                client.newCall(request).enqueue(new WhitelistCommand.UserWhitelistAddCallback(sender, type));
+                                return false;
+                            } else
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("floodgate.api-key-not-set")));
+
+                        }
+
                     } else if (type.equals(WhiteListType.DOMAIN)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
 
@@ -277,7 +290,7 @@ public class WhitelistCommand extends Command {
         }
     }
 
-    private void whitelistUser(CommandSender from, UUID uuid, String playerName) {
+    private void whitelistUser(CommandSender from, @NotNull UUID uuid, String playerName) {
         try {
             ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
             ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", playerName);
@@ -306,21 +319,35 @@ public class WhitelistCommand extends Command {
 
     private class UserWhitelistAddCallback implements Callback {
         private final CommandSender player;
+        private final WhiteListType type;
 
-        public UserWhitelistAddCallback(CommandSender player) {
+        public UserWhitelistAddCallback(CommandSender player, WhiteListType type) {
             this.player = player;
+            this.type = type;
         }
 
         @Override
         public void onResponse(@NotNull Call call, Response response) throws IOException {
 
             String body = response.body().string();
-            if (checkForGoodResponse(body) != null) {
-                player.sendMessage(checkForGoodResponse(body));
+
+            if (checkForGoodResponse(body, type) != null) {
+                player.sendMessage(checkForGoodResponse(body, type));
+            } else if (response.code() == 429) {
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.rate-limit")));
             } else {
                 Map<String, String> map = gson.fromJson(body, token);
-                String uuid = map.get("id");
-                String name = map.get("name");
+
+                String uuid;
+                String name;
+
+                if (type.equals(WhiteListType.JAVA)) {
+                    uuid = map.get("id");
+                    name = map.get("name");
+                } else {
+                    uuid = map.get("floodgateuid");
+                    name = Keklist.getInstance().getConfig().getString("floodgate.prefix") + map.get("gamertag");
+                }
 
                 whitelistUser(player, UUID.fromString(uuid.replaceFirst(
                         "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
@@ -336,15 +363,21 @@ public class WhitelistCommand extends Command {
     }
 
     @Nullable
-    private static Component checkForGoodResponse(@NotNull String response) {
+    private static Component checkForGoodResponse(@NotNull String response, @NotNull WhiteListType type) {
         JsonElement responseElement = JsonParser.parseString(response);
 
         if (!responseElement.isJsonNull()) {
-            if (responseElement.getAsJsonObject().get("error") != null ||
-                    !responseElement.getAsJsonObject().has("id") ||
-                    !responseElement.getAsJsonObject().has("name")) {
-                return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.not-found", responseElement.getAsJsonObject().get("error").getAsString()));
+            if (type.equals(WhiteListType.JAVA)) {
+                if (responseElement.getAsJsonObject().get("error") != null ||
+                        !responseElement.getAsJsonObject().has("id") ||
+                        !responseElement.getAsJsonObject().has("name")) {
+                    return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.not-found", responseElement.getAsJsonObject().get("error").getAsString()));
+                }
+            } else {
+                // 429 when rate limit is reached
+                return null; // "The request can't really fail, if for example you give a wrong xuid/gamertag the api just responds with an account not found but will still be a valid request." ~ jens_co
             }
+
         } else {
             return Component.text(Keklist.getTranslations().get("http.null-response"));
         }

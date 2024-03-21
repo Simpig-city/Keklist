@@ -50,7 +50,6 @@ public class BlacklistCommand extends Command {
         try {
             String senderName = sender.getName();
             BlacklistType type;
-            UUID bedrockUUID = null;
 
             if (args[1].matches("^[a-zA-Z0-9_]{2,16}$")) {
                 type = BlacklistType.JAVA;
@@ -59,20 +58,11 @@ public class BlacklistCommand extends Command {
             } else if (args[1].matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) {
                 type = BlacklistType.IPv6;
             } else {
-                if (Keklist.getInstance().getFloodgateApi() != null) {
-                    if (args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))) {
-                        FloodgateApi api = Keklist.getInstance().getFloodgateApi();
-
-                        bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
-                        type = BlacklistType.BEDROCK;
-                    } else {
-                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.invalid-argument")));
-                        return true;
-                    }
-                } else {
+                if (Keklist.getInstance().getFloodgateApi() == null) {
                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.invalid-argument")));
                     return true;
-                }
+                } else
+                    type = BlacklistType.BEDROCK;
             }
 
             String reason = null;
@@ -89,7 +79,7 @@ public class BlacklistCommand extends Command {
 
                     if (type.equals(BlacklistType.JAVA)) {
                         Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
-                        client.newCall(request).enqueue(new UserBlacklistAddCallback((sender instanceof Player) ? sender : null, reason));
+                        client.newCall(request).enqueue(new UserBlacklistAddCallback((sender instanceof Player) ? sender : null, reason, type));
                     } else if (type.equals(BlacklistType.IPv4) || type.equals(BlacklistType.IPv6)) {
                         ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
 
@@ -131,8 +121,25 @@ public class BlacklistCommand extends Command {
                             return true;
                         }
                     } else if (type.equals(BlacklistType.BEDROCK)) {
-                        new UUIDAddToBlacklistEvent(bedrockUUID, reason).callEvent();
-                        blacklistUser(sender, bedrockUUID, args[1], reason);
+                        FloodgateApi api = Keklist.getInstance().getFloodgateApi();
+
+                        try {
+                            UUID bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
+                            blacklistUser(sender, bedrockUUID, args[1], reason);
+                        } catch (IllegalStateException ex) {
+
+                            if (Keklist.getInstance().getConfig().getString("floodgate.api-key") != null) {
+                                Request request = new Request.Builder()
+                                        .url("https://mcprofile.io/api/v1/bedrock/gamertag/" + args[1].replace(".", ""))
+                                        .header("x-api-key", Keklist.getInstance().getConfig().getString("floodgate.api-key"))
+                                        .build();
+
+                                client.newCall(request).enqueue(new BlacklistCommand.UserBlacklistAddCallback(sender, reason, type));
+                                return false;
+                            } else
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("floodgate.api-key-not-set")));
+
+                        }
                     }
                 }
 
@@ -350,21 +357,35 @@ public class BlacklistCommand extends Command {
     private class UserBlacklistAddCallback implements Callback {
         private final CommandSender player;
         private final String reason;
+        private final BlacklistType type;
 
-        public UserBlacklistAddCallback(CommandSender player, String reason) {
+        public UserBlacklistAddCallback(CommandSender player, String reason, BlacklistType type) {
             this.player = player;
             this.reason = reason;
+            this.type = type;
         }
 
         @Override
         public void onResponse(@NotNull Call call, Response response) throws IOException {
             String body = response.body().string();
-            if (checkForGoodResponse(body) != null) {
-                player.sendMessage(checkForGoodResponse(body));
+            if (checkForGoodResponse(body, type) != null) {
+                player.sendMessage(checkForGoodResponse(body, type));
+
+            } else if (response.code() == 429) {
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.rate-limit")));
             } else {
                 Map<String, String> map = gson.fromJson(body, token);
-                String uuid = map.get("id");
-                String name = map.get("name");
+
+                String uuid;
+                String name;
+
+                if (type.equals(BlacklistType.JAVA)) {
+                    uuid = map.get("id");
+                    name = map.get("name");
+                } else {
+                    uuid = map.get("floodgateuid");
+                    name = Keklist.getInstance().getConfig().getString("floodgate.prefix") + map.get("gamertag");
+                }
 
                 blacklistUser(player, UUID.fromString(uuid.replaceFirst(
                         "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
@@ -380,13 +401,21 @@ public class BlacklistCommand extends Command {
         }
     }
 
-    private Component checkForGoodResponse(String response) {
+    private Component checkForGoodResponse(String response, BlacklistType type) {
         JsonElement element = JsonParser.parseString(response);
 
         if (!element.isJsonNull()) {
-            if (element.getAsJsonObject().get("error") != null) {
-                return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.not-found", element.getAsJsonObject().get("error").getAsString()));
+            if (type.equals(BlacklistType.JAVA)) {
+                if (element.getAsJsonObject().get("error") != null ||
+                        !element.getAsJsonObject().has("id") ||
+                        !element.getAsJsonObject().has("name")) {
+                    return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.not-found", element.getAsJsonObject().get("error").getAsString()));
+                }
+            } else {
+                // 429 when rate limit is reached
+                return null; // "The request can't really fail, if for example you give a wrong xuid/gamertag the api just responds with an account not found but will still be a valid request." ~ jens_co
             }
+
         } else {
             return Component.text(Keklist.getTranslations().get("http.null-response"));
         }

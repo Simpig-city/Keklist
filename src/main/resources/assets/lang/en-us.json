@@ -227,8 +227,11 @@
   "keklist.description": "Command to manage the Keklist plugin features.",
   "keklist.manage.disabled": "<red>This command is disabled due to security reasons! <grey><i>This can be enabled in the config.",
 
+  "floodgate.api-key-not-set": "<orange>You did not set the Floodgate API key in the config! Either get the floodgate uuid from https://mcprofile.io using the UUID directly or the floodgate user must be in the server's cache otherwise the request will fail!",
+
   "http.error": "<red>Could not connect to the Mojang-API!",
   "http.not-found": "<red>Could not find the player! More information: %s",
   "http.null-response": "Response is null! Please try again later!",
-  "http.detail": "Details: %s"
+  "http.detail": "Details: %s",
+  "http.rate-limit": "Rate limit reached! Please try again later! Non cached bedrock players can only be requested 200 times per hour!"
 }

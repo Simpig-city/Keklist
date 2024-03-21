@@ -79,11 +79,11 @@ public class PreLoginKickEvent implements Listener {
                                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", Keklist.getInstance().getFloodgateApi().getPlayer(event.getUniqueId()).getUsername())), "keklist.notify.kicked");
                             } else {
                                 Request request = new Request.Builder().url("https://sessionserver.mojang.com/session/minecraft/profile/" + event.getUniqueId()).build();
-                                client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, rsUser.getString("byPlayer"), System.currentTimeMillis()));
+                                client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getAddress().getHostAddress(), rsUser.getString("byPlayer"), System.currentTimeMillis()));
                             }
                         } else {
                             Request request = new Request.Builder().url("https://sessionserver.mojang.com/session/minecraft/profile/" + event.getUniqueId()).build();
-                            client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, rsUser.getString("byPlayer"), System.currentTimeMillis()));
+                            client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getAddress().getHostAddress(), rsUser.getString("byPlayer"), System.currentTimeMillis()));
                         }
                     }
 
@@ -101,8 +101,21 @@ public class PreLoginKickEvent implements Listener {
 
             try {
                 if (!rsUser.next()) {
-                    Request request = new Request.Builder().url("https://sessionserver.mojang.com/session/minecraft/profile/" + event.getUniqueId()).build();
-                    client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.WHITELIST_KICK, null, System.currentTimeMillis()));
+                    if (Keklist.getInstance().getFloodgateApi() != null) {
+                        if (!Keklist.getInstance().getFloodgateApi().isFloodgateId(event.getUniqueId())) {
+                            Request request = new Request.Builder().url("https://sessionserver.mojang.com/session/minecraft/profile/" + event.getUniqueId()).build();
+                            client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getAddress().getHostAddress(), null, System.currentTimeMillis()));
+                        } else {
+                            if (Keklist.getWebhookManager() != null)
+                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getName()+ " (" + event.getAddress().getHostAddress() + ")", null, System.currentTimeMillis());
+
+                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                                Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", event.getName())), "keklist.notify.kicked");
+                        }
+                    } else {
+                        Request request = new Request.Builder().url("https://sessionserver.mojang.com/session/minecraft/profile/" + event.getUniqueId()).build();
+                        client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getAddress().getHostAddress(), null, System.currentTimeMillis()));
+                    }
 
                     event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.WHITELISTED)));
                 } else
@@ -121,9 +134,6 @@ public class PreLoginKickEvent implements Listener {
                             return;
                         }
                     }
-
-                    if (Keklist.getWebhookManager() != null)
-                        Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getRawAddress().getHostAddress(), null, System.currentTimeMillis());
 
                     if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                         Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", event.getRawAddress().getHostName())), "keklist.notify.kicked");
@@ -224,11 +234,13 @@ public class PreLoginKickEvent implements Listener {
         private final WebhookManager.EVENT_TYPE type;
         private final String addedBy;
         private final long unixTime;
+        private final String ip;
 
-        public WebhooknameCallback(@NotNull WebhookManager.EVENT_TYPE type, @Nullable String by, long unixTime) {
+        public WebhooknameCallback(@NotNull WebhookManager.EVENT_TYPE type, @NotNull String ip, @Nullable String by, long unixTime) {
             this.type = type;
             this.addedBy = by;
             this.unixTime = unixTime;
+            this.ip = ip;
         }
 
         @Override
@@ -244,14 +256,14 @@ public class PreLoginKickEvent implements Listener {
                 switch (type) {
                     case BLACKLIST_KICK -> {
                         if (Keklist.getWebhookManager() != null)
-                            Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, name, addedBy, null, unixTime);
+                            Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, name + " (" + ip + ")", addedBy, null, unixTime);
 
                         if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                             Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", name)), "keklist.notify.kicked");
                     }
                     case WHITELIST_KICK -> {
                         if (Keklist.getWebhookManager() != null)
-                            Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, name, null, unixTime);
+                            Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, name + " (" + ip + ")", null, unixTime);
 
                         if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                             Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", name)), "keklist.notify.kicked");

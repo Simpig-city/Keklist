@@ -38,6 +38,7 @@ plan-support: false # Enable support for the Plan plugin
 # More: https://wiki.geysermc.org/floodgate/setup/
 floodgate:
   prefix: "." # Prefix for the floodgate player
+  api-key: "your-api" # https://mcprofile.io api key for getting the floodgate uuid for a bedrock player not being in the server's cache. Please read the wiki for more information
 
 discord:
   enabled: false
