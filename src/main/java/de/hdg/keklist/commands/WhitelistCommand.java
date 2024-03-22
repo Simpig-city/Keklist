@@ -105,7 +105,7 @@ public class WhitelistCommand extends Command {
                         try {
                             UUID bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
                             whitelistUser(sender, bedrockUUID, args[1]);
-                        } catch (IllegalStateException ex) {
+                        } catch (Exception ex) {
 
                             if (Keklist.getInstance().getConfig().getString("floodgate.api-key") != null) {
                                 Request request = new Request.Builder()
