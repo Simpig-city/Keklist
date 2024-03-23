@@ -374,8 +374,9 @@ public class WhitelistCommand extends Command {
                     return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.not-found", responseElement.getAsJsonObject().get("error").getAsString()));
                 }
             } else {
-                // 429 when rate limit is reached
-                return null; // "The request can't really fail, if for example you give a wrong xuid/gamertag the api just responds with an account not found but will still be a valid request." ~ jens_co
+                if (responseElement.getAsJsonObject().get("message") != null)
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.not-found", responseElement.getAsJsonObject().get("message").getAsString()));
+
             }
 
         } else {

@@ -412,8 +412,9 @@ public class BlacklistCommand extends Command {
                     return Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.not-found", element.getAsJsonObject().get("error").getAsString()));
                 }
             } else {
-                // 429 when rate limit is reached
-                return null; // "The request can't really fail, if for example you give a wrong xuid/gamertag the api just responds with an account not found but will still be a valid request." ~ jens_co
+                if (element.getAsJsonObject().get("message") != null)
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.not-found", element.getAsJsonObject().get("message").getAsString()));
+
             }
 
         } else {
