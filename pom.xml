@@ -190,11 +190,6 @@
             <id>sage-repository-snapshots</id>
             <url>https://repo.sageee.xyz/snapshots</url>
         </repository>
-        <!-- LuckPerms API -->
-        <repository>
-            <id>luck-repo</id>
-            <url>https://repo.lucko.me/</url>
-        </repository>
     </repositories>
 
     <dependencies>

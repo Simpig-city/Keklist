@@ -41,6 +41,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
@@ -59,8 +60,7 @@ public final class Keklist extends JavaPlugin {
     //private final ScheduledThreadPoolExecutor updateExecutor = new ScheduledThreadPoolExecutor(1); // TODO : Uncomment this when the plugin is *publicly* released
 
     /* Extensions */
-    private @Getter
-    @Nullable FloodgateApi floodgateApi = null;
+    private @Getter @Nullable FloodgateApi floodgateApi = null;
     private static @Getter PlanHook planHook;
     private PlaceholderAPIExtension placeholders;
     private ContextManager contextManager;
@@ -184,9 +184,12 @@ public final class Keklist extends JavaPlugin {
 
         // LuckPerms contexts (no config option, always enabled)
         if (Bukkit.getPluginManager().getPlugin("LuckPerms") != null) {
-            contextManager = getServer().getServicesManager().load(LuckPerms.class).getContextManager();
-            registeredCalculators.addAll(List.of(new WhitelistedCalculator(), new BlacklistedCalculator()));
-            registeredCalculators.forEach(contextManager::registerCalculator);
+            RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
+            if (provider == null) {
+                contextManager = provider.getProvider().getContextManager();
+                registeredCalculators.addAll(List.of(new WhitelistedCalculator(), new BlacklistedCalculator()));
+                registeredCalculators.forEach(contextManager::registerCalculator);
+            }
         }
 
         // Update checker
