@@ -185,6 +185,10 @@
             <id>opencollab-snapshot</id>
             <url>https://repo.opencollab.dev/maven-snapshots/</url>
         </repository>
+        <repository>
+            <id>opencollab-snapshot</id>
+            <url>https://repo.opencollab.dev/main/</url>
+        </repository>
         <!-- Plan Data Extension API -->
         <repository>
             <id>jitpack</id>
