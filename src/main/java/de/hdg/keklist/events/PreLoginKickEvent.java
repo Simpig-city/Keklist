@@ -107,7 +107,7 @@ public class PreLoginKickEvent implements Listener {
                             client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getAddress().getHostAddress(), null, System.currentTimeMillis()));
                         } else {
                             if (Keklist.getWebhookManager() != null)
-                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getName()+ " (" + event.getAddress().getHostAddress() + ")", null, System.currentTimeMillis());
+                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getName() + " (" + event.getAddress().getHostAddress() + ")", null, System.currentTimeMillis());
 
                             if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                 Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", event.getName())), "keklist.notify.kicked");

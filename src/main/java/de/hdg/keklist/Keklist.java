@@ -15,6 +15,7 @@ import de.hdg.keklist.events.BlacklistRemoveMotd;
 import de.hdg.keklist.events.ListPingEvent;
 import de.hdg.keklist.events.PreLoginKickEvent;
 import de.hdg.keklist.events.ServerWhitelistChangeEvent;
+import de.hdg.keklist.extentions.GeyserEventRegistrar;
 import de.hdg.keklist.extentions.PlaceholderAPIExtension;
 import de.hdg.keklist.extentions.context.BlacklistedCalculator;
 import de.hdg.keklist.extentions.context.WhitelistedCalculator;
@@ -44,6 +45,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.geysermc.floodgate.api.FloodgateApi;
+import org.geysermc.geyser.api.GeyserApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -65,6 +67,7 @@ public final class Keklist extends JavaPlugin {
     private PlaceholderAPIExtension placeholders;
     private ContextManager contextManager;
     private final List<ContextCalculator<Player>> registeredCalculators = new ArrayList<>();
+    private GeyserApi geyserApi;
 
     /* Global */
     private static @Getter DB database;
@@ -116,7 +119,7 @@ public final class Keklist extends JavaPlugin {
         //set debug mode
         debug = getConfig().getBoolean("debug");
 
-        updateChecker = new UpdateChecker("simpig-city", "Keklist", getPluginMeta().getVersion(), true, getLogger());
+        //updateChecker = new UpdateChecker("simpig-city", "Keklist", getPluginMeta().getVersion(), true, getLogger());
 
         //SQL
         if (getConfig().getBoolean("mariadb.enabled")) {
@@ -192,6 +195,20 @@ public final class Keklist extends JavaPlugin {
             }
         }
 
+        // Geyser hook
+        if (Bukkit.getPluginManager().getPlugin("Geyser-Spigot") != null) {
+            geyserApi = GeyserApi.api();
+
+            // We will not set the prefix if geyser is not enabled as the proxy could provide a different prefix than the floodgate api on sub server does
+            if(geyserApi.usernamePrefix() != null) {
+                getConfig().set("floodgate.prefix", geyserApi.usernamePrefix());
+                getLogger().info(translations.get("geyser.prefix", geyserApi.usernamePrefix()));
+            }
+
+           GeyserEventRegistrar eventRegistrar = new GeyserEventRegistrar(geyserApi, this);
+           eventRegistrar.registerEvents();
+        }
+
         // Update checker
         // TODO : Uncomment this when the plugin is *publicly* released
         /*if (getConfig().getBoolean("update.check"))
@@ -204,7 +221,7 @@ public final class Keklist extends JavaPlugin {
                 }
             }, 0, getConfig().getInt("update.interval"), java.util.concurrent.TimeUnit.HOURS);*/
 
-        updateChecker.setUpdateMessage(translations.get("update.message", getPluginMeta().getVersion()));
+        //updateChecker.setUpdateMessage(translations.get("update.message", getPluginMeta().getVersion()));
 
     }
 

@@ -2,7 +2,7 @@
 
 mvn package -f pom.xml
 mkdir -p ./testserver/plugins
-cp ./target/keklist-1.0-SNAPSHOT.jar ./testserver/plugins
+cp ./target/keklist-*.*.*-SNAPSHOT.jar ./testserver/plugins
 
 cd ./testserver || exit
 

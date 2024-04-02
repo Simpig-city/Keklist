@@ -30,13 +30,16 @@ public class KeklistConfigUtil {
             newConfig.load(reader);
             FileConfigurationOptions newOptions = newConfig.options();
 
+            boolean update = false;
+
             for (String key : newConfig.getKeys(true)) {
                 if (!oldConfig.getKeys(true).contains(key)) {
                     oldConfig.set(key, newConfig.get(key));
-
-                    if(Keklist.isDebug())
-                        plugin.getLogger().info("Added new config value: " + key);
+                    update = true;
                 }
+
+                if (Keklist.isDebug())
+                    plugin.getLogger().info("Added new config value: " + key);
 
                 oldConfig.setComments(key, newConfig.getComments(key));
                 oldConfig.setInlineComments(key, newConfig.getInlineComments(key));
@@ -45,12 +48,13 @@ public class KeklistConfigUtil {
             oldConfig.save(new File(plugin.getDataFolder(), "config.yml"));
             plugin.reloadConfig();
 
-            plugin.getLogger().info("Config updated to version: " + newConfig.get("config_version") + "!");
+            if (update)
+                plugin.getLogger().info("Config updated to version: " + newConfig.get("config_version") + "!");
 
             reader.close();
         } catch (IOException | InvalidConfigurationException e) {
-           plugin.getLogger().severe("Error while updating config! Please report this to the developer!");
-           plugin.getLogger().severe(e.getMessage());
+            plugin.getLogger().severe("Error while updating config! Please report this to the developer!");
+            plugin.getLogger().severe(e.getMessage());
         }
     }
 }

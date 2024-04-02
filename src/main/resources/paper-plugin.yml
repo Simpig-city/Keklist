@@ -1,8 +1,8 @@
 name: Keklist
-version: '1.0.0'
+version: ${project.version}
 main: de.hdg.keklist.Keklist
 api-version: '1.20'
-description: Custom made white and blacklist with many features!
+description: ${project.description}
 authors: [ "hdgamer1404Jonas", "SageSphinx63920" ]
 website: https://keklist.pages.dev
 loader: de.hdg.keklist.KeklistLoader
@@ -26,7 +26,10 @@ dependencies:
 
     PlaceholderAPI:
       required: false
-
+      
+    Geyser-Spigot:
+      load: BEFORE
+      required: false
 
 permissions:
   keklist.gui.use:
