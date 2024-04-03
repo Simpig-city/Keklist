@@ -1,22 +1,87 @@
 name: Keklist
-version: 1.0.0
+version: ${project.version}
 main: de.hdg.keklist.Keklist
 api-version: 1.20
-description: Block all the Keks and accept the nice people
+description: ${project.description}
 authors: ["hdgamer1404Jonas", "SageSphinx63920"]
-website: https://swc.sasp.gq
+website: https://keklist.pages.dev
+contributors: [ "LPTP1" ]
 database: true
+default-permission: op
 softdepend:
   - floodgate
+  - Plan
+  - LuckPerms
+  - PlaceholderAPI
+  - Geyser-Spigot
 
 commands:
   whitelist:
-    description: Whitelist commands
-    usage: /whitelist <add|remove>
+    description: Whitelists a player or ip to the server.
+    usage: /whitelist <add/remove/info> <Player/IPv4/IPv6>
     aliases: [wl]
-    permission: keklist.whitelist
   blacklist:
-    description: Blacklist commands
-    usage: /blacklist <add|remove>
+    description: Blacklists a player or ip from the server
+    usage: /blacklist <add/remove/motd/info> <Player/IPv4/IPv6> [Reason]
     aliases: [bl]
-    permission: keklist.blacklist
+  keklist:
+    description: Command to manage the Keklist plugin's features.
+    usage: /keklist <blacklist/whitelist/reload> [feature/enable/disable]
+    aliases: [kek]
+
+permissions:
+  keklist.gui.use:
+    description: Allows the player to use general the GUI
+    default: false
+
+  keklist.gui.settings:
+    description: Allows the player to use the settings GUI
+    default: false
+
+  keklist.manage.reload:
+    description: Allows the player to reload the plugin
+    default: op
+
+  keklist.manage.whitelist:
+    description: Allows the player to manage the whitelist
+    default: op
+
+  keklist.manage.blacklist:
+    description: Allows the player to manage the blacklist
+    default: op
+
+  keklist.blacklist.info:
+    description: Allows the player to see the blacklist
+    default: op
+
+  keklist.blacklist.add:
+    description: Allows the player to add entries to the blacklist
+    default: op
+
+  keklist.blacklist.remove:
+    description: Allows the player to remove entries from the blacklist
+    default: op
+
+  keklist.blacklist.motd:
+    description: Allows the player to add entries the motd blacklist
+    default: op
+
+  keklist.whitelist.info:
+    description: Allows the player to see the whitelist
+    default: op
+
+  keklist.whitelist.add:
+    description: Allows the player to add entries to the whitelist
+    default: op
+
+  keklist.whitelist.remove:
+    description: Allows the player to remove entries from the whitelist
+    default: op
+
+  keklist.notify.blacklist:
+    description: Allows the player to see blacklist notifications
+    default: false
+
+  keklist.notify.whitelist:
+    description: Allows the player to see whitelist notifications
+    default: false
