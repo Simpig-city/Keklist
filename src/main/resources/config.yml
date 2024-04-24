@@ -1,0 +1,93 @@
+# Settings for every feature of the Keklist Paper plugin
+
+language: "en-us" # Language for the plugin
+enable-manage-command: false # Enable the /keklist command to enable/disable the blacklist/whitelist
+date-format: "dd-MM-yyyy HH:mm" # Date format for the blacklist/whitelist GUI
+chat-notify: false # Notify the player if someone joins the server and is blacklisted/whitelisted
+
+update:
+  check: true # Check for updates
+  interval: 12 # Check for updates every x hours
+
+# Settings for the blacklist feature
+blacklist:
+  enabled: true # Enable the blacklist feature
+  allow-join-with-admin: false # Allows blacklisted player to join if a player with the admin-permission is online
+  admin-permission: "blacklist.admin"
+  limbo: false # May let the player join if nobody is online but fallback kicked; Needs velocity plugin
+  icon-file: "default" # The icon for the server if player is blacklisted. Put the file in the same folder as the config
+
+# Settings for the whitelist feature
+# Note: THIS WILL OVERRIDE THE DEFAULT WHITELIST; It works the same way as the default whitelist but does not import the players automatically
+whitelist:
+  enabled: false # Enable the whitelist feature
+  change-motd: true # Change the motd if the server is in whitelist mode
+  hide-online-players: false # This sends fake player's AND fake player counts to the client
+  fake-players: # List of fake players that are shown to the client NOTE: Can be empty
+    - SageSphinx63920
+    - hdgaymer1404Jonas
+    - LPTP1
+  fake-max-range: 20-40 # Please use the format: INTEGER-INTEGER
+  fake-online-range: 0-10 # Please use the format: INTEGER-INTEGER
+
+# Extentions for the plugin
+placeholderapi: false # Enable PlaceholderAPI support
+plan-support: false # Enable support for the Plan plugin
+
+# Note: If you use a proxy you need to enable 'send-floodgate-data' on the proxy's config
+# More: https://wiki.geysermc.org/floodgate/setup/
+floodgate:
+  prefix: "." # Prefix for the floodgate player
+  api-key: "your-api" # https://mcprofile.io api key for getting the floodgate uuid for a bedrock player not being in the server's cache. Please read the wiki for more information
+
+discord:
+  enabled: false
+  webhook-url: https://discord.com # Webhook url for the discord webhook
+  username: "Keklist"  # Username for the webhook
+  avatar-url: https://cdn.discordapp.com/attachments/1056727727991959673/1102655035290157176/keklist.png # This is the default avatar from keklist
+  events: ["blacklist_add", "blacklist_remove", "blacklist_kick", "whitelist_add", "whitelist_remove", "whitelist_kick", "limbo"] # List of events which trigger a message
+  ping-roles: ["214809157574983681"] # Pings this role on any event. NOTE: Can be empty
+
+# Settings for the database
+# This is useful to share the blacklist and whitelist between multiple servers
+mariadb:
+  enabled: false
+  host: localhost
+  port: 3306
+  database: keklist
+  username: root
+  password: root
+  options: "?useSSL=false&serverTimezone=MEZ"
+
+# Messages for the plugin
+# This fully supports minimessage
+messages:
+  motd:
+    blacklisted:
+      - "<red><bold>Your IP is blacklisted on this server!"
+      - "<red><bold>You are not allowed to join this server!"
+    whitelisted:
+      - "<gold><bold>The server is in whitelist mode but you can join."
+      - "<gold><bold>Glad you can join us!"
+    default:
+      - "This is a normal motd"
+      - "By default these are visible for everyone"
+
+  kick:
+    blacklisted:
+      - "<red><bold>You're kicked because you're on the blacklist!"
+      - "<red><bold>Sorry, but you're not allowed to join this server!"
+    whitelisted:
+      - "<gold><bold>You're kicked because the server is in whitelist mode!"
+      - "<gold><bold>Sorry, but you're not on the whitelist!"
+
+# Enable bstats
+# This is used to collect anonymous data about the plugin, which helps me to improve the plugin
+bstats: true
+
+# Debug mode
+# This will enable debug messages in the console
+debug: false
+
+# Don't touch it!
+config_version: 1
