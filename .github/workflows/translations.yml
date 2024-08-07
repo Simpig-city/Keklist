@@ -21,7 +21,7 @@ jobs:
         id: gh_branch
 
       - name: Crowdin Upload
-        uses: crowdin/github-action@v1
+        uses: crowdin/github-action@v2
         with:
           upload_sources: true
           upload_translations: false
