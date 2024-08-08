@@ -226,6 +226,7 @@
   "keklist.usage.command": "Please use: /keklist <blacklist/whitelist/reload> [feature/enable/disable]",
   "keklist.description": "Command to manage the Keklist plugin's features.",
   "keklist.manage.disabled": "<red>This command is disabled due to security reasons! <grey><i>This can be enabled in the config.",
+  "keklist.info": "<gray><b><u>Keklist Info</u></b> \n<white> Whitelist: %whitelist% \n<white>Whitelisted: <dark_green>%whitelisted% \n<white>Blacklist: %blacklist% \n<white>Blacklisted: <dark_green>%blacklisted% \n<blue>Database: <aqua>%database% \n<gold>Version: <white>%version% \n<gold>Made with <red><3 <gold>by SageSphinx63920 and jxnxsdev",
 
   "floodgate.api-key-not-set": "<orange>You did not set the Floodgate API key in the config! Either get the floodgate uuid from https://mcprofile.io using the UUID directly or the floodgate user must be in the server's cache otherwise the request will fail!",
   "geyser.prefix": "Geyser detected, using prefix: %s",
@@ -237,5 +238,8 @@
   "http.not-found": "<red>Could not find the player! More information: %s",
   "http.null-response": "Response is null! Please try again later!",
   "http.detail": "Details: %s",
-  "http.rate-limit": "Rate limit reached! Please try again later! Non cached bedrock players can only be requested 200 times per hour!"
+  "http.rate-limit": "Rate limit reached! Please try again later! Non cached bedrock players can only be requested 200 times per hour!",
+
+  "enabled": "enabled",
+  "disabled": "disabled"
 }

@@ -1,6 +1,7 @@
 package de.hdg.keklist.database;
 
 import de.hdg.keklist.Keklist;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.intellij.lang.annotations.Language;
 import org.jetbrains.annotations.NotNull;
@@ -16,7 +17,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class DB {
 
     private Connection connection;
-    private final DBType type;
+    private final @Getter DBType type;
     private final Keklist plugin;
     private final AtomicInteger count = new AtomicInteger(0);
 

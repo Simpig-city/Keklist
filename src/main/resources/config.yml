@@ -3,7 +3,7 @@
 language: "en-us" # Language for the plugin
 enable-manage-command: false # Enable the /keklist command to enable/disable the blacklist/whitelist
 date-format: "dd-MM-yyyy HH:mm" # Date format for the blacklist/whitelist GUI
-chat-notify: false # Notify the player if someone joins the server and is blacklisted/whitelisted
+chat-notify: false # Notify the player if someone joins the server which is blacklisted/whitelisted
 
 update:
   check: true # Check for updates
@@ -15,13 +15,13 @@ blacklist:
   allow-join-with-admin: false # Allows blacklisted player to join if a player with the admin-permission is online
   admin-permission: "blacklist.admin"
   limbo: false # May let the player join if nobody is online but fallback kicked; Needs velocity plugin
-  icon-file: "default" # The icon for the server if player is blacklisted. Put the file in the same folder as the config
+  icon-file: "default" # The icon for the server if player is blacklisted. Put the file in the same folder as the config. Use default for the default icon
 
 # Settings for the whitelist feature
 # Note: THIS WILL OVERRIDE THE DEFAULT WHITELIST; It works the same way as the default whitelist but does not import the players automatically
 whitelist:
   enabled: false # Enable the whitelist feature
-  change-motd: true # Change the motd if the server is in whitelist mode
+  change-motd: false # Change the motd if the server is in whitelist mode
   hide-online-players: false # This sends fake player's AND fake player counts to the client
   fake-players: # List of fake players that are shown to the client NOTE: Can be empty
     - SageSphinx63920
@@ -30,14 +30,14 @@ whitelist:
   fake-max-range: 20-40 # Please use the format: INTEGER-INTEGER
   fake-online-range: 0-10 # Please use the format: INTEGER-INTEGER
 
-# Extentions for the plugin
+# Extensions for the plugin
 placeholderapi: false # Enable PlaceholderAPI support
 plan-support: false # Enable support for the Plan plugin
 
 # Note: If you use a proxy you need to enable 'send-floodgate-data' on the proxy's config
 # More: https://wiki.geysermc.org/floodgate/setup/
 floodgate:
-  prefix: "." # Prefix for the floodgate player
+  prefix: "." # Prefix for the floodgate player. Gets automatically set if geyser is installed
   api-key: "your-api" # https://mcprofile.io api key for getting the floodgate uuid for a bedrock player not being in the server's cache. Please read the wiki for more information
 
 discord:
@@ -57,7 +57,7 @@ mariadb:
   database: keklist
   username: root
   password: root
-  options: "?useSSL=false&serverTimezone=MEZ"
+  options: "?useSSL=false&serverTimezone=UTC"
 
 # Messages for the plugin
 # This fully supports minimessage

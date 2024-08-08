@@ -1,6 +1,7 @@
 package de.hdg.keklist.commands;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.gui.GuiManager;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -12,6 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -224,6 +226,32 @@ public class KeklistCommand extends Command {
                         }
 
                         GuiManager.openMainGUI((Player) sender);
+                    }
+
+                    case "info" -> {
+                        try {
+                            int whitelisted = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM whitelist UNION ALL SELECT COUNT(*) FROM whitelistIp UNION ALL SELECT COUNT(*) FROM whitelistDomain) as whitelistCound").getInt(1);
+                            int blacklisted = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM blacklist UNION ALL SELECT COUNT(*) FROM blacklistIp) as blacklistCount").getInt(1);
+
+                            boolean whitelist = Keklist.getInstance().getConfig().getBoolean("whitelist.enabled");
+                            boolean blacklist = Keklist.getInstance().getConfig().getBoolean("blacklist.enabled");
+                            
+                            DB.DBType type = Keklist.getDatabase().getType();
+                            
+                            String version = Keklist.getInstance().getPluginMeta().getVersion();
+
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.info")
+                                    .replace("%whitelisted%", String.valueOf(whitelisted))
+                                    .replace("%blacklisted%", String.valueOf(blacklisted))
+                                    .replace("%whitelist%", whitelist ? "<green>" + Keklist.getTranslations().get("enabled") : "<red>" + Keklist.getTranslations().get("disabled"))
+                                    .replace("%blacklist%", blacklist ? "<green>" + Keklist.getTranslations().get("enabled") : "<red>" + Keklist.getTranslations().get("disabled"))
+                                    .replace("%database%", type.toString())
+                                    .replace("%version%", version)
+                            ));
+
+                        } catch (SQLException e) {
+                            throw new RuntimeException(e);
+                        }
                     }
 
                     default ->
