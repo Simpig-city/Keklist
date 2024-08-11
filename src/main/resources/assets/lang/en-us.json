@@ -226,13 +226,18 @@
   "keklist.usage.command": "Please use: /keklist <blacklist/whitelist/reload> [feature/enable/disable]",
   "keklist.description": "Command to manage the Keklist plugin's features.",
   "keklist.manage.disabled": "<red>This command is disabled due to security reasons! <grey><i>This can be enabled in the config.",
-  "keklist.info": "<gray><b><u>Keklist Info</u></b> \n<white> Whitelist: %whitelist% \n<white>Whitelisted: <dark_green>%whitelisted% \n<white>Blacklist: %blacklist% \n<white>Blacklisted: <dark_green>%blacklisted% \n<blue>Database: <aqua>%database% \n<gold>Version: <white>%version% \n<gold>Made with <red><3 <gold>by SageSphinx63920 and jxnxsdev",
+  "keklist.info": "\n<gray><b><u>Keklist Info</u></b> \n\n<yellow>Whitelist: %whitelist% \n<white>Whitelisted: <dark_green>%whitelisted% \n<yellow>Blacklist: %blacklist% \n<white>Blacklisted: <dark_green>%blacklisted% \n<blue>Database: <aqua>%database% \n<gold>Version: <white>%version% \n<gold>Made with <red><3 <gold>by SageSphinx63920 and jxnxsdev\n",
+  "keklist.player-info": "\n<grey><b><u>Player Info</u></b></grey> \n\n<hover:show_text:'%uuid%'><color:#26ffb3>Name</color>: <white><b>%name%</b></hover> \n<click:suggest_command:'/keklist info %ip%'><hover:show_text:'Click to get information about ip'><color:#26ffb3>Ip address: <color:#91bbff>%ip%</color></hover></click> \n<yellow>Whitelisted: %whitelisted% \n<yellow>Blacklisted: %blacklisted% \n<color:#5cceff>Brand: <white>%brand% \n<color:#5cceff><hover:show_text:'Idle since: %idle% Seconds'>Ping: <green>%ping%</hover> \n<click:open_url:'https://wiki.vg/Protocol_version_numbers'><hover:show_text:'Click to get version'><color:#5cceff>Protocol Version: <white>%version%</hover></click> \n<color:#5cceff>Gamemode: <white>%gamemode% \n<color:#5cceff>Location: <hover:show_text:'Click to teleport'><white><click:run_command:'/tp %requested_by% %x% %y% %z%'>%x% %y% %z%</click></hover> \n\n<grey><i><hover:show_text:'<i>Ssh... also hover over the other fields!'>Hover too see additional data</hover>",
+  "keklist.ip-info": "\n<hover:show_text:'Basic informations about the ip'><b><u><grey>IP Info:</u></b></hover> \n<color:#26ffb3>IP Address: <white><b><hover:show_text:'Click to see more informations'><click:open_url:'https://ipinfo.io/%ip%'>%ip%</click></hover></b> \n<aqua>Country: <hover:show_text:'<dark_aqua>Continent: <white>%continent% \n<dark_aqua>Code: <white>%continent_code%'><white>%country% <dark_grey>| <grey>Code: %country_code% </hover> \n<aqua>City: <hover:show_text:'<dark_aqua>Region: <white>%region%'><white>%city%</hover> \n<aqua>Timezone: <white>%timezone% \n<color:#63a7ff><hover:show_text:'The <b><yellow>i<reset>nternet <b><yellow>s<reset>ervice <b><yellow>p<reset>rovider '>ISP</hover>: <hover:show_text:'<color:#8c73ff>AS: <white>%as%</color>'><white>%org%</hover> \n<yellow><hover:show_text:'Mobile (cellular) connection'>Mobile</hover>: %mobile% <dark_grey>| <gold><hover:show_text:'Detects Proxies, VPNs and Tor exit relays'>Proxy/VPN</hover>: %proxy%  <dark_grey>| <color:#ff6f08><hover:show_text:'Hosting, colocated or data center'>Hosting</hover>: %hosting% \n\n<grey><i><hover:show_text:'<i>Ssh... also hover over the other fields!'>Hover too see additional data</hover>",
+  "keklist.info.unknown-type": "Can't find the information about %s",
 
   "floodgate.api-key-not-set": "<orange>You did not set the Floodgate API key in the config! Either get the floodgate uuid from https://mcprofile.io using the UUID directly or the floodgate user must be in the server's cache otherwise the request will fail!",
   "geyser.prefix": "Geyser detected, using prefix: %s",
   "geyser.events.registered": "Geyser events registered!",
   "geyser.events.error": "An error occurred while checking the IP blacklist on geyser: %s",
   "geyser.events.fallback": "Fallback to deny connection.",
+
+  "ip.rate-limit": "Rate limit reached! Please try again later! IP's can only be requested 45 times per minute!",
 
   "http.error": "<red>Could not connect to the Mojang-API!",
   "http.not-found": "<red>Could not find the player! More information: %s",
@@ -241,5 +246,8 @@
   "http.rate-limit": "Rate limit reached! Please try again later! Non cached bedrock players can only be requested 200 times per hour!",
 
   "enabled": "enabled",
-  "disabled": "disabled"
+  "disabled": "disabled",
+  "yes": "yes",
+  "no": "no",
+  "unknown": "unknown"
 }

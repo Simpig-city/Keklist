@@ -1,14 +1,12 @@
 package de.hdg.keklist.commands;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.api.events.whitelist.*;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.extentions.WebhookManager;
+import de.hdg.keklist.util.TypeUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import okhttp3.*;
@@ -51,25 +49,12 @@ public class WhitelistCommand extends Command {
 
         try {
             String senderName = sender.getName();
-            WhiteListType type;
 
-            if (args[1].matches("^[a-zA-Z0-9_]{2,16}$")) {
-                type = WhiteListType.JAVA;
-            } else if (args[1].matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
-                type = WhiteListType.IPv4;
-            } else if (args[1].matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$")) {
-                type = WhiteListType.IPv6;
-            } else if (args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))) {
-                if (Keklist.getInstance().getFloodgateApi() == null) {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-argument")));
-                    return true;
-                } else
-                    type = WhiteListType.BEDROCK;
-            } else if (args[1].matches("^((?!-))(xn--)?[a-z0-9][a-z0-9-_]{0,61}[a-z0-9]{0,}\\.?((xn--)?([a-z0-9\\-.]{1,61}|[a-z0-9-]{1,30})\\.?[a-z]{2,})$")) {
-                type = WhiteListType.DOMAIN;
-            } else {
+            TypeUtil.EntryType type = TypeUtil.getEntryType(args[1]);
+
+            if (type.equals(TypeUtil.EntryType.UNKNOWN)) {
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-argument")));
-                return true;
+                return false;
             }
 
 
@@ -80,71 +65,76 @@ public class WhitelistCommand extends Command {
                         return false;
                     }
 
-                    if (type.equals(WhiteListType.JAVA)) {
-                        Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
-                        client.newCall(request).enqueue(new WhitelistCommand.UserWhitelistAddCallback(sender, type));
-                    } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
-
-                        if (!rs.next()) {
-                            new IpAddToWhitelistEvent(args[1]).callEvent();
-                            Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.added", args[1])));
-
-                            if (Keklist.getWebhookManager() != null)
-                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, args[1], senderName, System.currentTimeMillis());
-
-                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
-                                Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.add", args[1], senderName)), "keklist.notify.whitelist");
-                        } else
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-whitelisted", args[1])));
-
-                    } else if (type.equals(WhiteListType.BEDROCK)) {
-                        FloodgateApi api = Keklist.getInstance().getFloodgateApi();
-
-                        try {
-                            UUID bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
-                            whitelistUser(sender, bedrockUUID, args[1]);
-                        } catch (Exception ex) {
-
-                            if (Keklist.getInstance().getConfig().getString("floodgate.api-key") != null) {
-                                Request request = new Request.Builder()
-                                        .url("https://mcprofile.io/api/v1/bedrock/gamertag/" + args[1].replace(".", ""))
-                                        .header("x-api-key", Keklist.getInstance().getConfig().getString("floodgate.api-key"))
-                                        .build();
-
-                                client.newCall(request).enqueue(new WhitelistCommand.UserWhitelistAddCallback(sender, type));
-                                return false;
-                            } else
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("floodgate.api-key-not-set")));
-
+                    switch (type) {
+                        case JAVA -> {
+                            Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
+                            client.newCall(request).enqueue(new WhitelistCommand.UserWhitelistAddCallback(sender, type));
                         }
 
-                    } else if (type.equals(WhiteListType.DOMAIN)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
+                        case IPv4, IPv6 -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
-                        if (!rs.next()) {
-                            try {
-                                InetAddress address = InetAddress.getByName(args[1]);
-
-                                new DomainAddToWhitelistEvent(args[1]).callEvent();
-                                Keklist.getDatabase().onUpdate("INSERT INTO whitelistDomain (domain, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.domain-added", args[1], address.getHostAddress())));
+                            if (!rs.next()) {
+                                new IpAddToWhitelistEvent(args[1]).callEvent();
+                                Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.added", args[1])));
 
                                 if (Keklist.getWebhookManager() != null)
                                     Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, args[1], senderName, System.currentTimeMillis());
 
                                 if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.add", args[1], senderName)), "keklist.notify.whitelist");
+                            } else
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-whitelisted", args[1])));
 
+                        }
 
-                            } catch (UnknownHostException e) {
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-domain", args[1])));
-                                return true;
+                        case BEDROCK -> {
+                            FloodgateApi api = Keklist.getInstance().getFloodgateApi();
+
+                            try {
+                                UUID bedrockUUID = api.getUuidFor(args[1].replace(Keklist.getInstance().getConfig().getString("floodgate.prefix"), "")).get();
+                                whitelistUser(sender, bedrockUUID, args[1]);
+                            } catch (Exception ex) {
+
+                                if (Keklist.getInstance().getConfig().getString("floodgate.api-key") != null) {
+                                    Request request = new Request.Builder()
+                                            .url("https://mcprofile.io/api/v1/bedrock/gamertag/" + args[1].replace(".", ""))
+                                            .header("x-api-key", Keklist.getInstance().getConfig().getString("floodgate.api-key"))
+                                            .build();
+
+                                    client.newCall(request).enqueue(new WhitelistCommand.UserWhitelistAddCallback(sender, type));
+                                    return false;
+                                } else
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("floodgate.api-key-not-set")));
+
                             }
+                        }
 
-                        } else
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-whitelisted", args[1])));
+                        case DOMAIN -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
+
+                            if (!rs.next()) {
+                                try {
+                                    InetAddress address = InetAddress.getByName(args[1]);
+
+                                    new DomainAddToWhitelistEvent(args[1]).callEvent();
+                                    Keklist.getDatabase().onUpdate("INSERT INTO whitelistDomain (domain, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.domain-added", args[1], address.getHostAddress())));
+
+                                    if (Keklist.getWebhookManager() != null)
+                                        Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_ADD, args[1], senderName, System.currentTimeMillis());
+
+                                    if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                                        Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.add", args[1], senderName)), "keklist.notify.whitelist");
+
+
+                                } catch (UnknownHostException e) {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-domain", args[1])));
+                                    return true;
+                                }
+                            }
+                        }
                     }
 
                     return true;
@@ -156,66 +146,72 @@ public class WhitelistCommand extends Command {
                         return false;
                     }
 
-                    if (type.equals(WhiteListType.JAVA) || type.equals(WhiteListType.BEDROCK)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
-                        if (rs.next()) {
-                            new PlayerRemovedFromWhitelistEvent(args[1]).callEvent();
-                            Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
-
-                            if (Keklist.getWebhookManager() != null)
-                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
-
-                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
-                                Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1], senderName)), "keklist.notify.whitelist");
-
-                        } else {
-                            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
-                            if (rsUserFix.next()) {
-                                Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
-                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1] + " (Old Name)")));
+                    switch (type) {
+                        case JAVA, BEDROCK -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
+                            if (rs.next()) {
+                                new PlayerRemovedFromWhitelistEvent(args[1]).callEvent();
+                                Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
 
                                 if (Keklist.getWebhookManager() != null)
                                     Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
 
                                 if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
-                                    Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1] + "(Old Name)", senderName)), "keklist.notify.whitelist");
+                                    Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1], senderName)), "keklist.notify.whitelist");
+
+                            } else {
+                                ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
+                                if (rsUserFix.next()) {
+                                    Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1] + " (Old Name)")));
+
+                                    if (Keklist.getWebhookManager() != null)
+                                        Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
+
+                                    if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                                        Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1] + "(Old Name)", senderName)), "keklist.notify.whitelist");
+
+                                } else {
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                                }
+                            }
+                        }
+
+                        case IPv4, IPv6 -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
+                            if (rs.next()) {
+                                new IpRemovedFromWhitelistEvent(args[1]).callEvent();
+                                Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", args[1]);
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
+
+                                if (Keklist.getWebhookManager() != null)
+                                    Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
+
+                                if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                                    Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1], senderName)), "keklist.notify.whitelist");
 
                             } else {
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
                             }
                         }
-                    } else if (type.equals(WhiteListType.IPv4) || type.equals(WhiteListType.IPv6)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
-                        if (rs.next()) {
-                            new IpRemovedFromWhitelistEvent(args[1]).callEvent();
-                            Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", args[1]);
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
 
-                            if (Keklist.getWebhookManager() != null)
-                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
+                        case DOMAIN -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
+                            if (rs.next()) {
+                                new DomainRemovedFromWhitelistEvent(args[1]).callEvent();
+                                Keklist.getDatabase().onUpdate("DELETE FROM whitelistDomain WHERE domain = ?", args[1]);
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
 
-                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
-                                Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1], senderName)), "keklist.notify.whitelist");
+                                if (Keklist.getWebhookManager() != null)
+                                    Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
 
-                        } else {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
-                        }
-                    } else if (type.equals(WhiteListType.DOMAIN)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
-                        if (rs.next()) {
-                            new DomainRemovedFromWhitelistEvent(args[1]).callEvent();
-                            Keklist.getDatabase().onUpdate("DELETE FROM whitelistDomain WHERE domain = ?", args[1]);
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
+                                if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
+                                    Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1], senderName)), "keklist.notify.whitelist");
 
-                            if (Keklist.getWebhookManager() != null)
-                                Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_REMOVE, args[1], senderName, System.currentTimeMillis());
-
-                            if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
-                                Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1], senderName)), "keklist.notify.whitelist");
-
-                        } else {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                            } else {
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                            }
                         }
                     }
 
@@ -228,33 +224,38 @@ public class WhitelistCommand extends Command {
                         return false;
                     }
 
-                    if (type.equals(WhitelistCommand.WhiteListType.IPv4) || type.equals(WhitelistCommand.WhiteListType.IPv6)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
+                    switch (type) {
+                        case IPv4, IPv6 -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
-                        if (rs.next()) {
-                            sendInfo(rs, sender, args[1]);
-                        } else
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.not-blacklisted", args[1])));
-
-                    } else if (type.equals(WhitelistCommand.WhiteListType.JAVA) || type.equals(WhitelistCommand.WhiteListType.BEDROCK)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
-
-                        if (rs.next()) {
-                            sendInfo(rs, sender, args[1]);
-                        } else {
-                            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
-                            if (rsUserFix.next()) {
-                                sendInfo(rsUserFix, sender, args[1] + " (Old Name)");
+                            if (rs.next()) {
+                                sendInfo(rs, sender, args[1]);
                             } else
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
                         }
-                    } else if (type.equals(WhitelistCommand.WhiteListType.DOMAIN)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
 
-                        if (rs.next()) {
-                            sendInfo(rs, sender, args[1]);
-                        } else
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                        case JAVA, BEDROCK -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
+
+                            if (rs.next()) {
+                                sendInfo(rs, sender, args[1]);
+                            } else {
+                                ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
+                                if (rsUserFix.next()) {
+                                    sendInfo(rsUserFix, sender, args[1] + " (Old Name)");
+                                } else
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                            }
+                        }
+                        
+                        case DOMAIN -> {
+                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
+
+                            if (rs.next()) {
+                                sendInfo(rs, sender, args[1]);
+                            } else
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                        }
                     }
                 }
 
@@ -319,9 +320,9 @@ public class WhitelistCommand extends Command {
 
     private class UserWhitelistAddCallback implements Callback {
         private final CommandSender player;
-        private final WhiteListType type;
+        private final TypeUtil.EntryType type;
 
-        public UserWhitelistAddCallback(CommandSender player, WhiteListType type) {
+        public UserWhitelistAddCallback(CommandSender player, TypeUtil.EntryType type) {
             this.player = player;
             this.type = type;
         }
@@ -341,7 +342,7 @@ public class WhitelistCommand extends Command {
                 String uuid;
                 String name;
 
-                if (type.equals(WhiteListType.JAVA)) {
+                if (type.equals(TypeUtil.EntryType.JAVA)) {
                     uuid = map.get("id");
                     name = map.get("name");
                 } else {
@@ -363,11 +364,11 @@ public class WhitelistCommand extends Command {
     }
 
     @Nullable
-    private static Component checkForGoodResponse(@NotNull String response, @NotNull WhiteListType type) {
+    private static Component checkForGoodResponse(@NotNull String response, @NotNull TypeUtil.EntryType type) {
         JsonElement responseElement = JsonParser.parseString(response);
 
         if (!responseElement.isJsonNull()) {
-            if (type.equals(WhiteListType.JAVA)) {
+            if (type.equals(TypeUtil.EntryType.JAVA)) {
                 if (responseElement.getAsJsonObject().get("error") != null ||
                         !responseElement.getAsJsonObject().has("id") ||
                         !responseElement.getAsJsonObject().has("name")) {
@@ -384,18 +385,6 @@ public class WhitelistCommand extends Command {
         }
 
         return null;
-    }
-
-    /**
-     * Types of whitelist entries
-     * <p> USERNAME: Whitelist a player by their username
-     * <p> IPv4: Whitelist a player by their IPv4 address
-     * <p> IPv6: Whitelist a player by their IPv6 address
-     * <p> BEDROCK: Whitelist a player by their Bedrock username
-     * <p> DOMAIN: Whitelist a domains which gets resolved to an IP
-     */
-    private enum WhiteListType {
-        IPv4, IPv6, JAVA, BEDROCK, DOMAIN
     }
 
     @Override

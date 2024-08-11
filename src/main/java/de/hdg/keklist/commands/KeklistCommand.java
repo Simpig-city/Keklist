@@ -3,7 +3,11 @@ package de.hdg.keklist.commands;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
 import de.hdg.keklist.gui.GuiManager;
+import de.hdg.keklist.util.IpUtil;
+import de.hdg.keklist.util.TypeUtil;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -119,9 +123,9 @@ public class KeklistCommand extends Command {
                                     }
                                 }
 
-                                default -> {
+                                default ->
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
-                                }
+
                             }
                         } else
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.manage.disabled")));
@@ -197,6 +201,87 @@ public class KeklistCommand extends Command {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.manage.disabled")));
                     }
 
+                    case "info" -> {
+                        if (!sender.hasPermission("keklist.info")) {
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                            return false;
+                        }
+
+                        TypeUtil.EntryType type = TypeUtil.getEntryType(args[1]);
+
+                        switch (type) {
+                            case IPv4, IPv6 -> {
+
+                                new IpUtil(args[1]).getIpData().thenAccept(data ->
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.ip-info")
+                                            .replace("%ip%", args[1])
+                                            .replace("%country%", data.country())
+                                                    .replace("%country_code%", data.countryCode())
+                                                    .replace("%continent%", data.continent())
+                                                    .replace("%continent_code%", data.continentCode())
+                                            .replace("%region%", data.regionName())
+                                            .replace("%city%", data.city())
+                                            .replace("%org%", data.org())
+                                            .replace("%as%", data.as())
+                                            .replace("%timezone%", data.timezone())
+                                            .replace("%mobile%", data.mobile() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                            .replace("%proxy%", data.proxy() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                            .replace("%hosting%", data.hosting() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                    ))
+                                );
+                            }
+
+                            case JAVA, BEDROCK -> {
+                                if (Bukkit.getPlayer(args[1]) != null) {
+                                    Player target = Bukkit.getPlayer(args[1]);
+                                    assert target != null;
+
+                                    try {
+
+                                        boolean whitelisted = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", target.getUniqueId().toString()).next();
+                                        boolean blacklisted = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", target.getUniqueId().toString()).next();
+
+                                        String brand = target.getClientBrandName();
+                                        int ping = target.getPing();
+                                        int version = target.getProtocolVersion();
+                                        long idle = target.getIdleDuration().getSeconds();
+                                        GameMode mode = target.getGameMode();
+                                        Location location = target.getLocation();
+
+                                        String ip = Keklist.getTranslations().get("unknown");
+                                        if (target.getAddress().getAddress() != null) {
+                                            ip = target.getAddress().getAddress().getHostAddress();
+                                        }
+
+
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.player-info")
+                                                .replace("%name%", target.getName())
+                                                .replace("%uuid%", target.getUniqueId().toString())
+                                                .replace("%whitelisted%", whitelisted ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%blacklisted%", blacklisted ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%brand%", brand == null ? "<red>" + Keklist.getTranslations().get("unknown") : brand)
+                                                .replace("%ping%", String.valueOf(ping))
+                                                .replace("%version%", String.valueOf(version))
+                                                .replace("%idle%", String.valueOf(idle))
+                                                .replace("%gamemode%", mode.toString())
+                                                .replace("%x%", String.valueOf(location.getBlockX()))
+                                                .replace("%y%", String.valueOf(location.getBlockY()))
+                                                .replace("%z%", String.valueOf(location.getBlockZ()))
+                                                .replace("%ip%", ip)
+                                                .replace("%requested_by%", sender.getName())
+                                        ));
+                                    } catch (SQLException e) {
+                                        throw new RuntimeException(e);
+                                    }
+                                }
+                            }
+
+                            default ->
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.info.unknown-type", args[1])));
+
+                        }
+                    }
+
                     default ->
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
                 }
@@ -228,16 +313,21 @@ public class KeklistCommand extends Command {
                         GuiManager.openMainGUI((Player) sender);
                     }
 
-                    case "info" -> {
+                    case "status" -> {
+                        if (!sender.hasPermission("keklist.status")) {
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                            return false;
+                        }
+
                         try {
                             int whitelisted = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM whitelist UNION ALL SELECT COUNT(*) FROM whitelistIp UNION ALL SELECT COUNT(*) FROM whitelistDomain) as whitelistCound").getInt(1);
                             int blacklisted = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM blacklist UNION ALL SELECT COUNT(*) FROM blacklistIp) as blacklistCount").getInt(1);
 
                             boolean whitelist = Keklist.getInstance().getConfig().getBoolean("whitelist.enabled");
                             boolean blacklist = Keklist.getInstance().getConfig().getBoolean("blacklist.enabled");
-                            
+
                             DB.DBType type = Keklist.getDatabase().getType();
-                            
+
                             String version = Keklist.getInstance().getPluginMeta().getVersion();
 
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.info")
@@ -278,6 +368,11 @@ public class KeklistCommand extends Command {
             if (sender.hasPermission("keklist.manage.reload"))
                 suggestions.add("reload");
 
+            if (sender.hasPermission("keklist.status"))
+                suggestions.add("status");
+
+            if (sender.hasPermission("keklist.info"))
+                suggestions.add("info");
 
             if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
                 if (sender.hasPermission("keklist.manage.blacklist"))
@@ -300,6 +395,11 @@ public class KeklistCommand extends Command {
                     && sender.hasPermission("keklist.manage.blacklist")) {
 
                 suggestions.addAll(List.of("enable", "disable", "allow-blacklisted", "disallow-blacklisted"));
+            } else if (args[0].equalsIgnoreCase("info")
+                    && sender.hasPermission("keklist.info")) {
+
+                suggestions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
+                suggestions.add("1.1.1.1");
             }
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("whitelist")
