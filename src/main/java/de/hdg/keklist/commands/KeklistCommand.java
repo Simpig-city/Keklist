@@ -202,7 +202,7 @@ public class KeklistCommand extends Command {
                     }
 
                     case "info" -> {
-                        if (!sender.hasPermission("keklist.info")) {
+                        if (!sender.hasPermission("keklist.info.use")) {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                             return false;
                         }
@@ -228,6 +228,7 @@ public class KeklistCommand extends Command {
                                             .replace("%proxy%", data.proxy() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
                                             .replace("%hosting%", data.hosting() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
                                             .replace("%query%", data.query())
+                                            .replace("%player%", args.length >= 3 ? args[2] : "<grey><hover:show_text:'May be due to searching just an IP'>unknown</hover>")
                                     ))
                                 );
                             }
@@ -238,7 +239,6 @@ public class KeklistCommand extends Command {
                                     assert target != null;
 
                                     try {
-
                                         boolean whitelisted = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", target.getUniqueId().toString()).next();
                                         boolean blacklisted = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", target.getUniqueId().toString()).next();
 
@@ -299,6 +299,7 @@ public class KeklistCommand extends Command {
 
                         try {
                             Keklist.getInstance().getConfig().load(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+                            Keklist.getDatabase().reconnect();
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("config-reloaded")));
                         } catch (IOException | InvalidConfigurationException e) {
                             throw new RuntimeException(e);
@@ -315,7 +316,7 @@ public class KeklistCommand extends Command {
                     }
 
                     case "status" -> {
-                        if (!sender.hasPermission("keklist.status")) {
+                        if (!sender.hasPermission("keklist.status.use")) {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
                             return false;
                         }
@@ -369,10 +370,10 @@ public class KeklistCommand extends Command {
             if (sender.hasPermission("keklist.manage.reload"))
                 suggestions.add("reload");
 
-            if (sender.hasPermission("keklist.status"))
+            if (sender.hasPermission("keklist.status.use"))
                 suggestions.add("status");
 
-            if (sender.hasPermission("keklist.info"))
+            if (sender.hasPermission("keklist.info.use"))
                 suggestions.add("info");
 
             if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
@@ -397,7 +398,7 @@ public class KeklistCommand extends Command {
 
                 suggestions.addAll(List.of("enable", "disable", "allow-blacklisted", "disallow-blacklisted"));
             } else if (args[0].equalsIgnoreCase("info")
-                    && sender.hasPermission("keklist.info")) {
+                    && sender.hasPermission("keklist.info.use")) {
 
                 suggestions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
                 suggestions.add("1.1.1.1");

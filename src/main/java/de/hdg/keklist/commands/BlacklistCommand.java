@@ -59,7 +59,7 @@ public class BlacklistCommand extends Command {
                 type = BlacklistType.IPv6;
             } else if (args[1].startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix"))) {
                 if (Keklist.getInstance().getFloodgateApi() == null) {
-                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-argument")));
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.invalid-argument")));
                     return false;
                 } else
                     type = BlacklistType.BEDROCK;
