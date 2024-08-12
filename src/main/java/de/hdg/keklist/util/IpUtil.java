@@ -60,7 +60,7 @@ public class IpUtil {
     @Contract(pure = true)
     private @NotNull String getUrl(@NotNull String ip) {
         // https://ip-api.com/docs/api:json
-        return "http://ip-api.com/json/" + ip + "?fields=20180763"; // status,message,continent,continentCode,country,countryCode,regionName,city,timezone,isp,org,as,mobile,proxy,hosting,query
+        return "http://ip-api.com/json/" + ip + "?fields=3862299"; // status,message,continent,continentCode,country,countryCode,regionName,city,timezone,isp,org,as,mobile,proxy,hosting,query
     }
 
 
