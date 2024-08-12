@@ -142,6 +142,11 @@ public class DB {
         return null;
     }
 
+    public void reconnect() {
+        disconnect();
+        connect();
+    }
+
     private void createTables() {
         onUpdate("CREATE TABLE IF NOT EXISTS whitelist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16) UNIQUE, byPlayer VARCHAR(16), unix BIGINT(13))");
         onUpdate("CREATE TABLE IF NOT EXISTS whitelistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13))");

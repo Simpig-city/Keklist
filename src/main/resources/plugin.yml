@@ -85,3 +85,15 @@ permissions:
   keklist.notify.whitelist:
     description: Allows the player to see whitelist notifications
     default: false
+
+  keklist.notify.ip:
+    description: Allows the player to see ip notifications on player join
+    default: false
+
+  keklist.info.use:
+    description: Allows the player to use the info command
+    default: op
+
+  keklist.status.use:
+    description: Allows the player to use the status command
+    default: op

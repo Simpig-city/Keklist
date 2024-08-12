@@ -2,7 +2,8 @@
  
  # Keklist
 
-![License](https://img.shields.io/badge/license-GPLv3-blue)
+[![License](https://img.shields.io/badge/license-GPLv3-blue)](./LICENSE)
+[![GitHub release](https://img.shields.io/github/v/release/simpig-city/keklist)](https://github.com/Simpig-city/Keklist/releases)
 [![Crowdin](https://badges.crowdin.net/keklist/localized.svg)](https://crowdin.com/project/Keklist)
 ![TeamCity](https://teamcity.sageee.xyz/app/rest/builds/buildType:(id:Keklist_build)/statusIcon)
 [![Contributors](https://img.shields.io/github/contributors/simpig-city/keklist)](https://github.com/Simpig-city/Keklist/graphs/contributors)
@@ -24,6 +25,10 @@ Keklist includes many different features to make your whitelist experience as go
 - Plan hook
 - ~~MySQL~~ MariaDB support for syncing your whitelist across multiple servers
 - **Ingame GUI**
+- IP info command
+- Block users by continent and country
+- Proxy/VPN/Tor block mode
+- Require players to add server to their server list
 - Velocity plugin
   - Adds limbo support
   - API for plugin developers
@@ -33,6 +38,7 @@ Keklist includes many different features to make your whitelist experience as go
  - Luckperms contexts
  - PlaceholderAPI
  - Plan player analytics
+ - Geyser & Floodgate
 
 *Informations about implementations of these can be found in the wiki*
 
@@ -96,7 +102,7 @@ git clone https://github.com/Simpig-city/Keklist.git
 cd Keklist
 mvn package
 ```
-The compiled jar file will be in the `target` folder. ***You need to have maven and java jdk 17 installed.***
+The compiled jar files will be in the `target` folder. ***You need to have maven and java jdk 21 installed.***
 
 ### Contributing
 If you want to help us with the development of Keklist, you can do that by creating a pull request. We'll review it and if everything is fine, we'll eventually merge it. If you want to add a new feature, please create an issue first, so we can discuss it. If you want to help us with the translation, you can do that [here](https://crowdin.com/project/keklist). If you want to help us with the documentation, you can do that on our discord server.
