@@ -30,7 +30,17 @@ public class PreLoginKickEvent implements Listener {
     private final OkHttpClient client = new OkHttpClient();
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-    public void onPreLogin(AsyncPlayerPreLoginEvent event) {
+    public void onPreLogin(@NotNull AsyncPlayerPreLoginEvent event) {
+        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", event.getUniqueId().toString())) {
+            if (!rs.next()) {
+                Keklist.getDatabase().onUpdate("INSERT INTO lastSeen (uuid, ip, lastSeen) VALUES (?, ?, ?)", event.getUniqueId().toString(), event.getAddress().getHostAddress(), System.currentTimeMillis());
+            } else {
+                Keklist.getDatabase().onUpdate("UPDATE lastSeen SET ip = ?, lastSeen = ? WHERE uuid = ?", event.getAddress().getHostAddress(), System.currentTimeMillis(), event.getUniqueId().toString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         if (!config.getList("blacklist.countries").isEmpty() ||
                 !config.getList("blacklist.continents").isEmpty() ||
                 !config.getBoolean("ip.proxy-allowed")) {
@@ -240,7 +250,10 @@ public class PreLoginKickEvent implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onJoin(PlayerJoinEvent event) {
+    public void onJoin(@NotNull PlayerJoinEvent event) {
+        // No need to check for the lastSeenIp table, because we already did this in the prelogin event
+        Keklist.getDatabase().onUpdate("UPDATE lastSeen SET protocolId = ?, brand = ? WHERE uuid = ?", event.getPlayer().getProtocolVersion(), (event.getPlayer().getClientBrandName() == null ? "unknown" : event.getPlayer().getClientBrandName()), event.getPlayer().getUniqueId().toString());
+
         if (config.getBoolean("blacklist.enabled")) {
             ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
             ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getPlayer().getAddress().getAddress().getHostAddress());

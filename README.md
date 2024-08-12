@@ -26,6 +26,7 @@ Keklist includes many different features to make your whitelist experience as go
 - ~~MySQL~~ MariaDB support for syncing your whitelist across multiple servers
 - **Ingame GUI**
 - IP info command
+- User info command (includes offline users)
 - Block users by continent and country
 - Proxy/VPN/Tor block mode
 - Require players to add server to their server list
