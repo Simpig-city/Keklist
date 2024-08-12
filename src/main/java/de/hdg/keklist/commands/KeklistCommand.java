@@ -18,7 +18,9 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 public class KeklistCommand extends Command {
@@ -211,7 +213,6 @@ public class KeklistCommand extends Command {
 
                         switch (type) {
                             case IPv4, IPv6 -> {
-
                                 new IpUtil(args[1]).getIpData().thenAccept(data ->
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.ip-info")
                                             .replace("%ip%", args[1])
@@ -254,7 +255,6 @@ public class KeklistCommand extends Command {
                                             ip = target.getAddress().getAddress().getHostAddress();
                                         }
 
-
                                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.player-info")
                                                 .replace("%name%", target.getName())
                                                 .replace("%uuid%", target.getUniqueId().toString())
@@ -274,6 +274,50 @@ public class KeklistCommand extends Command {
                                     } catch (SQLException e) {
                                         throw new RuntimeException(e);
                                     }
+                                } else {
+                                    OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
+
+                                    try {
+                                        boolean whitelisted = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next();
+                                        boolean blacklisted = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next();
+
+                                        String latestIp = "unknown";
+                                        int protocolId = -1;
+                                        String brand = "unknown";
+
+                                        if(Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next()) {
+                                            latestIp = Keklist.getDatabase().onQuery("SELECT ip FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getString("ip");
+                                            protocolId = Keklist.getDatabase().onQuery("SELECT protocolId FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getInt("protocolId");
+                                            brand = Keklist.getDatabase().onQuery("SELECT brand FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getString("brand");
+                                        }
+
+                                        Location location = offlinePlayer.getLocation();
+
+                                        if(location == null)
+                                            location = new Location(Bukkit.getWorlds().getFirst(), 0, 100, 0);
+
+                                        long lastSeen = offlinePlayer.getLastSeen();
+                                        SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
+
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.offline-player-info")
+                                                .replace("%name%", offlinePlayer.getName())
+                                                .replace("%uuid%", offlinePlayer.getUniqueId().toString())
+                                                .replace("%whitelisted%", whitelisted ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%blacklisted%", blacklisted ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%brand%", brand)
+                                                .replace("%version%", protocolId == -1 ? Keklist.getTranslations().get("unknown") : String.valueOf(protocolId))
+                                                .replace("%x%", String.valueOf(location.getBlockX()))
+                                                .replace("%y%", String.valueOf(location.getBlockY()))
+                                                .replace("%z%", String.valueOf(location.getBlockZ()))
+                                                .replace("%ip%", latestIp)
+                                                .replace("%requested_by%", sender.getName())
+                                                .replace("%last_seen%", sdf.format(new Date(lastSeen)))
+                                        ));
+
+                                    } catch (SQLException e) {
+                                        throw new RuntimeException(e);
+                                    }
+
                                 }
                             }
 

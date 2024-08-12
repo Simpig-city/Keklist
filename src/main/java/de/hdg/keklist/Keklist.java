@@ -33,7 +33,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.context.ContextCalculator;
-import net.luckperms.api.context.ContextManager;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -62,7 +61,7 @@ public final class Keklist extends JavaPlugin {
     private @Getter @Nullable FloodgateApi floodgateApi = null;
     private static @Getter PlanHook planHook;
     private PlaceholderAPIExtension placeholders;
-    private LuckPerms luckPermsAPI;
+    private @Getter LuckPerms luckPermsAPI;
     private final List<ContextCalculator<Player>> registeredCalculators = new ArrayList<>();
     private GeyserApi geyserApi;
 
