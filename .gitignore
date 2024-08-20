@@ -4,6 +4,8 @@
 
 /.gradle
 
+/build
+
 *.db
 *.log
 *.log.*

@@ -1,8 +1,8 @@
-name: Keklist
-version: ${project.version}
+name: ${name}
+version: ${version}
 main: de.hdg.keklist.Keklist
 api-version: 1.20
-description: ${project.description}
+description: ${description}
 authors: ["hdgamer1404Jonas", "SageSphinx63920"]
 website: https://keklist.pages.dev
 contributors: [ "LPTP1" ]
