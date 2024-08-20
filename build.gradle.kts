@@ -5,14 +5,13 @@ import org.ajoberstar.grgit.Grgit
 val serverDir: File = projectDir.resolve("testserver")
 val pluginDir: File = serverDir.resolve("plugins")
 
-defaultTasks("licenseFormat", "build")
+defaultTasks("build")
 
 plugins {
     `java-library`
     `maven-publish`
 
     id("io.freefair.lombok") version "8.7.1"
-    id("org.cadixdev.licenser") version "0.6.1"
     id("com.gradleup.shadow") version "8.3.0"
     id("com.modrinth.minotaur") version "2.+"
     id("org.ajoberstar.grgit") version "5.2.2"
@@ -81,13 +80,6 @@ java {
     toolchain.languageVersion = JavaLanguageVersion.of(21)
 }
 
-license {
-    header = resources.text.fromFile(rootProject.file("HEADER.txt"))
-    include("**/*.java")
-    newLine = true
-    ignoreFailures = true
-}
-
 publishing {
     repositories {
         maven {
@@ -135,10 +127,6 @@ modrinth {
 }
 
 tasks.modrinth.get().dependsOn(tasks.modrinthSyncBody)
-
-tasks.javadoc.configure() {
-    //options.('Xdoclint:-missing', '-quiet')
-}
 
 tasks {
     compileJava {
