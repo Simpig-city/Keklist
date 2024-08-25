@@ -1,6 +1,7 @@
 import java.net.URI
 import java.nio.file.Files
 import org.ajoberstar.grgit.Grgit
+import io.papermc.hangarpublishplugin.model.Platforms
 
 defaultTasks("build")
 
@@ -12,6 +13,7 @@ plugins {
     id("com.gradleup.shadow") version "8.3.0"
     id("com.modrinth.minotaur") version "2.+"
     id("org.ajoberstar.grgit") version "5.2.2"
+    id("io.papermc.hangar-publish-plugin") version "0.1.2"
 }
 
 group = "de.sage.minecraft"
@@ -130,23 +132,65 @@ publishing {
 }
 
 modrinth {
-    val changelogContent =
-        "[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}"
-
-    token.set(System.getenv("MODRINTH_TOKEN")) // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
+    token.set(System.getenv("MODRINTH_TOKEN"))
     projectId.set("keklist")
     versionNumber.set("${project.version}")
-    versionType.set(if (!version.toString().contains("SNAPSHOT")) "release" else "beta")
+    versionType.set(if (version.toString().contains("SNAPSHOT")) "release" else "beta")
     //uploadFile.set(tasks.jar)
     uploadFile.set(tasks.getByPath("shadowJar"))
     gameVersions.addAll("1.21.1")
     loaders.addAll("paper", "purpur", "velocity")
     syncBodyFrom.set(rootProject.file("README.md").readText())
-    changelog.set(changelogContent)
-    debugMode.set(true)
+    changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
 
     dependencies {
-        optional.project("geyser") // Sadly this is the only project on modrinth
+        optional.project("geyser") // Sadly this is the only project on modrinth, and it does not allow to add external dependencies *yet*
+    }
+}
+
+hangarPublish {
+    publications.register("hangar") {
+        version.set(project.version as String)
+        channel.set(if (version.toString().contains("SNAPSHOT")) "Release" else "Snapshot")
+        id.set("keklist")
+        apiKey.set(System.getenv("HANGAR_API_TOKEN"))
+        changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
+        pages {
+            resourcePage(provider { file("README.md").readText() })
+        }
+
+        platforms {
+            register(Platforms.PAPER) {
+                jar.set(tasks.jar.flatMap { it.archiveFile })
+                platformVersions.set(listOf("1.21.x"))
+                dependencies {
+                    hangar("Geyser") {
+                        required.set(false)
+                    }
+                    url("Floodgate", "https://geysermc.org/download?project=floodgate") {
+                        required.set(false)
+                    }
+                    hangar("PlaceholderAPI") {
+                        required.set(false)
+                    }
+                    hangar("Plan-Player-Analytics") {
+                        required.set(false)
+                    }
+                    url("LuckPerms", "https://luckperms.net/download") {
+                        required.set(false)
+                    }
+                }
+            }
+            register(Platforms.VELOCITY) {
+                jar.set(tasks.jar.flatMap { it.archiveFile })
+                platformVersions.set(listOf("3.3"))
+                dependencies {
+                    url("LimboAPI", "https://github.com/Elytrium/LimboAPI") {
+                        required.set(false)
+                    }
+                }
+            }
+        }
     }
 }
 
@@ -194,6 +238,11 @@ tasks {
                 Files.copy(it, serverDir.resolve("server.jar").toPath())
             }
         }
+    }
+
+    register("publishNewRelease") {
+        group = "util"
+        dependsOn("publish", "modrinth", "publishHangarPublicationToHangar", "syncHangarPublicationMainResourcePagePageToHangar")
     }
 
     // Is this any useful?
@@ -247,7 +296,7 @@ tasks {
         classpath = files(serverDir.resolve("server.jar"))
         workingDir = serverDir
         jvmArgs = listOf("-Dcom.mojang.eula.agree=true", "--add-modules=jdk.incubator.vector")
-       // args = listOf("--nogui")
+        // args = listOf("--nogui")
         standardInput = System.`in`
     }
 }
