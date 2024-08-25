@@ -30,8 +30,8 @@ jobs:
     - name: Publish to GitHub Packages
       run: ./gradlew publishNewRelease
       env:
-        KEKLIST_USER: ${{ secrets.KEKLIST_USER }}
-        KEKLIST_PASSWORD: ${{ secrets.KEKLIST_PASSWORD }}
+        KEKLIST_REPO_USER: ${{ vars.KEKLIST_USER }}
+        KEKLIST_REPO_PASSWORD: ${{ secrets.KEKLIST_PASSWORD }}
         MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         HANGAR_API_TOKEN:  ${{ secrets.HANGAR_API_TOKEN }}
     

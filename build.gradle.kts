@@ -92,8 +92,8 @@ publishing {
             url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
 
             credentials {
-                username = System.getenv("KEKLIST_USER")
-                password = System.getenv("KEKLIST_PASSWORD")
+                username = System.getenv("KEKLIST_REPO_USER")
+                password = System.getenv("KEKLIST_REPO_PASSWORD")
 
             }
         }
