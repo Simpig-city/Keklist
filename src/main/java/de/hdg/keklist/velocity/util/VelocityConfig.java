@@ -2,10 +2,10 @@ package de.hdg.keklist.velocity.util;
 
 import de.hdg.keklist.velocity.KeklistVelocity;
 import lombok.SneakyThrows;
-import ninja.leaping.configurate.ConfigurationNode;
-import ninja.leaping.configurate.yaml.YAMLConfigurationLoader;
 import org.jetbrains.annotations.NotNull;
-import org.yaml.snakeyaml.DumperOptions;
+import org.spongepowered.configurate.ConfigurationNode;
+import org.spongepowered.configurate.yaml.NodeStyle;
+import org.spongepowered.configurate.yaml.YamlConfigurationLoader;
 
 import java.io.*;
 import java.nio.file.Path;
@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class VelocityConfig {
-    private YAMLConfigurationLoader configLoader;
+    private YamlConfigurationLoader configLoader;
     private final Path configDirectory;
     private final String fileName;
 
@@ -39,7 +39,7 @@ public class VelocityConfig {
                 generateConfig(fileName);
             }
 
-            this.configLoader = YAMLConfigurationLoader.builder().setPath(directory.resolve(fileName)).setFlowStyle(DumperOptions.FlowStyle.BLOCK).build();
+            this.configLoader = YamlConfigurationLoader.builder().path(directory.resolve(fileName)).nodeStyle(NodeStyle.BLOCK).build();
 
         } catch (IOException exception) {
             exception.printStackTrace();
@@ -56,7 +56,7 @@ public class VelocityConfig {
      */
     @SneakyThrows(IOException.class)
     public <T> T getOption(@NotNull T defaultValue, @NotNull String path) {
-        return configLoader.load().getNode(path).getValue() != null ? (T) configLoader.load().getNode(path).getValue() : defaultValue;
+        return configLoader.load().node(path).raw() != null ? (T) configLoader.load().node(path).raw() : defaultValue;
     }
 
     /**
@@ -68,7 +68,7 @@ public class VelocityConfig {
      */
     public void setValue(@NotNull Object value, @NotNull String path) throws IOException {
         ConfigurationNode node = configLoader.load();
-        node.getNode(path).setValue(value);
+        node.node(path).set(value);
         configLoader.save(node);
     }
 
@@ -77,7 +77,7 @@ public class VelocityConfig {
      */
     public void updateToNewVersion() {
         try {
-            updateConfig(configLoader, YAMLConfigurationLoader.builder().setURL(this.getClass().getResource("/velocity-config.yml")).setFlowStyle(DumperOptions.FlowStyle.BLOCK).build());
+            updateConfig(configLoader, YamlConfigurationLoader.builder().url(this.getClass().getResource("/velocity-config.yml")).nodeStyle(NodeStyle.BLOCK).build());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -116,17 +116,17 @@ public class VelocityConfig {
      * @param newConfigLoader New config loader
      * @throws IOException On any IO error
      */
-    private void updateConfig(@NotNull YAMLConfigurationLoader oldConfigLoader, @NotNull YAMLConfigurationLoader newConfigLoader) throws IOException {
+    private void updateConfig(@NotNull YamlConfigurationLoader oldConfigLoader, @NotNull YamlConfigurationLoader newConfigLoader) throws IOException {
         ConfigurationNode oldConfig = oldConfigLoader.load();
         ConfigurationNode newConfig = newConfigLoader.load();
 
-        if (oldConfig.getNode("config_version").getInt() < newConfig.getNode("config_version").getInt()) {
+        if (oldConfig.node("config_version").getInt() < newConfig.node("config_version").getInt()) {
             //KeklistVelocity.getInstance().getLogger().info(KeklistVelocity.getTranslations().get("velocity.config.updating"));
 
 
-            for (ConfigurationNode node : newConfig.getChildrenMap().values()) {
-                if (!oldConfig.getChildrenMap().containsKey(node.getKey())) {
-                    oldConfig.getNode(node.getKey()).setValue(node.getValue());
+            for (ConfigurationNode node : newConfig.childrenMap().values()) {
+                if (!oldConfig.childrenMap().containsKey(node.key())) {
+                    oldConfig.node(node.key()).set(node.raw());
                 }
             }
 

@@ -16,7 +16,7 @@ plugins {
 
 group = "de.sage.minecraft"
 version = "1.0.0-SNAPSHOT"
-description = "Keklist"
+description = "Custom made black and whitelist with many different features"
 java.sourceCompatibility = JavaVersion.VERSION_21
 java.targetCompatibility = JavaVersion.VERSION_21
 
@@ -50,17 +50,17 @@ repositories {
 dependencies {
     // Provided by the server
     compileOnly(libs.io.papermc.paper.paper.api)
+    compileOnly(libs.com.velocitypowered.velocity.api)
     compileOnly(libs.net.kyori.adventure.text.minimessage)
     compileOnly(libs.com.google.code.gson.gson)
-    compileOnly(libs.com.velocitypowered.velocity.api)
 
     // Provided by plugins
     compileOnly(libs.org.geysermc.floodgate.api)
+    compileOnly(libs.org.geysermc.geyser.api)
     compileOnly(libs.net.elytrium.limboapi.api)
     compileOnly(libs.com.github.plan.player.analytics.plan)
     compileOnly(libs.me.clip.placeholderapi)
     compileOnly(libs.net.luckperms.api)
-    compileOnly(libs.org.geysermc.geyser.api)
 
     // Provided via custom loader
     compileOnly(libs.org.xerial.sqlite.jdbc)
@@ -85,9 +85,9 @@ publishing {
         maven {
             name = "keklist"
 
-            val releasesRepoUrl = "https://repo.sageee.xyz/releases"
-            val snapshotsRepoUrl = "https://repo.sageee.xyz/snapshots"
-            url = uri(if (!(version as String).contains("SNAPSHOT")) releasesRepoUrl else snapshotsRepoUrl)
+            val releasesRepoUrl = uri("https://repo.sageee.xyz/releases")
+            val snapshotsRepoUrl = uri("https://repo.sageee.xyz/snapshots")
+            url = if (version.toString().endsWith("SNAPSHOT")) snapshotsRepoUrl else releasesRepoUrl
 
             credentials {
                 username = System.getenv("KEKLIST_USER")
@@ -122,9 +122,7 @@ publishing {
                 }
             }
 
-            groupId = project.group.toString()
             artifactId = project.name
-            version = project.version.toString()
 
             from(components["java"])
         }
@@ -138,13 +136,14 @@ modrinth {
     token.set(System.getenv("MODRINTH_TOKEN")) // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
     projectId.set("keklist")
     versionNumber.set("${project.version}")
-    versionType.set(if ((version as String).contains("SNAPSHOT")) "release" else "beta")
+    versionType.set(if (!version.toString().contains("SNAPSHOT")) "release" else "beta")
     //uploadFile.set(tasks.jar)
     uploadFile.set(tasks.getByPath("shadowJar"))
     gameVersions.addAll("1.21.1")
-    loaders.addAll("paper", "purpur")
+    loaders.addAll("paper", "purpur", "velocity")
     syncBodyFrom.set(rootProject.file("README.md").readText())
     changelog.set(changelogContent)
+    debugMode.set(true)
 
     dependencies {
         optional.project("geyser") // Sadly this is the only project on modrinth
@@ -247,8 +246,8 @@ tasks {
         }
         classpath = files(serverDir.resolve("server.jar"))
         workingDir = serverDir
-        jvmArgs = listOf("-Dcom.mojang.eula.agree=true")
-        args = listOf("--nogui")
+        jvmArgs = listOf("-Dcom.mojang.eula.agree=true", "--add-modules=jdk.incubator.vector")
+       // args = listOf("--nogui")
         standardInput = System.`in`
     }
 }

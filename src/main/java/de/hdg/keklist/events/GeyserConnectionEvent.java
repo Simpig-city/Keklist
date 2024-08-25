@@ -15,7 +15,7 @@ public class GeyserConnectionEvent {
     private static final FileConfiguration config = Keklist.getInstance().getConfig();
 
     public static void onConnectionRequestEvent(ConnectionRequestEvent event) {
-        String ip = event.getInetSocketAddress().getAddress().getHostAddress();
+        String ip = event.inetSocketAddress().getAddress().getHostAddress();
 
         try (ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", ip)) {
             if (rsIp.next()) {
