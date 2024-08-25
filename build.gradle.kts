@@ -2,9 +2,6 @@ import java.net.URI
 import java.nio.file.Files
 import org.ajoberstar.grgit.Grgit
 
-val serverDir: File = projectDir.resolve("testserver")
-val pluginDir: File = serverDir.resolve("plugins")
-
 defaultTasks("build")
 
 plugins {
@@ -17,14 +14,15 @@ plugins {
     id("org.ajoberstar.grgit") version "5.2.2"
 }
 
+group = "de.sage.minecraft"
+version = "1.0.0-SNAPSHOT"
+description = "Keklist"
+java.sourceCompatibility = JavaVersion.VERSION_21
+java.targetCompatibility = JavaVersion.VERSION_21
+
 repositories {
     // mavenLocal()
     mavenCentral()
-
-    // Plan API
-    maven("https://jitpack.io")
-
-    maven("https://maven.pkg.github.com/Simpig-city/Keklist")
 
     // Paper and Velocity API
     maven("https://repo.papermc.io/repository/maven-public/")
@@ -39,6 +37,9 @@ repositories {
     maven("https://repo.opencollab.dev/maven-snapshots/")
     maven("https://repo.opencollab.dev/main/")
 
+    // Plan API
+    maven("https://jitpack.io")
+
     // PlaceholderAPI
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
 
@@ -47,31 +48,30 @@ repositories {
 }
 
 dependencies {
-    implementation(libs.org.bstats.bstats.bukkit)
-
+    // Provided by the server
     compileOnly(libs.io.papermc.paper.paper.api)
     compileOnly(libs.net.kyori.adventure.text.minimessage)
     compileOnly(libs.com.google.code.gson.gson)
     compileOnly(libs.com.velocitypowered.velocity.api)
+
+    // Provided by plugins
     compileOnly(libs.org.geysermc.floodgate.api)
     compileOnly(libs.net.elytrium.limboapi.api)
     compileOnly(libs.com.github.plan.player.analytics.plan)
     compileOnly(libs.me.clip.placeholderapi)
     compileOnly(libs.net.luckperms.api)
     compileOnly(libs.org.geysermc.geyser.api)
+
+    // Provided via custom loader
     compileOnly(libs.org.xerial.sqlite.jdbc)
     compileOnly(libs.org.mariadb.jdbc.mariadb.java.client)
     compileOnly(libs.com.squareup.okhttp3.okhttp)
     compileOnly(libs.club.minnced.discord.webhooks)
     compileOnly(libs.de.sage.util.updatechecker)
-    compileOnly(libs.org.projectlombok.lombok)
-}
 
-group = "de.sage.minecraft"
-version = "1.0.0-SNAPSHOT"
-description = "Keklist"
-java.sourceCompatibility = JavaVersion.VERSION_21
-java.targetCompatibility = JavaVersion.VERSION_21
+    // Other / Shaded
+    implementation(libs.org.bstats.bstats.bukkit)
+}
 
 java {
     withSourcesJar()
@@ -97,6 +97,31 @@ publishing {
         }
 
         publications.create<MavenPublication>("maven") {
+            pom {
+                name = project.name
+                description = project.description
+                url = "https://github.com/simpig-city/keklist"
+
+                licenses {
+                    license {
+                        name = "GNU General Public License v3.0"
+                        url = "https://www.gnu.org/licenses/gpl-3.0.en.html"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "sage"
+                        name = "SageSphinx63920"
+                        email = "sage@sagesphinx63920.dev"
+                    }
+                }
+                scm {
+                    connection = "scm:git:https://github.com/Simpig-city/Keklist.git"
+                    developerConnection = "scm:git:https://github.com/Simpig-city/Keklist.git"
+                    url = "https://github.com/Simpig-city/Keklist"
+                }
+            }
+
             groupId = project.group.toString()
             artifactId = project.name
             version = project.version.toString()
@@ -108,7 +133,7 @@ publishing {
 
 modrinth {
     val changelogContent =
-        "[${getLatestCommitHash()}](https://github.com/ViaVersion/ViaRewind/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}"
+        "[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}"
 
     token.set(System.getenv("MODRINTH_TOKEN")) // Remember to have the MODRINTH_TOKEN environment variable set or else this will fail - just make sure it stays private!
     projectId.set("keklist")
@@ -128,6 +153,9 @@ modrinth {
 
 tasks.modrinth.get().dependsOn(tasks.modrinthSyncBody)
 
+val serverDir: File = projectDir.resolve("testserver")
+val pluginDir: File = serverDir.resolve("plugins")
+
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
@@ -136,7 +164,9 @@ tasks {
 
     javadoc {
         options.encoding = Charsets.UTF_8.name()
+        options.showFromProtected()
         (options as StandardJavadocDocletOptions).addStringOption("Xdoclint:none", "-quiet")
+        (options as StandardJavadocDocletOptions).addBooleanOption("html5", true)
     }
 
     shadowJar {
@@ -167,12 +197,40 @@ tasks {
         }
     }
 
-    register("downloadExtensions") {
+    // Is this any useful?
+    /*register("downloadExtensions") {
         group = "purpur"
+        dependsOn("downloadServer")
         doFirst {
+            pluginDir.listFiles { _, name -> name.endsWith(".jar") && !name.equals("keklist.jar") }
+                ?.forEach { it.delete() }
 
+            URI.create("https://download.geysermc.org/v2/projects/geyser/versions/latest/builds/latest/downloads/spigot")
+                .toURL().openStream().use {
+                Files.copy(it, pluginDir.resolve("geyser.jar").toPath())
+            }
+
+            URI.create("https://download.geysermc.org/v2/projects/floodgate/versions/latest/builds/latest/downloads/spigot")
+                .toURL().openStream().use {
+                Files.copy(it, pluginDir.resolve("floodgate.jar").toPath())
+            }
+
+            URI.create("https://download.luckperms.net/1554/bukkit/loader/LuckPerms-Bukkit-5.4.139.jar").toURL()
+                .openStream().use {
+                Files.copy(it, pluginDir.resolve("luckperms.jar").toPath())
+            }
+
+            URI.create("https://hangarcdn.papermc.io/plugins/HelpChat/PlaceholderAPI/versions/2.11.6/PAPER/PlaceholderAPI-2.11.6.jar")
+                .toURL().openStream().use {
+                Files.copy(it, pluginDir.resolve("placeholderAPI.jar").toPath())
+            }
+
+            URI.create("https://github.com/plan-player-analytics/Plan/releases/download/5.6.2883/Plan-5.6-build-2883.jar")
+                .toURL().openStream().use {
+                Files.copy(it, pluginDir.resolve("plan.jar").toPath())
+            }
         }
-    }
+    }*/
 
     register("runServer", JavaExec::class) {
         group = "purpur"
@@ -194,7 +252,6 @@ tasks {
         standardInput = System.`in`
     }
 }
-
 
 
 fun getBranch(): String {
