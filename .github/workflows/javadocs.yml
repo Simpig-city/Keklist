@@ -19,19 +19,14 @@ jobs:
       with:
         java-version: 21
         distribution: 'corretto'
-        cache: 'maven'
+        cache: 'gradle'
         
-    - name: Setup Maven 3.9.1 🔮
-      uses: stCarolas/setup-maven@v5
-      with:
-        maven-version: 3.9.1
-        
-    - name: Build Javadocs with Maven ⚙ 
-      run: mvn -B javadoc:javadoc --file pom.xml 
+    - name: Build Javadocs with Gradle ⚙
+      run: ./gradlew javadoc
       
     - name: Deploy  🚀
       uses: peaceiris/actions-gh-pages@v4
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_branch: javadocs
-        publish_dir: ./src/javadoc
+        publish_dir: ./build/docs/javadoc
