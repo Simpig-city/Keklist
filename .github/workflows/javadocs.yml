@@ -1,11 +1,8 @@
 name: Publish Javadocs
 on:
-  #push:
-    #branches: [ main ]
-  #pull_request:
-    #branches: [ main ]
+  release:
+    types: [ created ]
   workflow_dispatch:
-
 
 jobs:
   javadoc:
@@ -18,8 +15,13 @@ jobs:
       uses: actions/setup-java@v4
       with:
         java-version: 21
-        distribution: 'corretto'
-        cache: 'gradle'
+        distribution: 'termium'
+
+    - name: Validate Gradle Wrapper
+      uses: gradle/actions/wrapper-validation@v4
+
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
         
     - name: Build Javadocs with Gradle ⚙
       run: ./gradlew javadoc
