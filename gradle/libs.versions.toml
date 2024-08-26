@@ -2,7 +2,7 @@
 
 [versions]
 io-papermc-paper-paper-api = "1.21.1-R0.1-SNAPSHOT"
-com-velocitypowered-velocity-api = "3.3.0-SNAPSHOT"
+com-velocitypowered-velocity-api = "4.0.0-SNAPSHOT"
 net-kyori-adventure-text-minimessage = "4.17.0"
 com-google-code-gson-gson = "2.11.0"
 
