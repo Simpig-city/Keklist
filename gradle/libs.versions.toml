@@ -1,0 +1,40 @@
+# https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
+
+[versions]
+io-papermc-paper-paper-api = "1.21.1-R0.1-SNAPSHOT"
+com-velocitypowered-velocity-api = "3.3.0-SNAPSHOT"
+net-kyori-adventure-text-minimessage = "4.17.0"
+com-google-code-gson-gson = "2.11.0"
+
+org-geysermc-floodgate-api = "2.2.3-SNAPSHOT"
+org-geysermc-geyser-api = "2.4.1-SNAPSHOT"
+net-elytrium-limboapi-api = "1.1.25"
+com-github-plan-player-analytics-plan = "5.6.2883"
+me-clip-placeholderapi = "2.11.6"
+net-luckperms-api = "5.4"
+
+org-xerial-sqlite-jdbc = "3.46.1.0"
+org-mariadb-jdbc-mariadb-java-client = "3.4.1"
+com-squareup-okhttp3-okhttp = "5.0.0-alpha.14"
+club-minnced-discord-webhooks = "0.8.4"
+de-sage-util-updatechecker = "1.0.3-SNAPSHOT"
+
+org-bstats-bstats-bukkit = "3.0.3"
+
+[libraries]
+club-minnced-discord-webhooks = { module = "club.minnced:discord-webhooks", version.ref = "club-minnced-discord-webhooks" }
+com-github-plan-player-analytics-plan = { module = "com.github.plan-player-analytics:Plan", version.ref = "com-github-plan-player-analytics-plan" }
+com-google-code-gson-gson = { module = "com.google.code.gson:gson", version.ref = "com-google-code-gson-gson" }
+com-squareup-okhttp3-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "com-squareup-okhttp3-okhttp" }
+com-velocitypowered-velocity-api = { module = "com.velocitypowered:velocity-api", version.ref = "com-velocitypowered-velocity-api" }
+de-sage-util-updatechecker = { module = "de.sage.util:updatechecker", version.ref = "de-sage-util-updatechecker" }
+io-papermc-paper-paper-api = { module = "io.papermc.paper:paper-api", version.ref = "io-papermc-paper-paper-api" }
+me-clip-placeholderapi = { module = "me.clip:placeholderapi", version.ref = "me-clip-placeholderapi" }
+net-elytrium-limboapi-api = { module = "net.elytrium.limboapi:api", version.ref = "net-elytrium-limboapi-api" }
+net-kyori-adventure-text-minimessage = { module = "net.kyori:adventure-text-minimessage", version.ref = "net-kyori-adventure-text-minimessage" }
+net-luckperms-api = { module = "net.luckperms:api", version.ref = "net-luckperms-api" }
+org-bstats-bstats-bukkit = { module = "org.bstats:bstats-bukkit", version.ref = "org-bstats-bstats-bukkit" }
+org-geysermc-floodgate-api = { module = "org.geysermc.floodgate:api", version.ref = "org-geysermc-floodgate-api" }
+org-geysermc-geyser-api = { module = "org.geysermc.geyser:api", version.ref = "org-geysermc-geyser-api" }
+org-mariadb-jdbc-mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "org-mariadb-jdbc-mariadb-java-client" }
+org-xerial-sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "org-xerial-sqlite-jdbc" }

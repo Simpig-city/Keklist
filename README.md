@@ -101,9 +101,9 @@ If you want to compile the plugin yourself, you can easily do that. Just run:
 ```bash
 git clone https://github.com/Simpig-city/Keklist.git
 cd Keklist
-mvn package
+./gradlew build
 ```
-The compiled jar files will be in the `target` folder. ***You need to have maven and java jdk 21 installed.***
+The compiled jar files will be in the `build/libs` folder. ***You need to have java jdk 21 installed.***
 
 ### Contributing
 If you want to help us with the development of Keklist, you can do that by creating a pull request. We'll review it and if everything is fine, we'll eventually merge it. If you want to add a new feature, please create an issue first, so we can discuss it. If you want to help us with the translation, you can do that [here](https://crowdin.com/project/keklist). If you want to help us with the documentation, you can do that on our discord server.

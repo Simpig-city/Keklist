@@ -1,13 +1,13 @@
-name: Keklist
-version: ${project.version}
+name: ${name}
+version: ${version}
 main: de.hdg.keklist.Keklist
 api-version: '1.21'
-description: ${project.description}
+description: ${description}
 authors: [ "jxnxsdev", "SageSphinx63920" ]
 website: https://keklist.pages.dev
-loader: de.hdg.keklist.KeklistLoader
 contributors: [ "LPTP1" ]
 default-perm: op
+loader: de.hdg.keklist.KeklistLoader
 
 dependencies:
   server:

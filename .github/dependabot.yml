@@ -1,19 +1,17 @@
 version: 2
 updates:
-  - package-ecosystem: "maven" 
+  - package-ecosystem: "gradle"
     directory: "/"
     schedule:
       interval: "weekly"
     assignees:
       - "SageSphinx63920"
     commit-message:
-      prefix: "mvn"
+      prefix: "gradle"
     labels:
-      - "maven"
-    open-pull-requests-limit: 3
+      - "gradle"
     
   - package-ecosystem: "github-actions" 
     directory: "/"
-    open-pull-requests-limit: 1
     schedule:
       interval: "weekly"

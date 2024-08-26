@@ -2,6 +2,10 @@
 /.idea
 *.iml
 
+/.gradle
+
+/build
+
 *.db
 *.log
 *.log.*

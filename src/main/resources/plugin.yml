@@ -1,13 +1,13 @@
-name: Keklist
-version: ${project.version}
+name: ${name}
+version: ${version}
 main: de.hdg.keklist.Keklist
 api-version: 1.21
-description: ${project.description}
-authors: ["jxnxsdev", "SageSphinx63920"]
+description: ${description}
+authors: [ "jxnxsdev", "SageSphinx63920" ]
 website: https://keklist.pages.dev
 contributors: [ "LPTP1" ]
-database: true
 default-permission: op
+database: true
 softdepend:
   - floodgate
   - Plan
