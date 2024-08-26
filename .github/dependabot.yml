@@ -10,7 +10,14 @@ updates:
       prefix: "gradle"
     labels:
       - "gradle"
-    
+    ignore:
+      - dependency-name: "com.velocitypowered:velocity-api" # Ignore this due to velocity 4.0 not being released yet
+        versions:
+          - "4.x"
+      - dependency-name: "com.squareup.okhttp3:okhttp" # Ignore this due to okhttp 5.0 not being released yet. We do use the latest alpha version but, dependabot does not support them
+        versions:
+          - "5.x"
+
   - package-ecosystem: "github-actions" 
     directory: "/"
     schedule:
