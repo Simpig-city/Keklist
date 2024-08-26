@@ -4,6 +4,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.extentions.WebhookManager;
+import de.hdg.keklist.util.IpUtil;
 import net.kyori.adventure.text.Component;
 import okhttp3.*;
 import org.bukkit.Bukkit;
@@ -29,7 +30,50 @@ public class PreLoginKickEvent implements Listener {
     private final OkHttpClient client = new OkHttpClient();
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-    public void onPreLogin(AsyncPlayerPreLoginEvent event) {
+    public void onPreLogin(@NotNull AsyncPlayerPreLoginEvent event) {
+        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", event.getUniqueId().toString())) {
+            if (!rs.next()) {
+                Keklist.getDatabase().onUpdate("INSERT INTO lastSeen (uuid, ip, lastSeen) VALUES (?, ?, ?)", event.getUniqueId().toString(), event.getAddress().getHostAddress(), System.currentTimeMillis());
+            } else {
+                Keklist.getDatabase().onUpdate("UPDATE lastSeen SET ip = ?, lastSeen = ? WHERE uuid = ?", event.getAddress().getHostAddress(), System.currentTimeMillis(), event.getUniqueId().toString());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        if (!config.getList("blacklist.countries").isEmpty() ||
+                !config.getList("blacklist.continents").isEmpty() ||
+                !config.getBoolean("ip.proxy-allowed")) {
+
+            IpUtil.IpData data = new IpUtil(event.getAddress().getHostAddress()).getIpData().join(); // We can use .join() because we are in an async event
+
+            if(config.getList("blacklist.continents").stream().map(String::valueOf).anyMatch(data.continentCode()::equalsIgnoreCase)) {
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.CONTINENT)));
+                return;
+            }
+
+            if(config.getList("blacklist.countries").stream().map(String::valueOf).anyMatch(data.countryCode()::equalsIgnoreCase)) {
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.COUNTRY)));
+                return;
+            }
+
+            if(config.getBoolean("ip.proxy-allowed") && data.proxy()) {
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.PROXY)));
+                return;
+            }
+        }
+
+        if(config.getBoolean("general.require-server-list-before-join")) {
+            if (ListPingEvent.pingedIps.containsKey(event.getAddress().getHostAddress())) {
+                if(ListPingEvent.pingedIps.get(event.getAddress().getHostAddress()) > System.currentTimeMillis() - 40000) { // Can not find how often the minecraft server pings the server list, so I just use 40 seconds
+                    ListPingEvent.pingedIps.remove(event.getAddress().getHostAddress());
+                } else {
+                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(config.getString("messages.kick.server-list")));
+                    return;
+                }
+            }
+        }
+
         if (config.getBoolean("blacklist.enabled")) {
             ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getUniqueId().toString());
             ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getRawAddress().getHostName());
@@ -38,11 +82,8 @@ public class PreLoginKickEvent implements Listener {
             boolean isUserBanned = false;
 
             try {
-                if (rsIp.next())
-                    isIpBanned = true;
-
-                if (rsUser.next())
-                    isUserBanned = true;
+                isIpBanned = rsIp.next();
+                isUserBanned = rsUser.next();
 
                 if (isUserBanned || isIpBanned) {
                     if (config.getBoolean("blacklist.allow-join-with-admin")) {
@@ -209,7 +250,10 @@ public class PreLoginKickEvent implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGHEST)
-    public void onJoin(PlayerJoinEvent event) {
+    public void onJoin(@NotNull PlayerJoinEvent event) {
+        // No need to check for the lastSeenIp table, because we already did this in the prelogin event
+        Keklist.getDatabase().onUpdate("UPDATE lastSeen SET protocolId = ?, brand = ? WHERE uuid = ?", event.getPlayer().getProtocolVersion(), (event.getPlayer().getClientBrandName() == null ? "unknown" : event.getPlayer().getClientBrandName()), event.getPlayer().getUniqueId().toString());
+
         if (config.getBoolean("blacklist.enabled")) {
             ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
             ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getPlayer().getAddress().getAddress().getHostAddress());

@@ -11,7 +11,7 @@ language: en-us
 # This section uses the limboapi plugin
 # You can find it here: https://github.com/Elytrium/LimboAPI
 limbo:
-  enabled: true # Enable the limbo but requires the limboapi plugin
+  enabled: false # Enable the limbo but requires the limboapi plugin
   nbt-file: "limbo.nbt"
   offset: [0, 0, 0] # Offset for the nbt file. Offset: x,y,z; Y CAN'T BE NEGATIVE
   enable-command: true # This adds /whereami command to the limbo, which gives some weird text

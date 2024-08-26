@@ -3,7 +3,6 @@ package de.hdg.keklist.extentions;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.events.GeyserConnectionEvent;
 import lombok.SneakyThrows;
-import org.geysermc.event.PostOrder;
 import org.geysermc.geyser.api.GeyserApi;
 import org.geysermc.geyser.api.event.EventRegistrar;
 import org.geysermc.geyser.api.event.connection.ConnectionRequestEvent;
@@ -20,7 +19,7 @@ public class GeyserEventRegistrar implements EventRegistrar {
 
     @SneakyThrows
     public void registerEvents() {
-        geyserApi.eventBus().subscribe(this, ConnectionRequestEvent.class, GeyserConnectionEvent::onConnectionRequestEvent, PostOrder.FIRST);
+        geyserApi.eventBus().subscribe(this, ConnectionRequestEvent.class, GeyserConnectionEvent::onConnectionRequestEvent/*, PostOrder.FIRST*/); // Commented out due to a bug in Geyser
         keklist.getLogger().info(Keklist.getTranslations().get("geyser.events.registered"));
     }
 }

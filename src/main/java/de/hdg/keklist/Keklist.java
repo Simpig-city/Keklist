@@ -11,10 +11,7 @@ import de.hdg.keklist.commands.BlacklistCommand;
 import de.hdg.keklist.commands.KeklistCommand;
 import de.hdg.keklist.commands.WhitelistCommand;
 import de.hdg.keklist.database.DB;
-import de.hdg.keklist.events.BlacklistRemoveMotd;
-import de.hdg.keklist.events.ListPingEvent;
-import de.hdg.keklist.events.PreLoginKickEvent;
-import de.hdg.keklist.events.ServerWhitelistChangeEvent;
+import de.hdg.keklist.events.*;
 import de.hdg.keklist.extentions.GeyserEventRegistrar;
 import de.hdg.keklist.extentions.PlaceholderAPIExtension;
 import de.hdg.keklist.extentions.context.BlacklistedCalculator;
@@ -36,7 +33,6 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.context.ContextCalculator;
-import net.luckperms.api.context.ContextManager;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -65,7 +61,7 @@ public final class Keklist extends JavaPlugin {
     private @Getter @Nullable FloodgateApi floodgateApi = null;
     private static @Getter PlanHook planHook;
     private PlaceholderAPIExtension placeholders;
-    private ContextManager contextManager;
+    private @Getter LuckPerms luckPermsAPI;
     private final List<ContextCalculator<Player>> registeredCalculators = new ArrayList<>();
     private GeyserApi geyserApi;
 
@@ -94,7 +90,7 @@ public final class Keklist extends JavaPlugin {
             return;
         }
 
-        if (Bukkit.getServer().getMinecraftVersion().equals("1.20")) {
+        if (Bukkit.getServer().getMinecraftVersion().contains("1.20")) {
             getLogger().severe(translations.get("paper.version.unsupported"));
             Bukkit.getPluginManager().disablePlugin(this);
             return;
@@ -147,6 +143,7 @@ public final class Keklist extends JavaPlugin {
         pm.registerEvents(new PreLoginKickEvent(), this);
         pm.registerEvents(new BlacklistRemoveMotd(), this);
         pm.registerEvents(new ServerWhitelistChangeEvent(), this);
+        pm.registerEvents(new NotifyJoinEvent(), this);
 
         // GUI Listener
         pm.registerEvents(new MainGUIEvent(), this);
@@ -188,10 +185,10 @@ public final class Keklist extends JavaPlugin {
         // LuckPerms contexts (no config option, always enabled)
         if (Bukkit.getPluginManager().getPlugin("LuckPerms") != null) {
             RegisteredServiceProvider<LuckPerms> provider = Bukkit.getServicesManager().getRegistration(LuckPerms.class);
-            if (provider == null) {
-                contextManager = provider.getProvider().getContextManager();
+            if (provider != null) {
+                luckPermsAPI = provider.getProvider();
                 registeredCalculators.addAll(List.of(new WhitelistedCalculator(), new BlacklistedCalculator()));
-                registeredCalculators.forEach(contextManager::registerCalculator);
+                registeredCalculators.forEach(luckPermsAPI.getContextManager()::registerCalculator);
             }
         }
 
@@ -232,8 +229,8 @@ public final class Keklist extends JavaPlugin {
             metrics.shutdown();
 
         // Disable context calculators
-        if (contextManager != null) {
-            registeredCalculators.forEach(contextManager::unregisterCalculator);
+        if (luckPermsAPI != null) {
+            registeredCalculators.forEach(luckPermsAPI.getContextManager()::unregisterCalculator);
             registeredCalculators.clear();
         }
 
@@ -269,17 +266,26 @@ public final class Keklist extends JavaPlugin {
 
     @NotNull
     public String getRandomizedKickMessage(@NotNull RandomType type) {
-        switch (type) {
-            case BLACKLISTED -> {
-                return getConfig().getStringList("messages.kick.blacklisted").get(random.nextInt(getConfig().getStringList("messages.kick.blacklisted").size()));
-            }
-            case WHITELISTED -> {
-                return getConfig().getStringList("messages.kick.whitelisted").get(random.nextInt(getConfig().getStringList("messages.kick.whitelisted").size()));
-            }
-            default -> {
-                return "null";
-            }
-        }
+        return switch (type) {
+            case BLACKLISTED ->
+                 getConfig().getStringList("messages.kick.blacklisted").get(random.nextInt(getConfig().getStringList("messages.kick.blacklisted").size()));
+
+            case WHITELISTED ->
+                 getConfig().getStringList("messages.kick.whitelisted").get(random.nextInt(getConfig().getStringList("messages.kick.whitelisted").size()));
+
+            case CONTINENT ->
+                 getConfig().getStringList("messages.kick.blacklist.continent").get(random.nextInt(getConfig().getStringList("messages.kick.blacklist.continent").size()));
+
+            case COUNTRY ->
+                 getConfig().getStringList("messages.kick.blacklist.country").get(random.nextInt(getConfig().getStringList("messages.kick.blacklist.country").size()));
+
+            case PROXY ->
+                    getConfig().getStringList("messages.kick.proxy").get(random.nextInt(getConfig().getStringList("messages.kick.proxy").size()));
+
+            default ->
+                 "null";
+
+        };
     }
 
     public void sendUserToLimbo(Player player) {
@@ -314,7 +320,7 @@ public final class Keklist extends JavaPlugin {
      * Enum for the different messages
      */
     public enum RandomType {
-        BLACKLISTED, WHITELISTED, NORMAL
+        BLACKLISTED, WHITELISTED, CONTINENT, COUNTRY, PROXY, NORMAL
     }
 
     /**
