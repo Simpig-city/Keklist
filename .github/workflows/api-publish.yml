@@ -25,9 +25,6 @@ jobs:
     - name: Setup Git
       run: git config --global user.email "no-reply@github.com" && git config --global user.name "Github Actions"
 
-    - name: Validate Gradle Wrapper
-      uses: gradle/actions/wrapper-validation@v4
-
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
       

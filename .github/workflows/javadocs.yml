@@ -17,9 +17,6 @@ jobs:
         java-version: 21
         distribution: 'termium'
 
-    - name: Validate Gradle Wrapper
-      uses: gradle/actions/wrapper-validation@v4
-
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v4
         
