@@ -53,6 +53,7 @@ dependencies {
     // Provided by the server
     compileOnly(libs.io.papermc.paper.paper.api)
     compileOnly(libs.com.velocitypowered.velocity.api)
+    annotationProcessor(libs.com.velocitypowered.velocity.api)
     compileOnly(libs.net.kyori.adventure.text.minimessage)
     compileOnly(libs.com.google.code.gson.gson)
 
@@ -135,7 +136,7 @@ modrinth {
     token.set(System.getenv("MODRINTH_TOKEN"))
     projectId.set("keklist")
     versionNumber.set("${project.version}")
-    versionType.set(if (version.toString().contains("SNAPSHOT")) "release" else "beta")
+    versionType.set(if (version.toString().endsWith("SNAPSHOT")) "beta" else "release")
     //uploadFile.set(tasks.jar)
     uploadFile.set(tasks.getByPath("shadowJar"))
     gameVersions.addAll("1.21.1")
@@ -151,7 +152,7 @@ modrinth {
 hangarPublish {
     publications.register("hangar") {
         version.set(project.version as String)
-        channel.set(if (version.toString().contains("SNAPSHOT")) "Release" else "Snapshot")
+        channel.set(if (!version.toString().endsWith("SNAPSHOT")) "Snapshot" else "Release")
         id.set("keklist")
         apiKey.set(System.getenv("HANGAR_API_TOKEN"))
         changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
@@ -242,7 +243,12 @@ tasks {
 
     register("publishNewRelease") {
         group = "util"
-        dependsOn("publish", "modrinth", "publishHangarPublicationToHangar", "syncHangarPublicationMainResourcePagePageToHangar")
+        dependsOn(
+            "publish",
+            "modrinth",
+            "publishHangarPublicationToHangar",
+            "syncHangarPublicationMainResourcePagePageToHangar"
+        )
     }
 
     // Is this any useful?

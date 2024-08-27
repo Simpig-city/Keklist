@@ -86,9 +86,7 @@ Maven
 Gradle
 ```kotlin
 repositories {
-    maven {
-        url = uri("https://repo.sageee.xyz/releases")
-    }
+    maven ("https://repo.sageee.xyz/releases/")
 }
 
 dependencies{
