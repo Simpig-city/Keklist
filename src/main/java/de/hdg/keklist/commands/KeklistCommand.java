@@ -317,7 +317,6 @@ public class KeklistCommand extends Command {
                                     } catch (SQLException e) {
                                         throw new RuntimeException(e);
                                     }
-
                                 }
                             }
 

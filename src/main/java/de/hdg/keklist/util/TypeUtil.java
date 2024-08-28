@@ -5,7 +5,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class TypeUtil {
 
-
     public static EntryType getEntryType(@NotNull String entry) {
         return switch (entry){
             case String e when e.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$") -> EntryType.IPv4;
@@ -14,6 +13,7 @@ public class TypeUtil {
             case String e when e.startsWith(Keklist.getInstance().getConfig().getString("floodgate.prefix" , ""))
                     && Keklist.getInstance().getFloodgateApi() == null -> EntryType.BEDROCK;
             case String e when e.matches("^(?:[a-zA-Z0-9]{1,63}\\.){1,126}[a-zA-Z]{2,63}$") -> EntryType.DOMAIN;
+            case String e when e.matches("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$") -> EntryType.UUID;
 
             default -> EntryType.UNKNOWN;
         };
@@ -26,7 +26,7 @@ public class TypeUtil {
         IPv6,
         BEDROCK,
         JAVA,
+        UUID,
         UNKNOWN
     }
-
 }

@@ -91,6 +91,11 @@
   "whitelist.imported": "<blue>Successfully imported whitelist entries!",
   "whitelist.invalid-domain": "<red>Invalid domain! Please use a valid domain to add to the whitelist!",
   "whitelist.domain-added": "<green>Successfully added <white>%s <green>to the whitelist! Current IP: <white>%s",
+  "whitelist.list.header": "<hover:show_text:'Entries from the whitelist including ips and domains'><b><u><yellow>Whitelist</hover><reset>",
+  "whitelist.list.entry": "<hover:show_text:'<gold>Added at %s'><aqua>Entry: <white>%s <color:#525252>| <blue><i>Added by: <grey>%s</hover>",
+  "whitelist.list.entry.player": "<hover:show_text:'<gold>Added at %s'><aqua><hover:show_text:'<dark_aqua>UUID: <white>%s \n<i><grey>Please note that the player name could be changed'>Entry: <white>%s</hover> <color:#525252>| <blue><i>Added by: <grey>%s</hover>",
+  "whitelist.list.footer": "<hover:show_text:'Click on the arrows to change page'><dark_aqua><click:run_command:'/whitelist list %s'><<<</click> <grey>Page %s <dark_aqua><click:run_command:'/whitelist list %s'>>>></click></hover>",
+  "whitelist.list.empty": "<red><i>No entries found on this page!",
 
   "gui.whitelist.title": "<gold><b>Whitelist",
   "gui.whitelist.description": "<gray><i>Menu for the whitelist",

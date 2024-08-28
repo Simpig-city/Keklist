@@ -13,9 +13,11 @@ import okhttp3.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jetbrains.annotations.Range;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -24,6 +26,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+
+import static de.hdg.keklist.util.TypeUtil.getEntryType;
 
 public class WhitelistCommand extends Command {
 
@@ -50,11 +54,21 @@ public class WhitelistCommand extends Command {
         try {
             String senderName = sender.getName();
 
-            TypeUtil.EntryType type = TypeUtil.getEntryType(args[1]);
+            TypeUtil.EntryType type = getEntryType(args[1]);
 
             if (type.equals(TypeUtil.EntryType.UNKNOWN)) {
-                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-argument")));
-                return false;
+                if (args[0].equalsIgnoreCase("list")) { // Not the best way to handle this, but it works
+                    try {
+                        handleList(sender, Integer.parseInt(args[1]));
+                    } catch (NumberFormatException e) {
+                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("invalid-syntax")));
+                    }
+
+                    return true;
+                } else {
+                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.invalid-argument")));
+                    return false;
+                }
             }
 
 
@@ -247,7 +261,7 @@ public class WhitelistCommand extends Command {
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
                             }
                         }
-                        
+
                         case DOMAIN -> {
                             ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
 
@@ -387,10 +401,61 @@ public class WhitelistCommand extends Command {
         return null;
     }
 
+    /**
+     * Handles the list command
+     *
+     * @param sender the sender who executed the command
+     * @param page   the page to display
+     */
+    private void handleList(@NotNull CommandSender sender, int page) {
+        try (ResultSet rs =
+                     Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM whitelist UNION ALL SELECT * FROM whitelistIp UNION ALL SELECT * FROM whitelistDomain) LIMIT 8 OFFSET ?", (page - 1) * 8)) {
+
+            if (!rs.next() || page < 1) {
+                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.list.empty")));
+                return;
+            }
+
+            StringBuilder listMessage = new StringBuilder();
+
+            listMessage.append("\n").append(Keklist.getTranslations().get("whitelist.list.header")).append("\n\n");
+
+            SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
+
+            do {
+                String entry = rs.getString(1);
+                String byPlayer = rs.getString(2);
+                String date = sdf.format(new Date(rs.getLong(3)));
+
+                TypeUtil.EntryType type = TypeUtil.getEntryType(entry);
+
+                switch (type) {
+                    case IPv4, IPv6, DOMAIN ->
+                            listMessage.append(Keklist.getTranslations().get("whitelist.list.entry", date, entry, byPlayer)).append("\n");
+
+                    case UUID -> {
+                        ResultSet rsName = Keklist.getDatabase().onQuery("SELECT name FROM whitelist WHERE uuid = ?", entry);
+                        String name = rsName.next() ? rsName.getString("name") : "Unknown";
+
+                        listMessage.append(Keklist.getTranslations().get("whitelist.list.entry.player", date, entry, name, byPlayer)).append("\n");
+                    }
+                }
+
+            } while (rs.next());
+
+            listMessage.append("\n").append(Keklist.getTranslations().get("whitelist.list.footer", Math.max(page - 1, 0), page, page + 1));
+
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(listMessage.toString()));
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length < 2) {
-            return List.of("add", "remove", "info");
+            return List.of("add", "remove", "info", "list");
         } else if (args.length == 2) {
             try {
                 switch (args[0]) {

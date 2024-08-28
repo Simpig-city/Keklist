@@ -144,6 +144,7 @@ public final class Keklist extends JavaPlugin {
         pm.registerEvents(new BlacklistRemoveMotd(), this);
         pm.registerEvents(new ServerWhitelistChangeEvent(), this);
         pm.registerEvents(new NotifyJoinEvent(), this);
+        pm.registerEvents(new ListCommandPageEvent(), this);
 
         // GUI Listener
         pm.registerEvents(new MainGUIEvent(), this);

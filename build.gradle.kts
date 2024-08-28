@@ -301,7 +301,7 @@ tasks {
         }
         classpath = files(serverDir.resolve("server.jar"))
         workingDir = serverDir
-        jvmArgs = listOf("-Dcom.mojang.eula.agree=true", "--add-modules=jdk.incubator.vector")
+        jvmArgs = listOf("-Dcom.mojang.eula.agree=true", "--add-modules=jdk.incubator.vector", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
         // args = listOf("--nogui")
         standardInput = System.`in`
     }
