@@ -69,6 +69,11 @@
   "blacklist.notify.add": "<gold>%s <aqua>was added by <white>%s <aqua>to the blacklist!",
   "blacklist.notify.motd": "<gold>%s <aqua>was added by <white>%s <aqua>to the motd-blacklist!",
   "blacklist.notify.remove": "<gold>%s <blue>was removed by <white>%s <blue>from the blacklist!",
+  "blacklist.list.header": "<hover:show_text:'Entries from the blacklist including ips and the motd entries'><b><u><gold>Blacklist</hover><reset>",
+  "blacklist.list.entry": "<hover:show_text:'<gold>Added at %s'><aqua>Entry: <white>%s <color:#525252>| <blue><i>Added by: <grey>%s</hover>",
+  "blacklist.list.entry.player": "<hover:show_text:'<gold>Added at %s'><aqua><hover:show_text:'<dark_aqua>UUID: <white>%s \n<i><grey>Please note that the player name could be changed'>Entry: <white>%s</hover> <color:#525252>| <blue><i>Added by: <grey>%s</hover>",
+  "blacklist.list.footer": "<hover:show_text:'Click on the arrows to change page'><dark_aqua><click:run_command:'/blacklist list %s'><<<</click> <grey>Page %s <dark_aqua><click:run_command:'/blacklist list %s'>>>></click></hover>",
+  "blacklist.list.empty": "<red><i>No entries found on this page!",
 
   "whitelist.usage": "/whitelist <add/remove/info> <Player/IPv4/IPv6>",
   "whitelist.usage.command": "Please use: /whitelist <add/remove/info> <Player/IPv4/IPv6>",
