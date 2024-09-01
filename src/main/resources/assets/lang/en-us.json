@@ -241,6 +241,15 @@
   "keklist.offline-player-info": "\n<hover:show_text:'This is the cached/database data for this offline user!'><b><u><grey>Offline Player Info:</u></b></hover> \n\n<color:#26ffb3>Name: <white><b><hover:show_text:'%uuid%'>%name%</hover></b> \n<color:#26ffb3>Ip address: <click:suggest_command:'/keklist info %ip% %name%'><hover:show_text:'Click to get information about ip'><color:#6b81ff>%ip% <grey><i>(last seen with this ip)</i></color></hover></click> \n<yellow>Whitelisted: %whitelisted%  \n<yellow>Blacklisted: %blacklisted% \n<color:#5cceff>Brand: <white>%brand% <grey><i>(last seen with this brand)</i> \n<click:open_url:'https://wiki.vg/Protocol_version_numbers'><hover:show_text:'Click to get version string'><color:#5cceff>Version: <white>%version% <grey><i>(last seen with this version)</i> \n<color:#5cceff>Location: <hover:show_text:'Click to teleport'><white><click:run_command:'/tp %requested_by% %x% %y% %z%'>%x% %y% %z% <grey><i>(last seen there)</i></click></hover> \n<dark_green>Last seen: <red>%last_seen%</red></dark_green> \n<grey><i><hover:show_text:'<i>Ssh... also hover over the other fields!'>Hover too see additional data</hover> \n\n<dark_grey><i>Disclaimer: This data may be not complete or wrong as it only gets the server's and our own cached data.",
   "keklist.ip-info": "\n<hover:show_text:'Basic informations about the ip'><b><u><grey>IP Info:</u></b></hover> \n\n<color:#26ffb3>IP Address: <white><b><hover:show_text:'Click to see more informations <dark_grey>| <grey><i>Using public IP if in local subnet'><click:open_url:'https://ipinfo.io/%query%'>%ip%</click></hover></b> \n<color:#26ffb3>Player: <white>%player% \n<aqua>Country: <hover:show_text:'<dark_aqua>Continent: <white>%continent% \n<dark_aqua>Code: <white>%continent_code%'><white>%country% <dark_grey>| <grey>Code: %country_code% </hover> \n<aqua>City: <hover:show_text:'<dark_aqua>Region: <white>%region%'><white>%city%</hover> \n<aqua>Timezone: <white>%timezone% \n<color:#63a7ff><hover:show_text:'The <b><yellow>i<reset>nternet <b><yellow>s<reset>ervice <b><yellow>p<reset>rovider '>ISP</hover>: <hover:show_text:'<color:#8c73ff>AS: <white>%as%</color>'><white>%org%</hover> \n<yellow><hover:show_text:'Mobile (cellular) connection'>Mobile</hover>: %mobile% <dark_grey>| <gold><hover:show_text:'Detects Proxies, VPNs and Tor exit relays'>Proxy/VPN</hover>: %proxy%  <dark_grey>| <color:#ff6f08><hover:show_text:'Hosting, colocated or data center'>Hosting</hover>: %hosting% \n\n<grey><i><hover:show_text:'<i>Ssh... also hover over the other fields!'>Hover too see additional data</hover>",
   "keklist.info.unknown-type": "Can't find the information about %s",
+  "keklist.2fa.setup": "<green>Please scan the QR code with your 2FA app and send the code in the chat!",
+  "keklist.2fa.setup-fail": "<red>This is the wrong code! Please try setting 2FA up again!",
+  "keklist.2fa.setup-success": "<green>2FA is now enabled!",
+  "keklist.2fa.codes": "<green>Here are your backup codes! Please save them in a safe place! \n \n %s",
+  "keklist.2fa.already-enabled": "<dark_green>2FA is already enabled!",
+  "keklist.2fa.already-disabled": "<dark_red>You don't have 2FA enabled!",
+  "keklist.2fa.invalid-code": "<red>Invalid 2FA or recovery code! Please try again!",
+  "keklist.2fa.disabled": "<green>2FA is now disabled!",
+  "keklist.2fa.no-code": "<red>You need to provide a 2FA or recovery code to use this!",
 
   "floodgate.api-key-not-set": "<orange>You did not set the Floodgate API key in the config! Either get the floodgate uuid from https://mcprofile.io using the UUID directly or the floodgate user must be in the server's cache otherwise the request will fail!",
   "geyser.prefix": "Geyser detected, using prefix: %s",
@@ -260,5 +269,6 @@
   "disabled": "disabled",
   "yes": "yes",
   "no": "no",
-  "unknown": "unknown"
+  "unknown": "unknown",
+  "player-only": "<red>This command is only for players!"
 }

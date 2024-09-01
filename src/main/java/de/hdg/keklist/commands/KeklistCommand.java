@@ -5,6 +5,7 @@ import de.hdg.keklist.database.DB;
 import de.hdg.keklist.gui.GuiManager;
 import de.hdg.keklist.util.IpUtil;
 import de.hdg.keklist.util.TypeUtil;
+import de.hdg.keklist.util.mfa.MFAUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -126,7 +127,7 @@ public class KeklistCommand extends Command {
                                 }
 
                                 default ->
-                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
 
                             }
                         } else
@@ -214,23 +215,23 @@ public class KeklistCommand extends Command {
                         switch (type) {
                             case IPv4, IPv6 -> {
                                 new IpUtil(args[1]).getIpData().thenAccept(data ->
-                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.ip-info")
-                                            .replace("%ip%", args[1])
-                                            .replace("%country%", data.country())
-                                                    .replace("%country_code%", data.countryCode())
-                                                    .replace("%continent%", data.continent())
-                                                    .replace("%continent_code%", data.continentCode())
-                                            .replace("%region%", data.regionName())
-                                            .replace("%city%", data.city())
-                                            .replace("%org%", data.org())
-                                            .replace("%as%", data.as())
-                                            .replace("%timezone%", data.timezone())
-                                            .replace("%mobile%", data.mobile() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
-                                            .replace("%proxy%", data.proxy() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
-                                            .replace("%hosting%", data.hosting() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
-                                            .replace("%query%", data.query())
-                                            .replace("%player%", args.length >= 3 ? args[2] : "<grey><hover:show_text:'May be due to searching just an IP'>unknown</hover>")
-                                    ))
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.ip-info")
+                                                .replace("%ip%", args[1])
+                                                .replace("%country%", data.country())
+                                                .replace("%country_code%", data.countryCode())
+                                                .replace("%continent%", data.continent())
+                                                .replace("%continent_code%", data.continentCode())
+                                                .replace("%region%", data.regionName())
+                                                .replace("%city%", data.city())
+                                                .replace("%org%", data.org())
+                                                .replace("%as%", data.as())
+                                                .replace("%timezone%", data.timezone())
+                                                .replace("%mobile%", data.mobile() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%proxy%", data.proxy() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%hosting%", data.hosting() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%query%", data.query())
+                                                .replace("%player%", args.length >= 3 ? args[2] : "<grey><hover:show_text:'May be due to searching just an IP'>unknown</hover>")
+                                        ))
                                 );
                             }
 
@@ -285,7 +286,7 @@ public class KeklistCommand extends Command {
                                         int protocolId = -1;
                                         String brand = "unknown";
 
-                                        if(Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next()) {
+                                        if (Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next()) {
                                             latestIp = Keklist.getDatabase().onQuery("SELECT ip FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getString("ip");
                                             protocolId = Keklist.getDatabase().onQuery("SELECT protocolId FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getInt("protocolId");
                                             brand = Keklist.getDatabase().onQuery("SELECT brand FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getString("brand");
@@ -293,7 +294,7 @@ public class KeklistCommand extends Command {
 
                                         Location location = offlinePlayer.getLocation();
 
-                                        if(location == null)
+                                        if (location == null)
                                             location = new Location(Bukkit.getWorlds().getFirst(), 0, 100, 0);
 
                                         long lastSeen = offlinePlayer.getLastSeen();
@@ -323,6 +324,76 @@ public class KeklistCommand extends Command {
                             default ->
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.info.unknown-type", args[1])));
 
+                        }
+                    }
+
+                    case "2fa" -> {
+                        if (!sender.hasPermission("keklist.2fa.use")) {
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                            return false;
+                        }
+
+                        if (sender instanceof Player player) {
+                            switch (args[1]) {
+                                case "enable" -> {
+                                    if (!MFAUtil.hasMFAEnabled(player)) {
+                                        MFAUtil.setupPlayer(player);
+                                    } else {
+                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.already-enabled")));
+                                    }
+
+                                }
+
+                                case "disable" -> {
+                                    if (MFAUtil.hasMFAEnabled(player)) {
+                                       if(args.length >= 3) {
+                                           String code = args[2];
+
+                                           if(MFAUtil.validateCode(player, code) || MFAUtil.validateRecoveryCode(player, code)) {
+                                               MFAUtil.disableMFA(player);
+                                               player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.disabled")));
+                                           } else {
+                                               player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.invalid-code")));
+                                           }
+
+                                       } else
+                                             player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.no-code")));
+
+                                    } else {
+                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.already-disabled")));
+                                    }
+                                }
+
+                                case "codes" -> {
+                                    if(MFAUtil.hasMFAEnabled(player)) {
+                                        try (var rs = Keklist.getDatabase().onQuery("SELECT recoveryCodes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
+                                            if(rs.next()) {
+                                                String[] recoveryCodes = rs.getString("recoveryCodes").split(",");
+                                                StringBuilder builder = new StringBuilder();
+
+                                                for (String code : recoveryCodes) {
+                                                    code = code.replace("[", "").replace("]", "").replace(",", "");
+
+                                                    if ((builder.length() / 2) != 1) {
+                                                        builder.append(code).append(" | ");
+                                                    } else
+                                                        builder.append(code).append("\n");
+                                                }
+
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.codes", builder.toString())));
+                                            }
+                                        } catch (SQLException e) {
+                                            throw new RuntimeException(e);
+                                        }
+
+                                    } else {
+                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.not-enabled")));
+                                    }
+                                }
+
+                            }
+                        } else {
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("player-only")));
                         }
                     }
 
@@ -419,6 +490,9 @@ public class KeklistCommand extends Command {
             if (sender.hasPermission("keklist.info.use"))
                 suggestions.add("info");
 
+            if (sender.hasPermission("keklist.2fa.use"))
+                suggestions.add("2fa");
+
             if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
                 if (sender.hasPermission("keklist.manage.blacklist"))
                     suggestions.add("blacklist");
@@ -445,6 +519,10 @@ public class KeklistCommand extends Command {
 
                 suggestions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
                 suggestions.add("1.1.1.1");
+            } else if(args[0].equalsIgnoreCase("2fa")
+                    && sender.hasPermission("keklist.2fa.use")) {
+
+                suggestions.addAll(List.of("enable", "disable", "codes"));
             }
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("whitelist")

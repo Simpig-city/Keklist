@@ -31,6 +31,10 @@ dependencies:
       load: BEFORE
       required: false
 
+    BKCommonLib:
+      load: BEFORE
+      required: false
+
 permissions:
   keklist.gui.use:
     description: Allows the player to use general the GUI
