@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -327,9 +328,15 @@ public class KeklistCommand extends Command {
                         }
                     }
 
+
                     case "2fa" -> {
                         if (!sender.hasPermission("keklist.2fa.use")) {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                            return false;
+                        }
+
+                        if (!Keklist.getInstance().getConfig().getBoolean("2fa.enable")) {
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.feature-disabled")));
                             return false;
                         }
 
@@ -346,18 +353,18 @@ public class KeklistCommand extends Command {
 
                                 case "disable" -> {
                                     if (MFAUtil.hasMFAEnabled(player)) {
-                                       if(args.length >= 3) {
-                                           String code = args[2];
+                                        if (args.length >= 3) {
+                                            String code = args[2];
 
-                                           if(MFAUtil.validateCode(player, code) || MFAUtil.validateRecoveryCode(player, code)) {
-                                               MFAUtil.disableMFA(player);
-                                               player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.disabled")));
-                                           } else {
-                                               player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.invalid-code")));
-                                           }
+                                            if (MFAUtil.validateCode(player, code) || MFAUtil.validateRecoveryCode(player, code)) {
+                                                MFAUtil.disableMFA(player);
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.disabled")));
+                                            } else {
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.invalid-code")));
+                                            }
 
-                                       } else
-                                             player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.no-code")));
+                                        } else
+                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.no-code")));
 
                                     } else {
                                         player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.already-disabled")));
@@ -365,16 +372,17 @@ public class KeklistCommand extends Command {
                                 }
 
                                 case "codes" -> {
-                                    if(MFAUtil.hasMFAEnabled(player)) {
-                                        try (var rs = Keklist.getDatabase().onQuery("SELECT recoveryCodes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
-                                            if(rs.next()) {
+                                    if (MFAUtil.hasMFAEnabled(player)) {
+                                        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT recoveryCodes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
+                                            if (rs.next()) {
                                                 String[] recoveryCodes = rs.getString("recoveryCodes").split(",");
                                                 StringBuilder builder = new StringBuilder();
 
                                                 for (String code : recoveryCodes) {
                                                     code = code.replace("[", "").replace("]", "").replace(",", "");
 
-                                                    if ((builder.length() / 2) != 1) {
+                                                    if ((builder.length() / 2) != 1
+                                                            && !code.equals(recoveryCodes[recoveryCodes.length - 1])) {
                                                         builder.append(code).append(" | ");
                                                     } else
                                                         builder.append(code).append("\n");
@@ -391,9 +399,37 @@ public class KeklistCommand extends Command {
                                     }
                                 }
 
+                                case "status" -> {
+                                    if (MFAUtil.hasMFAEnabled(player)) {
+                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.status.enabled")));
+                                    } else {
+                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.status.disabled")));
+                                    }
+                                }
+
                             }
                         } else {
-                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("player-only")));
+                            if (args[1].equalsIgnoreCase("delete")) {
+                                if (Keklist.getInstance().getConfig().getBoolean("2fa.console-can-delete-2fa")) {
+                                    if (args.length >= 3) {
+                                        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM mfa WHERE secret = ?", args[2])) {
+
+                                            if (rs.next()) {
+                                                Keklist.getDatabase().onUpdate("DELETE FROM mfa WHERE secret = ?", args[2]);
+                                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.deleted", args[2])));
+                                            } else
+                                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.not-enabled", args[2])));
+
+                                        } catch (SQLException e) {
+                                            throw new RuntimeException(e);
+                                        }
+
+                                    } else
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.no-uuid")));
+                                } else
+                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.feature-disabled")));
+                            } else
+                                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("player-only")));
                         }
                     }
 
@@ -519,10 +555,14 @@ public class KeklistCommand extends Command {
 
                 suggestions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
                 suggestions.add("1.1.1.1");
-            } else if(args[0].equalsIgnoreCase("2fa")
-                    && sender.hasPermission("keklist.2fa.use")) {
+            } else if (args[0].equalsIgnoreCase("2fa")
+                    && sender.hasPermission("keklist.2fa.use")
+                    && Keklist.getInstance().getConfig().getBoolean("2fa.enable")) {
 
-                suggestions.addAll(List.of("enable", "disable", "codes"));
+                if (sender instanceof Player)
+                    suggestions.addAll(List.of("enable", "disable", "codes", "status"));
+                else
+                    suggestions.add("delete");
             }
         } else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("whitelist")
@@ -531,6 +571,23 @@ public class KeklistCommand extends Command {
                     && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
 
                 suggestions.add("vanilla");
+            }
+
+            if (args[0].equalsIgnoreCase("2fa")
+                    && sender.hasPermission("keklist.2fa.use")
+                    && !(sender instanceof Player)
+                    && Keklist.getInstance().getConfig().getBoolean("2fa.console-can-delete-2fa")
+                    && Keklist.getInstance().getConfig().getBoolean("2fa.enable")) {
+
+                try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT uuid FROM mfa LIMIT 10")) {
+                    while (rs.next()) {
+                        suggestions.add(rs.getString("uuid"));
+                    }
+
+                    suggestions.add("uuid");
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 

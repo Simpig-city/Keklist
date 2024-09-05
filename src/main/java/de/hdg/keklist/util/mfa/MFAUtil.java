@@ -62,7 +62,11 @@ public class MFAUtil {
     public static boolean validateCode(@NotNull Player player, @NotNull String code) {
         try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT secret FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
             if (rs.next()) {
-                return AuthSys.validateCode(rs.getString("secret"), code);
+                try {
+                    return AuthSys.validateCode(rs.getString("secret"), code);
+                } catch (NumberFormatException e) {
+                    return false;
+                }
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
@@ -79,12 +83,12 @@ public class MFAUtil {
      * @return true if the code is valid, false otherwise
      */
     public static boolean validateRecoveryCode(Player player, String code) {
-        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT recovery_codes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
+        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT recoveryCodes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
             if (rs.next()) {
-                String[] recoveryCodes = rs.getString("recovery_codes").split(",");
+                String[] recoveryCodes = rs.getString("recoveryCodes").split(",");
                 for (String recoveryCode : recoveryCodes) {
                     if (recoveryCode.contains(code)) {
-                        Keklist.getDatabase().onUpdate("UPDATE mfa SET recovery_codes = ? WHERE uuid = ?", Arrays.toString(Arrays.stream(recoveryCodes).filter(s -> !s.contains(code)).toArray()), player.getUniqueId().toString());
+                        Keklist.getDatabase().onUpdate("UPDATE mfa SET recoveryCodes = ? WHERE uuid = ?", Arrays.toString(Arrays.stream(recoveryCodes).filter(s -> !s.contains(code)).toArray()), player.getUniqueId().toString());
                         return true;
                     }
                 }

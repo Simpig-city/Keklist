@@ -68,21 +68,21 @@ public class MFAEvent implements Listener {
     }
 
     @EventHandler()
-    public void onInvMove(InventoryClickEvent event) {
+    public void onInvMove(@NotNull InventoryClickEvent event) {
         if (MFAUtil.getPendingApproval().containsKey(((Player) event.getWhoClicked()))) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
-    public void onInvDrag(InventoryDragEvent event) {
+    public void onInvDrag(@NotNull InventoryDragEvent event) {
         if (MFAUtil.getPendingApproval().containsKey(((Player) event.getWhoClicked()))) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
-    public void onSwapItem(PlayerSwapHandItemsEvent event) {
+    public void onSwapItem(@NotNull PlayerSwapHandItemsEvent event) {
         if (MFAUtil.getPendingApproval().containsKey(event.getPlayer())) {
             event.setCancelled(true);
         }

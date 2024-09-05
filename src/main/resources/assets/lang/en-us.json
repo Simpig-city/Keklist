@@ -250,6 +250,12 @@
   "keklist.2fa.invalid-code": "<red>Invalid 2FA or recovery code! Please try again!",
   "keklist.2fa.disabled": "<green>2FA is now disabled!",
   "keklist.2fa.no-code": "<red>You need to provide a 2FA or recovery code to use this!",
+  "keklist.2fa.no-uuid": "<red>You need to provide a UUID to delete a player from 2fa using the console!",
+  "keklist.2fa.deleted": "<green>Successfully deleted the player with the uuid %s from 2fa!",
+  "keklist.2fa.not-enabled": "<red>The player with the uuid %s does not have 2fa enabled!",
+  "keklist.2fa.status.enabled": "<green>2FA is currently enabled for your account!",
+  "keklist.2fa.status.disabled": "<gold>2FA is currently disabled for your account!",
+  "keklist.2fa.feature-disabled": "<red>This 2fa feature is disabled! Please enable it in the config file to use this feature!",
 
   "floodgate.api-key-not-set": "<orange>You did not set the Floodgate API key in the config! Either get the floodgate uuid from https://mcprofile.io using the UUID directly or the floodgate user must be in the server's cache otherwise the request will fail!",
   "geyser.prefix": "Geyser detected, using prefix: %s",
