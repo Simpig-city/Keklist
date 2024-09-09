@@ -119,6 +119,11 @@ public final class Keklist extends JavaPlugin {
         //set debug mode
         debug = getConfig().getBoolean("debug");
 
+        if (Bukkit.getPluginManager().getPlugin("BKCommonLib") == null && getConfig().getBoolean("2fa.enabled")) {
+            getLogger().warning(translations.get("2fa.bkcommonlib"));
+           getConfig().set("2fa.enabled", false);
+        }
+
         //updateChecker = new UpdateChecker("simpig-city", "Keklist", getPluginMeta().getVersion(), true, getLogger());
 
         //SQL

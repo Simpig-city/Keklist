@@ -14,6 +14,7 @@ ip:
   proxy-allowed: true # Option to block users using proxies, vpns and tor exit relays
 # Future Update: bypass-permission: "keklist.bypass.ip" # Permission to bypass the ip checks
 
+# This requires BKCommonLib to be installed for the qr codes
 2fa:
   enable: false # Enable the 2fa feature
   2fa-on-join: false # Require 2fa verification on join

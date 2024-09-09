@@ -408,10 +408,10 @@ public class KeklistCommand extends Command {
                                 }
 
                                 case "verify" -> {
-                                    if (args.length <= 3){
-                                        if(MFAUtil.hasMFAEnabled(player)) {
+                                    if (args.length <= 3) {
+                                        if (MFAUtil.hasMFAEnabled(player)) {
 
-                                            if(MFAUtil.validateCode(player, args[2])) {
+                                            if (MFAUtil.validateCode(player, args[2])) {
                                                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.verified")));
                                                 MFAUtil.setVerified(player, true);
                                             } else {
@@ -466,7 +466,13 @@ public class KeklistCommand extends Command {
                         }
 
                         try {
+                            if (Bukkit.getPluginManager().getPlugin("BKCommonLib") == null && Keklist.getInstance().getConfig().getBoolean("2fa.enabled")) {
+                                Keklist.getInstance().getLogger().warning(Keklist.getTranslations().get("2fa.bkcommonlib"));
+                                Keklist.getInstance().getConfig().set("2fa.enabled", false);
+                            }
+
                             Keklist.getInstance().getConfig().load(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+
                             Keklist.getDatabase().reconnect();
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("config-reloaded")));
                         } catch (IOException | InvalidConfigurationException e) {
@@ -544,7 +550,8 @@ public class KeklistCommand extends Command {
             if (sender.hasPermission("keklist.info.use"))
                 suggestions.add("info");
 
-            if (sender.hasPermission("keklist.2fa.use"))
+            if (sender.hasPermission("keklist.2fa.use") &&
+                    Keklist.getInstance().getConfig().getBoolean("2fa.enable"))
                 suggestions.add("2fa");
 
             if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {

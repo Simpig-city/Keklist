@@ -150,7 +150,8 @@ modrinth {
     changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
 
     dependencies {
-        optional.project("geyser") // Sadly this is the only project on modrinth, and it does not allow to add external dependencies *yet*
+        optional.project("geyser") // Sadly these are the only projects on modrinth, and it does not allow to add external dependencies *yet*
+        optional.project("bkcommonlib")
     }
 }
 
@@ -180,6 +181,9 @@ hangarPublish {
                         required.set(false)
                     }
                     hangar("Plan-Player-Analytics") {
+                        required.set(false)
+                    }
+                    url("BkCommonLib", "https://modrinth.com/plugin/bkcommonlib") {
                         required.set(false)
                     }
                     url("LuckPerms", "https://luckperms.net/download") {
