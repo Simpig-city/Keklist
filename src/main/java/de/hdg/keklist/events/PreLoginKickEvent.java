@@ -71,6 +71,9 @@ public class PreLoginKickEvent implements Listener {
                     event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(config.getString("messages.kick.server-list")));
                     return;
                 }
+            } else {
+                event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(config.getString("messages.kick.server-list")));
+                return;
             }
         }
 
