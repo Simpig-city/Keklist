@@ -12,6 +12,9 @@ import de.hdg.keklist.commands.KeklistCommand;
 import de.hdg.keklist.commands.WhitelistCommand;
 import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.*;
+import de.hdg.keklist.events.command.ListCommandPageEvent;
+import de.hdg.keklist.events.command.NameChangeCommandEvent;
+import de.hdg.keklist.events.mfa.MFAEvent;
 import de.hdg.keklist.extentions.GeyserEventRegistrar;
 import de.hdg.keklist.extentions.PlaceholderAPIExtension;
 import de.hdg.keklist.extentions.context.BlacklistedCalculator;
@@ -26,7 +29,7 @@ import de.hdg.keklist.util.KeklistConfigUtil;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.extentions.PlanHook;
 import de.hdg.keklist.extentions.WebhookManager;
-import de.hdg.keklist.util.mfa.CommandEvent;
+import de.hdg.keklist.events.mfa.CommandEvent;
 import de.sage.util.UpdateChecker;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -142,7 +145,7 @@ public final class Keklist extends JavaPlugin {
 
         pm.registerEvents(new ListPingEvent(), this);
         pm.registerEvents(new PreLoginKickEvent(), this);
-        pm.registerEvents(new BlacklistRemoveMotd(), this);
+        pm.registerEvents(new NameChangeCommandEvent(), this);
         pm.registerEvents(new ServerWhitelistChangeEvent(), this);
         pm.registerEvents(new NotifyJoinEvent(), this);
         pm.registerEvents(new ListCommandPageEvent(), this);

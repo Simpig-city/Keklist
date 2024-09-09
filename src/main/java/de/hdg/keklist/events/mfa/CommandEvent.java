@@ -1,6 +1,7 @@
-package de.hdg.keklist.util.mfa;
+package de.hdg.keklist.events.mfa;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.util.mfa.MFAUtil;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -11,7 +12,7 @@ public class CommandEvent implements Listener {
 
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onCommand(@NotNull PlayerCommandPreprocessEvent event) {
-        if (event.getMessage().toLowerCase().startsWith("keklist 2fa verify"))
+        if (event.getMessage().toLowerCase().startsWith("keklist 2fa"))
             return;
 
         if (!Keklist.getInstance().getConfig().getBoolean("2fa.enabled"))

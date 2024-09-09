@@ -1,4 +1,4 @@
-package de.hdg.keklist.events;
+package de.hdg.keklist.events.command;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;

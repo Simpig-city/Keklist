@@ -3,6 +3,7 @@ package de.hdg.keklist.util.mfa;
 import com.bergerkiller.bukkit.common.map.MapDisplay;
 import com.bergerkiller.bukkit.common.map.MapTexture;
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.events.mfa.MFAEvent;
 import de.tomino.AuthSys;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -29,6 +30,7 @@ public class MFAUtil {
     private final static String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final @Getter HashMap<Player, MFAPendingData> pendingApproval = new HashMap<>();
     private static final List<Player> isCurrentlyVerified = new ArrayList<>();
+    private static final List<Player> hasEnabledMfaCache = new ArrayList<>(); // Cache data to prevent unnecessary database queries
 
     /**
      * Sends the QR code to the player and registers the player in the database
@@ -46,6 +48,7 @@ public class MFAUtil {
         });
 
         pendingApproval.put(player, new MFAPendingData(secret, player.getInventory().getItemInOffHand()));
+        MFAEvent.lockPlayer(player);
 
         player.getInventory().setItemInOffHand(item);  // send qr code to player
         player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.setup")));
@@ -81,7 +84,7 @@ public class MFAUtil {
      * @param code   the code to validate
      * @return true if the code is valid, false otherwise
      */
-    public static boolean validateRecoveryCode(Player player, String code) {
+    public static boolean validateRecoveryCode(@NotNull Player player, @NotNull String code) {
         try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT recoveryCodes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
             if (rs.next()) {
                 String[] recoveryCodes = rs.getString("recoveryCodes").split(",");
@@ -106,8 +109,14 @@ public class MFAUtil {
      * @return true if the player has 2fa enabled, false otherwise
      */
     public static boolean hasMFAEnabled(@NotNull Player player) {
+        if (hasEnabledMfaCache.contains(player))
+            return true;
+
         try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT secret FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
-            return rs.next();
+            if(rs.next()) {
+                hasEnabledMfaCache.add(player);
+                return true;
+            }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
@@ -122,6 +131,9 @@ public class MFAUtil {
      */
     public static void disableMFA(@NotNull Player player) {
         Keklist.getDatabase().onUpdate("DELETE FROM mfa WHERE uuid = ?", player.getUniqueId().toString());
+        hasEnabledMfaCache.remove(player);
+        setVerified(player, false);
+        MFAEvent.unlockPlayer(player); // Unlock the player as they had to enter a valid code to disable 2fa
         player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.disabled")));
     }
 
@@ -164,6 +176,7 @@ public class MFAUtil {
     public static void setVerified(@NotNull Player player, boolean verified) {
         if (verified) {
             isCurrentlyVerified.add(player);
+            MFAEvent.unlockPlayer(player);
 
             Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> {
                 if (!player.isOnline())
@@ -171,15 +184,32 @@ public class MFAUtil {
 
                 setVerified(player, false);
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.expired")));
-            }, 20 * 60 * 30);
+            }, 20 * 60 * 30); // Invalidate after 30 minutes
         } else
             isCurrentlyVerified.remove(player);
     }
 
-    public record MFAPendingData(String secret, ItemStack offhand) {
+    /**
+     * Clears a player from every list including the pending approval list
+     *
+     * @param player the player to clear from the lists
+     */
+    public static void clearPlayerFromLists(@NotNull Player player) {
+        pendingApproval.remove(player);
+        isCurrentlyVerified.remove(player);
+        hasEnabledMfaCache.remove(player);
+    }
+
+    /**
+     * A record that holds the secret and the offhand item of a player
+     */
+    public record MFAPendingData(@NotNull String secret, @NotNull ItemStack offhand) {
     }
 
 
+    /**
+     * A map display that displays a qr code
+     */
     public static class QrCodeDisplay extends MapDisplay {
 
         @Override
@@ -206,6 +236,12 @@ public class MFAUtil {
         }
     }
 
+    /**
+     * Converts a BufferedImage to a base64 encoded string
+     *
+     * @param image the image to convert
+     * @return the base64 encoded string
+     */
     private static String pngImageToBase64(@NotNull BufferedImage image) {
         try (ByteArrayOutputStream os = new ByteArrayOutputStream()) {
             ImageIO.write(image, "png", os);
