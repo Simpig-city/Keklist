@@ -26,6 +26,7 @@ import de.hdg.keklist.util.KeklistConfigUtil;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.extentions.PlanHook;
 import de.hdg.keklist.extentions.WebhookManager;
+import de.hdg.keklist.util.mfa.CommandEvent;
 import de.sage.util.UpdateChecker;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -145,6 +146,9 @@ public final class Keklist extends JavaPlugin {
         pm.registerEvents(new ServerWhitelistChangeEvent(), this);
         pm.registerEvents(new NotifyJoinEvent(), this);
         pm.registerEvents(new ListCommandPageEvent(), this);
+
+        // MFA
+        pm.registerEvents(new CommandEvent(), this);
         pm.registerEvents(new MFAEvent(), this);
 
         // GUI Listener

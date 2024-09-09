@@ -124,5 +124,8 @@ public class MFAEvent implements Listener {
 
         if (data != null)
             event.getPlayer().getInventory().setItemInOffHand(data.offhand());
+
+        if(MFAUtil.hasVerified(event.getPlayer()))
+            MFAUtil.setVerified(event.getPlayer(), false);
     }
 }

@@ -256,6 +256,10 @@
   "keklist.2fa.status.enabled": "<green>2FA is currently enabled for your account!",
   "keklist.2fa.status.disabled": "<gold>2FA is currently disabled for your account!",
   "keklist.2fa.feature-disabled": "<red>This 2fa feature is disabled! Please enable it in the config file to use this feature!",
+  "keklist.2fa.not-verified": "<red>You need to have 2fa enabled verify your 2fa code first! Use /keklist 2fa verify <code>",
+  "keklist.2fa.required": "<red>You need to have 2fa enabled to use this command!",
+  "keklist.2fa.verified": "<green>Successfully verified your 2fa code!",
+  "keklist.2fa.expired": "<gold>Your 2fa verification has expired! Please verify again!",
 
   "floodgate.api-key-not-set": "<orange>You did not set the Floodgate API key in the config! Either get the floodgate uuid from https://mcprofile.io using the UUID directly or the floodgate user must be in the server's cache otherwise the request will fail!",
   "geyser.prefix": "Geyser detected, using prefix: %s",

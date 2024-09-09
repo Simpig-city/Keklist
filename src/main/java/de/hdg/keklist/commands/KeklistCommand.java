@@ -407,7 +407,25 @@ public class KeklistCommand extends Command {
                                     }
                                 }
 
+                                case "verify" -> {
+                                    if (args.length <= 3){
+                                        if(MFAUtil.hasMFAEnabled(player)) {
+
+                                            if(MFAUtil.validateCode(player, args[2])) {
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.verified")));
+                                                MFAUtil.setVerified(player, true);
+                                            } else {
+                                                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.invalid-code")));
+                                                MFAUtil.setVerified(player, false);
+                                            }
+
+                                        } else
+                                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.required")));
+                                    } else
+                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.no-code")));
+                                }
                             }
+
                         } else {
                             if (args[1].equalsIgnoreCase("delete")) {
                                 if (Keklist.getInstance().getConfig().getBoolean("2fa.console-can-delete-2fa")) {

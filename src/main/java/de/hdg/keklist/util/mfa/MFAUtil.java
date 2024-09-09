@@ -22,14 +22,13 @@ import java.io.IOException;
 import java.security.SecureRandom;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.Base64;
-import java.util.HashMap;
+import java.util.*;
 
 public class MFAUtil {
 
     private final static String alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     private static final @Getter HashMap<Player, MFAPendingData> pendingApproval = new HashMap<>();
+    private static final List<Player> isCurrentlyVerified = new ArrayList<>();
 
     /**
      * Sends the QR code to the player and registers the player in the database
@@ -144,6 +143,37 @@ public class MFAUtil {
         }
 
         return codes;
+    }
+
+    /**
+     * Checks if the player has already verified their 2fa
+     *
+     * @param player the player to check
+     * @return true if the player has verified their 2fa, false otherwise
+     */
+    public static boolean hasVerified(@NotNull Player player) {
+        return isCurrentlyVerified.contains(player);
+    }
+
+    /**
+     * Sets the player as verified or not verified
+     *
+     * @param player   the player to set
+     * @param verified true if the player is verified, false otherwise
+     */
+    public static void setVerified(@NotNull Player player, boolean verified) {
+        if (verified) {
+            isCurrentlyVerified.add(player);
+
+            Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> {
+                if (!player.isOnline())
+                    return;
+
+                setVerified(player, false);
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.expired")));
+            }, 20 * 60 * 30);
+        } else
+            isCurrentlyVerified.remove(player);
     }
 
     public record MFAPendingData(String secret, ItemStack offhand) {
