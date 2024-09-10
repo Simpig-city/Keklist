@@ -24,6 +24,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 public class KeklistCommand extends Command {
 
@@ -430,11 +431,17 @@ public class KeklistCommand extends Command {
                             if (args[1].equalsIgnoreCase("delete")) {
                                 if (Keklist.getInstance().getConfig().getBoolean("2fa.console-can-delete-2fa")) {
                                     if (args.length >= 3) {
-                                        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM mfa WHERE secret = ?", args[2])) {
+                                        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM mfa WHERE uuid = ?", args[2])) {
 
                                             if (rs.next()) {
-                                                Keklist.getDatabase().onUpdate("DELETE FROM mfa WHERE secret = ?", args[2]);
+                                                Keklist.getDatabase().onUpdate("DELETE FROM mfa WHERE uuid = ?", args[2]);
                                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.deleted", args[2])));
+
+                                                Player player = Bukkit.getPlayer(UUID.fromString(args[2]));
+
+                                                if (player != null)
+                                                    player.kick(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.deleted.kick")));
+
                                             } else
                                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.not-enabled", args[2])));
 
@@ -585,7 +592,7 @@ public class KeklistCommand extends Command {
                     && Keklist.getInstance().getConfig().getBoolean("2fa.enabled")) {
 
                 if (sender instanceof Player player)
-                    if(MFAUtil.hasMFAEnabled(player))
+                    if (MFAUtil.hasMFAEnabled(player))
                         suggestions.addAll(List.of("disable", "codes", "status", "verify"));
                     else
                         suggestions.addAll(List.of("enable", "status"));

@@ -252,6 +252,7 @@
   "keklist.2fa.no-code": "<red>You need to provide a 2FA or recovery code to use this!",
   "keklist.2fa.no-uuid": "<red>You need to provide a UUID to delete a player from 2fa using the console!",
   "keklist.2fa.deleted": "<green>Successfully deleted the player with the uuid %s from 2fa!",
+  "keklist.2fa.deleted.kick": "<red>Your 2fa account has been deleted by the console! \n<gold>Please enable it again if you want to use it!",
   "keklist.2fa.not-enabled": "<red>The player with the uuid %s does not have 2fa enabled!",
   "keklist.2fa.status.enabled": "<green>2FA is currently enabled for your account!",
   "keklist.2fa.status.disabled": "<gold>2FA is currently disabled for your account!",
