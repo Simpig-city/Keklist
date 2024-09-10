@@ -16,7 +16,7 @@ ip:
 
 # This requires BKCommonLib to be installed for the qr codes
 2fa:
-  enable: false # Enable the 2fa feature
+  enabled: false # Enable the 2fa feature
   2fa-on-join: false # Require 2fa verification on join
   enforce-settings: false # Force the player to use 2fa on any settings set here. NOTE: If set to false only player who have 2fa set up will be forced to use it
   require-2fa-on-command:

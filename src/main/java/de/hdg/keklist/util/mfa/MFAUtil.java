@@ -126,6 +126,7 @@ public class MFAUtil {
 
     /**
      * Disables 2fa for a given player <p>Please check the 2fa/recovery code before disabling 2fa</p>
+     * The player should be notified about this!
      *
      * @param player the player to disable 2fa for
      */
@@ -134,7 +135,6 @@ public class MFAUtil {
         hasEnabledMfaCache.remove(player);
         setVerified(player, false);
         MFAEvent.unlockPlayer(player); // Unlock the player as they had to enter a valid code to disable 2fa
-        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.disabled")));
     }
 
     /**

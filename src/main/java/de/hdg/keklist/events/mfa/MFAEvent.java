@@ -7,6 +7,7 @@ import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
@@ -57,8 +58,11 @@ public class MFAEvent implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(priority = EventPriority.HIGH)
     public void onLogin(PlayerLoginEvent event) {
+        if(!event.getResult().equals(PlayerLoginEvent.Result.ALLOWED))
+           return;
+
         if (Keklist.getInstance().getConfig().getBoolean("2fa.enabled")) {
             if (Keklist.getInstance().getConfig().getBoolean("2fa.2fa-on-join")
                     && (Keklist.getInstance().getConfig().getBoolean("2fa.enforce-settings") || MFAUtil.hasMFAEnabled(event.getPlayer()))) {
@@ -121,6 +125,13 @@ public class MFAEvent implements Listener {
     @EventHandler
     public void onSwapItem(@NotNull PlayerSwapHandItemsEvent event) {
         if (lockedPlayers.contains(event.getPlayer())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onCreativeInv(@NotNull InventoryCreativeEvent event) {
+        if (lockedPlayers.contains((Player) event.getWhoClicked())) {
             event.setCancelled(true);
         }
     }

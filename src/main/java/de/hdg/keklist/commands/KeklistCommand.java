@@ -335,7 +335,7 @@ public class KeklistCommand extends Command {
                             return false;
                         }
 
-                        if (!Keklist.getInstance().getConfig().getBoolean("2fa.enable")) {
+                        if (!Keklist.getInstance().getConfig().getBoolean("2fa.enabled")) {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.feature-disabled")));
                             return false;
                         }
@@ -395,7 +395,7 @@ public class KeklistCommand extends Command {
                                         }
 
                                     } else {
-                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.not-enabled")));
+                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.required")));
                                     }
                                 }
 
@@ -551,7 +551,7 @@ public class KeklistCommand extends Command {
                 suggestions.add("info");
 
             if (sender.hasPermission("keklist.2fa.use") &&
-                    Keklist.getInstance().getConfig().getBoolean("2fa.enable"))
+                    Keklist.getInstance().getConfig().getBoolean("2fa.enabled"))
                 suggestions.add("2fa");
 
             if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
@@ -582,10 +582,14 @@ public class KeklistCommand extends Command {
                 suggestions.add("1.1.1.1");
             } else if (args[0].equalsIgnoreCase("2fa")
                     && sender.hasPermission("keklist.2fa.use")
-                    && Keklist.getInstance().getConfig().getBoolean("2fa.enable")) {
+                    && Keklist.getInstance().getConfig().getBoolean("2fa.enabled")) {
 
-                if (sender instanceof Player)
-                    suggestions.addAll(List.of("enable", "disable", "codes", "status"));
+                if (sender instanceof Player player)
+                    if(MFAUtil.hasMFAEnabled(player))
+                        suggestions.addAll(List.of("disable", "codes", "status"));
+                    else
+                        suggestions.addAll(List.of("enable", "status"));
+
                 else
                     suggestions.add("delete");
             }
@@ -602,7 +606,7 @@ public class KeklistCommand extends Command {
                     && sender.hasPermission("keklist.2fa.use")
                     && !(sender instanceof Player)
                     && Keklist.getInstance().getConfig().getBoolean("2fa.console-can-delete-2fa")
-                    && Keklist.getInstance().getConfig().getBoolean("2fa.enable")) {
+                    && Keklist.getInstance().getConfig().getBoolean("2fa.enabled")) {
 
                 try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT uuid FROM mfa LIMIT 10")) {
                     while (rs.next()) {
