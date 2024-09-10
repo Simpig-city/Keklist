@@ -5,6 +5,7 @@ import de.hdg.keklist.util.mfa.MFAUtil;
 import de.tomino.AuthSys;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
+import net.kyori.adventure.title.Title;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,6 +17,8 @@ import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.jetbrains.annotations.NotNull;
 
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -59,14 +62,16 @@ public class MFAEvent implements Listener {
     }
 
     @EventHandler(priority = EventPriority.HIGH)
-    public void onLogin(PlayerLoginEvent event) {
-        if(!event.getResult().equals(PlayerLoginEvent.Result.ALLOWED))
-           return;
-
+    public void onLogin(PlayerJoinEvent event) {
         if (Keklist.getInstance().getConfig().getBoolean("2fa.enabled")) {
             if (Keklist.getInstance().getConfig().getBoolean("2fa.2fa-on-join")
                     && (Keklist.getInstance().getConfig().getBoolean("2fa.enforce-settings") || MFAUtil.hasMFAEnabled(event.getPlayer()))) {
                 event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.join")));
+                event.getPlayer().showTitle(Title.title(
+                        Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.join-title")),
+                        Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.join-subtitle")),
+                        Title.Times.times(Duration.of(5, ChronoUnit.SECONDS), Duration.of(60, ChronoUnit.SECONDS), Duration.of(10, ChronoUnit.SECONDS))));
+
                 lockPlayer(event.getPlayer()); // Gets unlocked by MFAUtil#setVerified which gets called in the Keklist command
             }
         }
@@ -89,7 +94,8 @@ public class MFAEvent implements Listener {
      * @param player the player to unlock
      */
     public static void unlockPlayer(@NotNull Player player) {
-        lockedPlayers.remove(player);
+        if(lockedPlayers.remove(player))
+            player.clearTitle(); // May be in conflict with some other titles but im going to change this only on request as its fine for now
     }
 
     /* Player is not allow to do anything during setup */

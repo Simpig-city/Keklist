@@ -45,7 +45,7 @@ public class CommandEvent implements Listener {
         }
     }
 
-    /* This subcommand matcher was pain asf and not even ai could help me with it. BUT it works :) */
+    /* This subcommand matcher was pain asf and not even AI could help me with it. BUT it works :) */
 
     /**
      * Checks if the command with any arguments matches any of the blocked commands

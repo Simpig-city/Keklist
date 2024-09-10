@@ -586,7 +586,7 @@ public class KeklistCommand extends Command {
 
                 if (sender instanceof Player player)
                     if(MFAUtil.hasMFAEnabled(player))
-                        suggestions.addAll(List.of("disable", "codes", "status"));
+                        suggestions.addAll(List.of("disable", "codes", "status", "verify"));
                     else
                         suggestions.addAll(List.of("enable", "status"));
 

@@ -19,6 +19,7 @@ ip:
   enabled: false # Enable the 2fa feature
   2fa-on-join: false # Require 2fa verification on join
   enforce-settings: false # Force the player to use 2fa on any settings set here. NOTE: If set to false only player who have 2fa set up will be forced to use it
+  expire-time: 180 # Time in seconds until the 2fa code verification expires and the has to verify again. NOTE: Set this to 0 if you want to expire the verification immediately. -1 will disable the expiration completely
   require-2fa-on-command:
     enabled: false # Require 2fa on a command
     commands: [ "whitelist", "blacklist", "keklist gui" ] # List of commands that require 2fa.

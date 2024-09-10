@@ -7,6 +7,7 @@ import de.hdg.keklist.events.mfa.MFAEvent;
 import de.tomino.AuthSys;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -113,7 +114,7 @@ public class MFAUtil {
             return true;
 
         try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT secret FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
-            if(rs.next()) {
+            if (rs.next()) {
                 hasEnabledMfaCache.add(player);
                 return true;
             }
@@ -178,13 +179,24 @@ public class MFAUtil {
             isCurrentlyVerified.add(player);
             MFAEvent.unlockPlayer(player);
 
-            Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> {
-                if (!player.isOnline())
-                    return;
+            int expireTime = Keklist.getInstance().getConfig().getInt("2fa.expire-time", 180);
 
-                setVerified(player, false);
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.expired")));
-            }, 20 * 60 * 30); // Invalidate after 30 minutes
+            switch (expireTime) {
+                case -1 -> {} // Do nothing
+                case 0 -> isCurrentlyVerified.remove(player);
+                default -> {
+                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> {
+                        if (!player.isOnline())
+                            return;
+
+                        setVerified(player, false);
+                        if (Keklist.getInstance().getConfig().getBoolean("2fa.notify-expiration-chat", false)) // Not present in the default config
+                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.expired")));
+
+                        player.sendActionBar(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.expired")));
+                    }, 20L * Math.max(expireTime, 1));
+                }
+            }
         } else
             isCurrentlyVerified.remove(player);
     }
