@@ -32,28 +32,39 @@ public class MFAEvent implements Listener {
         if (MFAUtil.getPendingApproval().containsKey(event.getPlayer())) {
             event.setCancelled(true);
 
+            if(PlainTextComponentSerializer.plainText().serialize(event.message()).equalsIgnoreCase("secret")) {
+                event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.secret", MFAUtil.getPendingApproval().get(event.getPlayer()).secret())));
+                return;
+            }
+
             MFAUtil.MFAPendingData data = MFAUtil.getPendingApproval().remove(event.getPlayer());
             event.getPlayer().getInventory().setItemInOffHand(data.offhand());
 
-            if (AuthSys.validateCode(data.secret(), PlainTextComponentSerializer.plainText().serialize(event.message()))) {
-                event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.setup-success")));
+            unlockPlayer(event.getPlayer());
+            try {
+                if (AuthSys.validateCode(data.secret(), PlainTextComponentSerializer.plainText().serialize(event.message()))) {
+                    event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.setup-success")));
 
-                String[] recoveryCodes = MFAUtil.generateRecoveryCodes();
-                StringBuilder builder = new StringBuilder();
+                    String[] recoveryCodes = MFAUtil.generateRecoveryCodes();
+                    StringBuilder builder = new StringBuilder();
 
-                for (String code : recoveryCodes) {
-                    if ((builder.length() / 2) != 1) {
-                        builder.append(code).append(" | ");
-                    } else
-                        builder.append(code).append("\n");
+                    for (String code : recoveryCodes) {
+                        if ((builder.length() / 2) != 1) {
+                            builder.append(code).append(" | ");
+                        } else
+                            builder.append(code).append("\n");
+                    }
+
+                    Keklist.getDatabase().onUpdate("INSERT INTO mfa(uuid, secret, recoveryCodes) VALUES (?, ?, ?)", event.getPlayer().getUniqueId().toString(), data.secret(), Arrays.toString(recoveryCodes));
+                    MFAUtil.setVerified(event.getPlayer(), true);
+
+                    event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.codes", builder.toString())));
+
+                } else {
+                    event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.setup-fail")));
                 }
 
-                Keklist.getDatabase().onUpdate("INSERT INTO mfa(uuid, secret, recoveryCodes) VALUES (?, ?, ?)", event.getPlayer().getUniqueId().toString(), data.secret(), Arrays.toString(recoveryCodes));
-                MFAUtil.setVerified(event.getPlayer(), true);
-
-                event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.codes", builder.toString())));
-
-            } else {
+            } catch (NumberFormatException noCode) {
                 event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.setup-fail")));
             }
         } else if (lockedPlayers.contains(event.getPlayer())) {

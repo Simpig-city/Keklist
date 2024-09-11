@@ -409,7 +409,7 @@ public class KeklistCommand extends Command {
                                 }
 
                                 case "verify" -> {
-                                    if (args.length <= 3) {
+                                    if (args.length <= 4) {
                                         if (MFAUtil.hasMFAEnabled(player)) {
 
                                             if (MFAUtil.validateCode(player, args[2])) {
