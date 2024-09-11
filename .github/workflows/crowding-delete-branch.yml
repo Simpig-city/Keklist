@@ -1,0 +1,28 @@
+name: Translations
+on:
+  [delete, workflow_dispatch]
+
+jobs:
+  delete-old:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract branch name
+        shell: bash
+        run: |
+          branchName=$(echo ${GITHUB_REF#refs/heads/})
+          echo "branch=${branchName/\//"-"}"   >>$GITHUB_OUTPUT
+        id: gh_branch
+
+      - name: Crowdin Upload
+        uses: crowdin/github-action@v2
+        with:
+          command: 'branch delete ${{ steps.gh_branch.outputs.branch }}'
+          command_args: '-l uk --method tm --branch main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
