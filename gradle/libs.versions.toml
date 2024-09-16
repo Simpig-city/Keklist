@@ -20,6 +20,7 @@ club-minnced-discord-webhooks = "0.8.4"
 de-sage-util-updatechecker = "1.0.3-SNAPSHOT"
 
 org-bstats-bstats-bukkit = "3.0.3"
+org-spongepowered-configurate-yaml = "4.1.2"
 
 [libraries]
 club-minnced-discord-webhooks = { module = "club.minnced:discord-webhooks", version.ref = "club-minnced-discord-webhooks" }
@@ -38,3 +39,4 @@ org-geysermc-floodgate-api = { module = "org.geysermc.floodgate:api", version.re
 org-geysermc-geyser-api = { module = "org.geysermc.geyser:api", version.ref = "org-geysermc-geyser-api" }
 org-mariadb-jdbc-mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java-client", version.ref = "org-mariadb-jdbc-mariadb-java-client" }
 org-xerial-sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "org-xerial-sqlite-jdbc" }
+org-spongepowered-configurate-yaml = { module = "org.spongepowered:configurate-yaml", version.ref = "org-spongepowered-configurate-yaml" }
