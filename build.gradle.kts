@@ -74,6 +74,7 @@ dependencies {
 
     // Other / Shaded
     implementation(libs.org.bstats.bstats.bukkit)
+    compileOnly(libs.org.spongepowered.configurate.yaml)
 }
 
 java {
