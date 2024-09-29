@@ -1,7 +1,7 @@
 package de.hdg.keklist.extentions;
 
 import de.hdg.keklist.Keklist;
-import de.hdg.keklist.events.GeyserConnectionEvent;
+import de.hdg.keklist.events.feats.GeyserConnectionEvent;
 import lombok.SneakyThrows;
 import org.geysermc.geyser.api.GeyserApi;
 import org.geysermc.geyser.api.event.EventRegistrar;

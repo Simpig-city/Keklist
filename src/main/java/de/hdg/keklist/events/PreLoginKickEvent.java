@@ -3,6 +3,7 @@ package de.hdg.keklist.events;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.events.feats.ListPingEvent;
 import de.hdg.keklist.extentions.WebhookManager;
 import de.hdg.keklist.util.IpUtil;
 import net.kyori.adventure.text.Component;
@@ -23,6 +24,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class PreLoginKickEvent implements Listener {
 
@@ -47,25 +49,25 @@ public class PreLoginKickEvent implements Listener {
 
             IpUtil.IpData data = new IpUtil(event.getAddress().getHostAddress()).getIpData().join(); // We can use .join() because we are in an async event
 
-            if(config.getList("blacklist.continents").stream().map(String::valueOf).anyMatch(data.continentCode()::equalsIgnoreCase)) {
+            if (config.getList("blacklist.continents").stream().map(String::valueOf).anyMatch(data.continentCode()::equalsIgnoreCase)) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.CONTINENT)));
                 return;
             }
 
-            if(config.getList("blacklist.countries").stream().map(String::valueOf).anyMatch(data.countryCode()::equalsIgnoreCase)) {
+            if (config.getList("blacklist.countries").stream().map(String::valueOf).anyMatch(data.countryCode()::equalsIgnoreCase)) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.COUNTRY)));
                 return;
             }
 
-            if(config.getBoolean("ip.proxy-allowed") && data.proxy()) {
+            if (config.getBoolean("ip.proxy-allowed") && data.proxy()) {
                 event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.PROXY)));
                 return;
             }
         }
 
-        if(config.getBoolean("general.require-server-list-before-join")) {
+        if (config.getBoolean("general.require-server-list-before-join")) {
             if (ListPingEvent.pingedIps.containsKey(event.getAddress().getHostAddress())) {
-                if(ListPingEvent.pingedIps.get(event.getAddress().getHostAddress()) > System.currentTimeMillis() - 40000) { // Can not find how often the minecraft server pings the server list, so I just use 40 seconds
+                if (ListPingEvent.pingedIps.get(event.getAddress().getHostAddress()) > System.currentTimeMillis() - 40000) { // Can not find how often the minecraft server pings the server list, so I just use 40 seconds
                     ListPingEvent.pingedIps.remove(event.getAddress().getHostAddress());
                 } else {
                     event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_OTHER, Keklist.getInstance().getMiniMessage().deserialize(config.getString("messages.kick.server-list")));
@@ -143,6 +145,20 @@ public class PreLoginKickEvent implements Listener {
             ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getUniqueId().toString());
             ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress());
 
+            int level = 0;
+
+            // Ip level is lower ranked as user level
+            try (ResultSet rsLevelUser = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", event.getUniqueId().toString());
+                 ResultSet rsLevelIp = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", event.getAddress().getHostAddress())) {
+                 if(rsLevelIp.next())
+                    level = rsLevelIp.getInt("whitelistLevel");
+
+                if (rsLevelUser.next())
+                    level = rsLevelUser.getInt("whitelistLevel");
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
             try {
                 if (!rsUser.next()) {
                     if (Keklist.getInstance().getFloodgateApi() != null) {
@@ -183,6 +199,11 @@ public class PreLoginKickEvent implements Listener {
                         Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", event.getRawAddress().getHostName())), "keklist.notify.kicked");
 
                     event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.WHITELISTED)));
+                }
+
+                // Level is too low
+                if (level < Keklist.getInstance().getConfig().getInt("whitelist.level")) {
+                    event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_WHITELIST, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getConfig().getString("messages.kick.whitelist.level")));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
