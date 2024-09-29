@@ -126,7 +126,7 @@ public class KeklistCommand extends Command {
                                 }
 
                                 default ->
-                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
 
                             }
                         } else
@@ -141,10 +141,10 @@ public class KeklistCommand extends Command {
 
                         switch (args[1]) {
                             case "import" -> {
-                                if (args.length == 3) {
+                                if (args.length >= 3) {
                                     if (args[2].equalsIgnoreCase("vanilla")) {
                                         for (OfflinePlayer player : Bukkit.getWhitelistedPlayers()) {
-                                            Bukkit.dispatchCommand(sender, "keklist whitelist add " + player.getName());
+                                            Bukkit.dispatchCommand(sender, "keklist whitelist add " + player.getUniqueId());
                                         }
 
                                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.imported")));
@@ -196,6 +196,33 @@ public class KeklistCommand extends Command {
                                     }
                                 }
 
+                                case "level" -> {
+                                    if (args.length >= 3) {
+                                        try {
+                                            int level = Integer.parseInt(args[2]);
+
+                                            Keklist.getInstance().getConfig().set("whitelist.level", level);
+
+                                            try {
+                                                Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+
+                                                for (Player player : Bukkit.getOnlinePlayers()) {
+                                                    if (player.hasPermission("keklist.manage.whitelist")) {
+                                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.set", level)));
+                                                    }
+                                                }
+
+                                                Bukkit.getConsoleSender().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.set", level)));
+                                            } catch (IOException e) {
+                                                throw new RuntimeException(e);
+                                            }
+
+                                        } catch (NumberFormatException e) {
+                                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.invalid")));
+                                        }
+                                    }
+                                }
+
                                 default ->
                                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.usage.command")));
                             }
@@ -214,23 +241,23 @@ public class KeklistCommand extends Command {
                         switch (type) {
                             case IPv4, IPv6 -> {
                                 new IpUtil(args[1]).getIpData().thenAccept(data ->
-                                    sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.ip-info")
-                                            .replace("%ip%", args[1])
-                                            .replace("%country%", data.country())
-                                                    .replace("%country_code%", data.countryCode())
-                                                    .replace("%continent%", data.continent())
-                                                    .replace("%continent_code%", data.continentCode())
-                                            .replace("%region%", data.regionName())
-                                            .replace("%city%", data.city())
-                                            .replace("%org%", data.org())
-                                            .replace("%as%", data.as())
-                                            .replace("%timezone%", data.timezone())
-                                            .replace("%mobile%", data.mobile() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
-                                            .replace("%proxy%", data.proxy() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
-                                            .replace("%hosting%", data.hosting() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
-                                            .replace("%query%", data.query())
-                                            .replace("%player%", args.length >= 3 ? args[2] : "<grey><hover:show_text:'May be due to searching just an IP'>unknown</hover>")
-                                    ))
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.ip-info")
+                                                .replace("%ip%", args[1])
+                                                .replace("%country%", data.country())
+                                                .replace("%country_code%", data.countryCode())
+                                                .replace("%continent%", data.continent())
+                                                .replace("%continent_code%", data.continentCode())
+                                                .replace("%region%", data.regionName())
+                                                .replace("%city%", data.city())
+                                                .replace("%org%", data.org())
+                                                .replace("%as%", data.as())
+                                                .replace("%timezone%", data.timezone())
+                                                .replace("%mobile%", data.mobile() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%proxy%", data.proxy() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%hosting%", data.hosting() ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
+                                                .replace("%query%", data.query())
+                                                .replace("%player%", args.length >= 3 ? args[2] : "<grey><hover:show_text:'May be due to searching just an IP'>unknown</hover>")
+                                        ))
                                 );
                             }
 
@@ -285,7 +312,7 @@ public class KeklistCommand extends Command {
                                         int protocolId = -1;
                                         String brand = "unknown";
 
-                                        if(Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next()) {
+                                        if (Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next()) {
                                             latestIp = Keklist.getDatabase().onQuery("SELECT ip FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getString("ip");
                                             protocolId = Keklist.getDatabase().onQuery("SELECT protocolId FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getInt("protocolId");
                                             brand = Keklist.getDatabase().onQuery("SELECT brand FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getString("brand");
@@ -293,7 +320,7 @@ public class KeklistCommand extends Command {
 
                                         Location location = offlinePlayer.getLocation();
 
-                                        if(location == null)
+                                        if (location == null)
                                             location = new Location(Bukkit.getWorlds().getFirst(), 0, 100, 0);
 
                                         long lastSeen = offlinePlayer.getLastSeen();
@@ -379,6 +406,7 @@ public class KeklistCommand extends Command {
                                     .replace("%whitelisted%", String.valueOf(whitelisted))
                                     .replace("%blacklisted%", String.valueOf(blacklisted))
                                     .replace("%whitelist%", whitelist ? "<green>" + Keklist.getTranslations().get("enabled") : "<red>" + Keklist.getTranslations().get("disabled"))
+                                    .replace("%whitelistLevel%", String.valueOf(Keklist.getInstance().getConfig().getInt("whitelist.level")))
                                     .replace("%blacklist%", blacklist ? "<green>" + Keklist.getTranslations().get("enabled") : "<red>" + Keklist.getTranslations().get("disabled"))
                                     .replace("%database%", type.toString())
                                     .replace("%version%", version)
@@ -432,8 +460,7 @@ public class KeklistCommand extends Command {
                     && sender.hasPermission("keklist.manage.whitelist")
                     && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
 
-                suggestions.addAll(List.of("enable", "disable"));
-                suggestions.add("import");
+                suggestions.addAll(List.of("enable", "disable", "level", "import"));
 
             } else if (args[0].equalsIgnoreCase("blacklist")
                     && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")
