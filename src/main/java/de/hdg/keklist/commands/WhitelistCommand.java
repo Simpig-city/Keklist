@@ -25,7 +25,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static de.hdg.keklist.util.TypeUtil.getEntryType;
 
@@ -298,11 +297,58 @@ public class WhitelistCommand extends Command {
                         try {
                             int level = Integer.parseInt(args[2]);
 
-                            try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE entry = ?", args[1])) {
+                            String entry = args[1];
+
+                            switch (type) {
+                                case JAVA -> {
+                                    try {
+                                        entry = Objects.requireNonNull(Bukkit.getPlayerUniqueId(args[1])).toString();
+
+                                        ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", entry);
+
+                                        if (!isWhitelistedRs.next()) {
+                                            throw new NullPointerException("User not found on whitelist");
+                                        }
+                                    } catch (NullPointerException notFound) {
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                                        return false;
+                                    }
+                                }
+
+                                case BEDROCK -> {
+                                    assert Keklist.getInstance().getFloodgateApi() != null;
+                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", Keklist.getInstance().getFloodgateApi().getUuidFor(entry).join()); // Please don't judge
+
+                                    if (!isWhitelistedRs.next()) {
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                                        return false;
+                                    }
+                                }
+
+                                case DOMAIN -> {
+                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", entry);
+
+                                    if (!isWhitelistedRs.next()) {
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                                        return false;
+                                    }
+                                }
+
+                                case IPv4, IPv6 -> {
+                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", entry);
+
+                                    if (!isWhitelistedRs.next()) {
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                                        return false;
+                                    }
+                                }
+                            }
+
+                            try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE entry = ?", entry)) {
                                 if (rs.next()) {
-                                    Keklist.getDatabase().onUpdate("UPDATE whitelistLevel SET whitelistLevel = ? WHERE entry = ?", level, args[1]);
+                                    Keklist.getDatabase().onUpdate("UPDATE whitelistLevel SET whitelistLevel = ? WHERE entry = ?", level, entry);
                                 } else {
-                                    Keklist.getDatabase().onUpdate("INSERT INTO whitelistLevel VALUES (?, ?, ?)", args[1], level, senderName);
+                                    Keklist.getDatabase().onUpdate("INSERT INTO whitelistLevel VALUES (?, ?, ?)", entry, level, senderName);
                                 }
 
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.update", level, args[1])));
