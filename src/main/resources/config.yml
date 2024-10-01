@@ -93,9 +93,10 @@ messages:
       - "<red><bold>Sorry, but you're not allowed to join this server!"
 
     whitelisted:
-      - level: "<red>Your whitelist level is insufficient, thus you can not join!"
       - "<gold><bold>You're kicked because the server is in whitelist mode!"
       - "<gold><bold>Sorry, but you're not on the whitelist!"
+
+    whitelisted-level: "<red>Your whitelist level is insufficient, thus you can not join!"
 
     proxy:
       - "<red><bold>You're kicked because you're using a proxy/vpn!"

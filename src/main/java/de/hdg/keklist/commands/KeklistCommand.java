@@ -220,7 +220,8 @@ public class KeklistCommand extends Command {
                                         } catch (NumberFormatException e) {
                                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.invalid")));
                                         }
-                                    }
+                                    } else
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.info", Keklist.getInstance().getConfig().getInt("whitelist.level"))));
                                 }
 
                                 default ->

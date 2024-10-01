@@ -13,6 +13,7 @@ import okhttp3.*;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static de.hdg.keklist.util.TypeUtil.getEntryType;
 
@@ -300,7 +302,7 @@ public class WhitelistCommand extends Command {
                                 if (rs.next()) {
                                     Keklist.getDatabase().onUpdate("UPDATE whitelistLevel SET whitelistLevel = ? WHERE entry = ?", level, args[1]);
                                 } else {
-                                    Keklist.getDatabase().onUpdate("INSERT INTO whitelistLevel VALUES (?, ?, ?)", level, args[1], senderName);
+                                    Keklist.getDatabase().onUpdate("INSERT INTO whitelistLevel VALUES (?, ?, ?)", args[1], level, senderName);
                                 }
 
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.update", level, args[1])));
@@ -399,7 +401,7 @@ public class WhitelistCommand extends Command {
         }
 
         @Override
-        public void onResponse(@NotNull Call call, Response response) throws IOException {
+        public void onResponse(@NotNull Call call, @NotNull Response response) throws IOException {
 
             String body = response.body().string();
 
@@ -585,6 +587,8 @@ public class WhitelistCommand extends Command {
                         while (rsUser.next()) {
                             completions.add(rsUser.getString("entry"));
                         }
+
+                        completions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());
 
                         return completions;
                     }
