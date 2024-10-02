@@ -14,6 +14,7 @@ softdepend:
   - LuckPerms
   - PlaceholderAPI
   - Geyser-Spigot
+  - BKCommonLib
 
 commands:
   whitelist:
@@ -26,7 +27,7 @@ commands:
     aliases: [bl]
   keklist:
     description: Command to manage the Keklist plugin's features.
-    usage: /keklist <blacklist/whitelist/reload> [feature/enable/disable]
+    usage: /keklist <subcommand> [feature/enable/disable]
     aliases: [kek]
 
 permissions:
@@ -96,4 +97,8 @@ permissions:
 
   keklist.status.use:
     description: Allows the player to use the status command
+    default: op
+
+  keklist.2fa.use:
+    description: Allows the player to use the 2fa command
     default: op

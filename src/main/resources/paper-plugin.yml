@@ -31,6 +31,10 @@ dependencies:
       load: BEFORE
       required: false
 
+    BKCommonLib:
+      load: BEFORE
+      required: false
+
 permissions:
   keklist.gui.use:
     description: Allows the player to use general the GUI
@@ -99,3 +103,7 @@ permissions:
   keklist.status.use:
     description: Allows the player to use the status command
     default: op
+
+  keklist.2fa.use:
+      description: Allows the player to use the 2fa command
+      default: op

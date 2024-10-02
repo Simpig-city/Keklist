@@ -14,6 +14,18 @@ ip:
   proxy-allowed: true # Option to block users using proxies, vpns and tor exit relays
 # Future Update: bypass-permission: "keklist.bypass.ip" # Permission to bypass the ip checks
 
+# This requires BKCommonLib to be installed for the qr codes
+2fa:
+  enabled: false # Enable the 2fa feature
+  2fa-on-join: false # Require 2fa verification on join
+  enforce-settings: false # Force the player to use 2fa on any settings set here. NOTE: If set to false only player who have 2fa set up will be forced to use it
+  expire-time: 180 # Time in seconds until the 2fa code verification expires and the has to verify again. NOTE: Set this to 0 if you want to expire the verification immediately. -1 will disable the expiration completely
+  require-2fa-on-command:
+    enabled: false # Require 2fa on a command
+    commands: [ "whitelist", "blacklist", "keklist gui" ] # List of commands that require 2fa.
+  require-2fa-on-any-command: false # Require 2fa for any command also including vanilla commands and other plugins. NOTE: ignores the require-2fa-on-command setting
+  console-can-delete-2fa: false # Console can delete 2fa for a player. NOTE: This is a security risk and should be disabled
+
 # Settings for the blacklist feature
 blacklist:
   enabled: true # Enable the blacklist feature

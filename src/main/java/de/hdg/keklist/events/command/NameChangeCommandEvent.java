@@ -1,10 +1,10 @@
-package de.hdg.keklist.events;
+package de.hdg.keklist.events.command;
 
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 
-public class BlacklistRemoveMotd implements Listener {
+public class NameChangeCommandEvent implements Listener {
 
     @EventHandler(ignoreCancelled = true)
     public void onCommand(PlayerCommandPreprocessEvent event) {
@@ -16,7 +16,8 @@ public class BlacklistRemoveMotd implements Listener {
             if (args.length >= 3) {
                 if (args[1].equalsIgnoreCase("remove") ||
                         args[1].equalsIgnoreCase("add") ||
-                        args[1].equalsIgnoreCase("motd")) {
+                        args[1].equalsIgnoreCase("motd") ||
+                        args[1].equalsIgnoreCase("info")) {
 
                     if (args[2].contains("(") && args[2].contains(")")) {
                         event.setMessage(command.replace(command.substring(command.indexOf("("), command.indexOf(")") + 1), ""));

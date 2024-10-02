@@ -47,6 +47,9 @@ repositories {
 
     // Update Checker
     maven("https://repo.sageee.xyz/snapshots")
+
+    // BkCommonLib
+    maven("https://ci.mg-dev.eu/plugin/repository/everything")
 }
 
 dependencies {
@@ -64,6 +67,7 @@ dependencies {
     compileOnly(libs.com.github.plan.player.analytics.plan)
     compileOnly(libs.me.clip.placeholderapi)
     compileOnly(libs.net.luckperms.api)
+    compileOnly(libs.com.bergerkiller.bukkit.bkcommonlibs)
 
     // Provided via custom loader
     compileOnly(libs.org.xerial.sqlite.jdbc)
@@ -71,6 +75,7 @@ dependencies {
     compileOnly(libs.com.squareup.okhttp3.okhttp)
     compileOnly(libs.club.minnced.discord.webhooks)
     compileOnly(libs.de.sage.util.updatechecker)
+    compileOnly(libs.com.github.tominoLP.mfa.api)
 
     // Other / Shaded
     implementation(libs.org.bstats.bstats.bukkit)
@@ -145,7 +150,8 @@ modrinth {
     changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
 
     dependencies {
-        optional.project("geyser") // Sadly this is the only project on modrinth, and it does not allow to add external dependencies *yet*
+        optional.project("geyser") // Sadly these are the only projects on modrinth, and it does not allow to add external dependencies *yet*
+        optional.project("bkcommonlib")
     }
 }
 
@@ -175,6 +181,9 @@ hangarPublish {
                         required.set(false)
                     }
                     hangar("Plan-Player-Analytics") {
+                        required.set(false)
+                    }
+                    url("BkCommonLib", "https://modrinth.com/plugin/bkcommonlib") {
                         required.set(false)
                     }
                     url("LuckPerms", "https://luckperms.net/download") {

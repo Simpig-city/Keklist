@@ -30,16 +30,18 @@ Keklist includes many different features to make your whitelist experience as go
 - Block users by continent and country
 - Proxy/VPN/Tor block mode
 - Require players to add server to their server list
+- 2FA support on any commands and on join
 - Velocity plugin
   - Adds limbo support
   - API for plugin developers
  <br>
 
- Keklist also hooks into the following plugins and provides informations and add featurs:
+ Keklist also hooks into the following plugins and provides information and add features:
  - Luckperms contexts
  - PlaceholderAPI
  - Plan player analytics
  - Geyser & Floodgate
+ - BKCommonLib
 
 *Informations about implementations of these can be found in the wiki*
 
