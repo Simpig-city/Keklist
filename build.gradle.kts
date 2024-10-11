@@ -205,6 +205,7 @@ hangarPublish {
 }
 
 tasks.modrinth.get().dependsOn(tasks.modrinthSyncBody)
+tasks.jar.get().dependsOn(tasks.shadowJar)
 
 val serverDir: File = projectDir.resolve("testserver")
 val pluginDir: File = serverDir.resolve("plugins")
@@ -223,8 +224,12 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("keklist-${version}.jar")
-        relocate("org.bstats", "de.hdg.keklist.bstats")
+        archiveClassifier.set("")
+        relocate("org.bstats", "libs.bstats")
+    }
+
+    jar {
+        archiveClassifier.set("unshaded")
     }
 
     processResources {
