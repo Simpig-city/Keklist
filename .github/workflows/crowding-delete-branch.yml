@@ -2,6 +2,10 @@ name: Translations
 on: workflow_dispatch
 #  [delete, workflow_dispatch]
 
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   delete-old:
     runs-on: ubuntu-latest
@@ -23,6 +27,6 @@ jobs:
           command: 'branch delete ${{ steps.gh_branch.outputs.branch }}'
           command_args: '-l uk --method tm --branch main'
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
-          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ vars.CROWDIN_PROJECT_ID }}
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
