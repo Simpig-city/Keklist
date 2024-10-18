@@ -9,10 +9,10 @@ plugins {
     `java-library`
     `maven-publish`
 
-    id("io.freefair.lombok") version "8.10"
-    id("com.gradleup.shadow") version "8.3.2"
+    id("io.freefair.lombok") version "8.10.2"
+    id("com.gradleup.shadow") version "8.3.3"
     id("com.modrinth.minotaur") version "2.+"
-    id("org.ajoberstar.grgit") version "5.2.2"
+    id("org.ajoberstar.grgit") version "5.3.0"
     id("io.papermc.hangar-publish-plugin") version "0.1.2"
 }
 
