@@ -1,6 +1,6 @@
 name: Translations
-on:
-  [delete, workflow_dispatch]
+on: workflow_dispatch
+#  [delete, workflow_dispatch]
 
 jobs:
   delete-old:
