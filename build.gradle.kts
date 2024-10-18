@@ -75,7 +75,7 @@ dependencies {
     compileOnly(libs.com.squareup.okhttp3.okhttp)
     compileOnly(libs.club.minnced.discord.webhooks)
     compileOnly(libs.de.sage.util.updatechecker)
-    compileOnly(libs.com.github.tominoLP.mfa.api)
+    compileOnly(libs.com.github.tominolp.mfa.api)
 
     // Other / Shaded
     implementation(libs.org.bstats.bstats.bukkit)
