@@ -1,7 +1,7 @@
 # https://docs.gradle.org/current/userguide/platforms.html#sub::toml-dependencies-format
 
 [versions]
-io-papermc-paper-paper-api = "1.21.1-R0.1-SNAPSHOT"
+io-papermc-paper-paper-api = "1.21.3-R0.1-SNAPSHOT"
 com-velocitypowered-velocity-api = "3.3.0-SNAPSHOT"
 net-kyori-adventure-text-minimessage = "4.17.0"
 com-google-code-gson-gson = "2.11.0"
