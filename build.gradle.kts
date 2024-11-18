@@ -9,7 +9,7 @@ plugins {
     `java-library`
     `maven-publish`
 
-    id("io.freefair.lombok") version "8.10.2"
+    id("io.freefair.lombok") version "8.11"
     id("com.gradleup.shadow") version "8.3.3"
     id("com.modrinth.minotaur") version "2.+"
     id("org.ajoberstar.grgit") version "5.3.0"
