@@ -301,27 +301,22 @@ public class WhitelistCommand extends Command {
 
                             switch (type) {
                                 case JAVA -> {
-                                    try {
-                                        entry = Objects.requireNonNull(Bukkit.getPlayerUniqueId(args[1])).toString();
+                                    entry = Objects.requireNonNull(Bukkit.getPlayerUniqueId(args[1])).toString();
 
-                                        ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", entry);
+                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", entry);
 
-                                        if (!isWhitelistedRs.next()) {
-                                            throw new NullPointerException("User not found on whitelist");
-                                        }
-                                    } catch (NullPointerException notFound) {
-                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
-                                        return false;
+                                    if (!isWhitelistedRs.next()) {
+                                        throw new NullPointerException("User not found on whitelist");
                                     }
                                 }
+
 
                                 case BEDROCK -> {
                                     assert Keklist.getInstance().getFloodgateApi() != null;
                                     ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", Keklist.getInstance().getFloodgateApi().getUuidFor(entry).join()); // Please don't judge
 
                                     if (!isWhitelistedRs.next()) {
-                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
-                                        return false;
+                                        throw new NullPointerException("User not found on whitelist");
                                     }
                                 }
 
@@ -329,8 +324,7 @@ public class WhitelistCommand extends Command {
                                     ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", entry);
 
                                     if (!isWhitelistedRs.next()) {
-                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
-                                        return false;
+                                        throw new NullPointerException("Domain not found on whitelist");
                                     }
                                 }
 
@@ -338,8 +332,15 @@ public class WhitelistCommand extends Command {
                                     ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", entry);
 
                                     if (!isWhitelistedRs.next()) {
-                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
-                                        return false;
+                                        throw new NullPointerException("IP not found on whitelist");
+                                    }
+                                }
+
+                                case UUID -> {
+                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", entry);
+
+                                    if (!isWhitelistedRs.next()) {
+                                        throw new NullPointerException("IP not found on whitelist");
                                     }
                                 }
                             }
@@ -356,6 +357,10 @@ public class WhitelistCommand extends Command {
 
                         } catch (NumberFormatException e) {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.invalid", args[2])));
+                            return false;
+                        } catch (NullPointerException notFound) {
+                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
+                            return false;
                         }
 
                     } else {
@@ -407,7 +412,8 @@ public class WhitelistCommand extends Command {
         }
     }
 
-    private void whitelistUser(@NotNull CommandSender from, @NotNull UUID uuid, @NotNull String playerName, int level) {
+    private void whitelistUser(@NotNull CommandSender from, @NotNull UUID uuid, @NotNull String playerName,
+                               int level) {
         try {
             ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
             ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", playerName);
@@ -565,7 +571,8 @@ public class WhitelistCommand extends Command {
     }
 
     @Override
-    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[]
+            args) throws IllegalArgumentException {
         if (args.length < 2) {
             return List.of("add", "remove", "info", "list", "level");
         } else if (args.length == 2) {
