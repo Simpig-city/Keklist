@@ -9,8 +9,8 @@ plugins {
     `java-library`
     `maven-publish`
 
-    id("io.freefair.lombok") version "8.10.2"
-    id("com.gradleup.shadow") version "8.3.3"
+    id("io.freefair.lombok") version "8.11"
+    id("com.gradleup.shadow") version "8.3.5"
     id("com.modrinth.minotaur") version "2.+"
     id("org.ajoberstar.grgit") version "5.3.0"
     id("io.papermc.hangar-publish-plugin") version "0.1.2"
@@ -144,7 +144,7 @@ modrinth {
     versionType.set(if (version.toString().endsWith("SNAPSHOT")) "beta" else "release")
     //uploadFile.set(tasks.jar)
     uploadFile.set(tasks.getByPath("shadowJar"))
-    gameVersions.addAll("1.21.1")
+    gameVersions.addAll("1.21.3")
     loaders.addAll("paper", "purpur", "velocity")
     syncBodyFrom.set(rootProject.file("README.md").readText())
     changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
@@ -249,7 +249,7 @@ tasks {
         doFirst {
             serverDir.mkdirs()
             pluginDir.mkdirs()
-            URI.create("https://api.purpurmc.org/v2/purpur/1.21.1/latest/download").toURL().openStream().use {
+            URI.create("https://api.purpurmc.org/v2/purpur/1.21.3/latest/download").toURL().openStream().use {
                 Files.copy(it, serverDir.resolve("server.jar").toPath())
             }
         }
