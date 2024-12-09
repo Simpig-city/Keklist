@@ -13,7 +13,7 @@ com-github-plan-player-analytics-plan = "5.6.2883"
 me-clip-placeholderapi = "2.11.6"
 net-luckperms-api = "5.4"
 
-org-xerial-sqlite-jdbc = "3.47.0.0"
+org-xerial-sqlite-jdbc = "3.47.1.0"
 org-mariadb-jdbc-mariadb-java-client = "3.5.1"
 com-squareup-okhttp3-okhttp = "5.0.0-alpha.14"
 club-minnced-discord-webhooks = "0.8.4"
