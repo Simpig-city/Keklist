@@ -17,6 +17,10 @@ import de.hdg.keklist.events.feats.NotifyJoinEvent;
 import de.hdg.keklist.events.qol.BlacklistRemoveMotd;
 import de.hdg.keklist.events.qol.ListCommandPageEvent;
 import de.hdg.keklist.events.qol.ServerWhitelistChangeEvent;
+import de.hdg.keklist.events.command.ListCommandPageEvent;
+import de.hdg.keklist.events.command.NameChangeCommandEvent;
+import de.hdg.keklist.events.mfa.MFAEvent;
+import de.hdg.keklist.events.mfa.CommandEvent;
 import de.hdg.keklist.extentions.GeyserEventRegistrar;
 import de.hdg.keklist.extentions.PlaceholderAPIExtension;
 import de.hdg.keklist.extentions.context.BlacklistedCalculator;
@@ -120,6 +124,11 @@ public final class Keklist extends JavaPlugin {
         //set debug mode
         debug = getConfig().getBoolean("debug");
 
+        if (Bukkit.getPluginManager().getPlugin("BKCommonLib") == null && getConfig().getBoolean("2fa.enabled")) {
+            getLogger().warning(translations.get("2fa.bkcommonlib"));
+           getConfig().set("2fa.enabled", false);
+        }
+
         //updateChecker = new UpdateChecker("simpig-city", "Keklist", getPluginMeta().getVersion(), true, getLogger());
 
         //SQL
@@ -146,10 +155,14 @@ public final class Keklist extends JavaPlugin {
 
         pm.registerEvents(new ListPingEvent(), this);
         pm.registerEvents(new PreLoginKickEvent(), this);
-        pm.registerEvents(new BlacklistRemoveMotd(), this);
+        pm.registerEvents(new NameChangeCommandEvent(), this);
         pm.registerEvents(new ServerWhitelistChangeEvent(), this);
         pm.registerEvents(new NotifyJoinEvent(), this);
         pm.registerEvents(new ListCommandPageEvent(), this);
+
+        // MFA
+        pm.registerEvents(new CommandEvent(), this);
+        pm.registerEvents(new MFAEvent(), this);
 
         // GUI Listener
         pm.registerEvents(new MainGUIEvent(), this);

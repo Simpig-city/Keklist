@@ -9,10 +9,10 @@ plugins {
     `java-library`
     `maven-publish`
 
-    id("io.freefair.lombok") version "8.10"
-    id("com.gradleup.shadow") version "8.3.1"
+    id("io.freefair.lombok") version "8.11"
+    id("com.gradleup.shadow") version "8.3.5"
     id("com.modrinth.minotaur") version "2.+"
-    id("org.ajoberstar.grgit") version "5.2.2"
+    id("org.ajoberstar.grgit") version "5.3.0"
     id("io.papermc.hangar-publish-plugin") version "0.1.2"
 }
 
@@ -47,6 +47,9 @@ repositories {
 
     // Update Checker
     maven("https://repo.sageee.xyz/snapshots")
+
+    // BkCommonLib
+    maven("https://ci.mg-dev.eu/plugin/repository/everything")
 }
 
 dependencies {
@@ -64,6 +67,7 @@ dependencies {
     compileOnly(libs.com.github.plan.player.analytics.plan)
     compileOnly(libs.me.clip.placeholderapi)
     compileOnly(libs.net.luckperms.api)
+    compileOnly(libs.com.bergerkiller.bukkit.bkcommonlibs)
 
     // Provided via custom loader
     compileOnly(libs.org.xerial.sqlite.jdbc)
@@ -71,6 +75,7 @@ dependencies {
     compileOnly(libs.com.squareup.okhttp3.okhttp)
     compileOnly(libs.club.minnced.discord.webhooks)
     compileOnly(libs.de.sage.util.updatechecker)
+    compileOnly(libs.com.github.tominolp.mfa.api)
 
     // Other / Shaded
     implementation(libs.org.bstats.bstats.bukkit)
@@ -139,13 +144,14 @@ modrinth {
     versionType.set(if (version.toString().endsWith("SNAPSHOT")) "beta" else "release")
     //uploadFile.set(tasks.jar)
     uploadFile.set(tasks.getByPath("shadowJar"))
-    gameVersions.addAll("1.21.1")
+    gameVersions.addAll("1.21.3")
     loaders.addAll("paper", "purpur", "velocity")
     syncBodyFrom.set(rootProject.file("README.md").readText())
     changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
 
     dependencies {
-        optional.project("geyser") // Sadly this is the only project on modrinth, and it does not allow to add external dependencies *yet*
+        optional.project("geyser") // Sadly these are the only projects on modrinth, and it does not allow to add external dependencies *yet*
+        optional.project("bkcommonlib")
     }
 }
 
@@ -177,6 +183,9 @@ hangarPublish {
                     hangar("Plan-Player-Analytics") {
                         required.set(false)
                     }
+                    url("BkCommonLib", "https://modrinth.com/plugin/bkcommonlib") {
+                        required.set(false)
+                    }
                     url("LuckPerms", "https://luckperms.net/download") {
                         required.set(false)
                     }
@@ -184,7 +193,7 @@ hangarPublish {
             }
             register(Platforms.VELOCITY) {
                 jar.set(tasks.jar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("3.3"))
+                platformVersions.set(listOf("3.4"))
                 dependencies {
                     url("LimboAPI", "https://github.com/Elytrium/LimboAPI") {
                         required.set(false)
@@ -196,6 +205,7 @@ hangarPublish {
 }
 
 tasks.modrinth.get().dependsOn(tasks.modrinthSyncBody)
+tasks.jar.get().dependsOn(tasks.shadowJar)
 
 val serverDir: File = projectDir.resolve("testserver")
 val pluginDir: File = serverDir.resolve("plugins")
@@ -214,8 +224,12 @@ tasks {
     }
 
     shadowJar {
-        archiveFileName.set("keklist-${version}.jar")
-        relocate("org.bstats", "de.hdg.keklist.bstats")
+        archiveClassifier.set("")
+        relocate("org.bstats", "libs.bstats")
+    }
+
+    jar {
+        archiveClassifier.set("unshaded")
     }
 
     processResources {
@@ -235,8 +249,8 @@ tasks {
         doFirst {
             serverDir.mkdirs()
             pluginDir.mkdirs()
-            URI.create("https://api.purpurmc.org/v2/purpur/1.21.1/latest/download").toURL().openStream().use {
-                Files.copy(it, serverDir.resolve("server.jar").toPath())
+            URI.create("https://api.purpurmc.org/v2/purpur/1.21.4/latest/download").toURL().openStream().use {
+                Files.delete(serverDir.resolve("server.jar").toPath()).also { _ -> Files.copy(it, serverDir.resolve("server.jar").toPath()) }
             }
         }
     }
@@ -289,7 +303,7 @@ tasks {
     register("runServer", JavaExec::class) {
         group = "purpur"
         dependsOn("shadowJar")
-        if (!serverDir.resolve("server.jar").exists()) {
+        if (!serverDir.resolve("server.jar").exists() || serverDir.resolve("server.jar").lastModified() < System.currentTimeMillis() - (((1000 * 60) * 60) * 24) * 7) {
             dependsOn("downloadServer")
         }
         doFirst {

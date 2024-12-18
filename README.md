@@ -30,26 +30,28 @@ Keklist includes many different features to make your whitelist experience as go
 - Block users by continent and country
 - Proxy/VPN/Tor block mode
 - Require players to add server to their server list
+- 2FA support on any commands and on join
 - Velocity plugin
   - Adds limbo support
   - API for plugin developers
  <br>
 
- Keklist also hooks into the following plugins and provides informations and add featurs:
+ Keklist also hooks into the following plugins and provides information and add features:
  - Luckperms contexts
  - PlaceholderAPI
  - Plan player analytics
  - Geyser & Floodgate
+ - BKCommonLib
 
 *Informations about implementations of these can be found in the wiki*
 
 ## Installation & Download
-You can download the latest version of Keklist on [github releases](https://github.com/Simpig-city/Keklist/releases/latest) or on [modrinth](https://modrinth.com/plugin/keklist). 
-All versions including beta releases can be found [here](https://github.com/Simpig-city/Keklist/releases/). Alpha builds are soon available for download, but this is still WiP. 
+You can download the latest release version of Keklist on [github releases](https://github.com/Simpig-city/Keklist/releases/latest) or on [modrinth](https://modrinth.com/plugin/keklist). 
+All versions including beta releases can be found [here](https://github.com/Simpig-city/Keklist/releases/). Every build *for each commit* can be found on the [teamcity server](https://teamcity.sageee.xyz/buildConfiguration/Keklist_Build?mode=builds).
 <br> <br>
 To install Keklist you just need to drop the jar file into your plugins folder and restart your server. Keklist will automatically create a config file. You can find the config file in the `plugins/Keklist` folder. **Keklist requires Paper 1.20.1+ (build: 94+) or forks e.g. Purpur(build: 2018+)**. More about the config file and other features can be found [here](https://github.com/simpig-city/Keklist/wiki/config). 
 <br> <br>
-Keklist officially supports the following server software: Paper, Purpur
+Keklist officially supports the following server software: Paper, Pufferfish, Purpur
 
 ## Wiki
 If you have any problems or need documentation about the plugin, you can just contact us
