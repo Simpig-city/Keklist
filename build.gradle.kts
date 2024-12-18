@@ -193,7 +193,7 @@ hangarPublish {
             }
             register(Platforms.VELOCITY) {
                 jar.set(tasks.jar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("3.3"))
+                platformVersions.set(listOf("3.4"))
                 dependencies {
                     url("LimboAPI", "https://github.com/Elytrium/LimboAPI") {
                         required.set(false)
@@ -249,8 +249,8 @@ tasks {
         doFirst {
             serverDir.mkdirs()
             pluginDir.mkdirs()
-            URI.create("https://api.purpurmc.org/v2/purpur/1.21.3/latest/download").toURL().openStream().use {
-                Files.copy(it, serverDir.resolve("server.jar").toPath())
+            URI.create("https://api.purpurmc.org/v2/purpur/1.21.4/latest/download").toURL().openStream().use {
+                Files.delete(serverDir.resolve("server.jar").toPath()).also { _ -> Files.copy(it, serverDir.resolve("server.jar").toPath()) }
             }
         }
     }
@@ -303,7 +303,7 @@ tasks {
     register("runServer", JavaExec::class) {
         group = "purpur"
         dependsOn("shadowJar")
-        if (!serverDir.resolve("server.jar").exists()) {
+        if (!serverDir.resolve("server.jar").exists() || serverDir.resolve("server.jar").lastModified() < System.currentTimeMillis() - (((1000 * 60) * 60) * 24) * 7) {
             dependsOn("downloadServer")
         }
         doFirst {
