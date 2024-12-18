@@ -1,4 +1,4 @@
-package de.hdg.keklist.events;
+package de.hdg.keklist.events.feats;
 
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import de.hdg.keklist.Keklist;

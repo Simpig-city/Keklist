@@ -1,4 +1,4 @@
-package de.hdg.keklist.events;
+package de.hdg.keklist.events.qol;
 
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.api.events.whitelist.PlayerRemovedFromWhitelistEvent;

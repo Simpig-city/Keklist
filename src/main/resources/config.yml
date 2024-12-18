@@ -49,6 +49,7 @@ whitelist:
     - LPTP1
   fake-max-range: 20-40 # Please use the format: INTEGER-INTEGER
   fake-online-range: 0-10 # Please use the format: INTEGER-INTEGER
+  level: 0 # Sets the level for the whitelist. Higher level means only level >= entries can join. Leave 0 for default behavior
 
 # Extensions for the plugin
 placeholderapi: false # Enable PlaceholderAPI support
@@ -106,6 +107,8 @@ messages:
     whitelisted:
       - "<gold><bold>You're kicked because the server is in whitelist mode!"
       - "<gold><bold>Sorry, but you're not on the whitelist!"
+
+    whitelisted-level: "<red>Your whitelist level is insufficient, thus you can not join!"
 
     proxy:
       - "<red><bold>You're kicked because you're using a proxy/vpn!"

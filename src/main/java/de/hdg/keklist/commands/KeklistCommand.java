@@ -144,10 +144,10 @@ public class KeklistCommand extends Command {
 
                         switch (args[1]) {
                             case "import" -> {
-                                if (args.length == 3) {
+                                if (args.length >= 3) {
                                     if (args[2].equalsIgnoreCase("vanilla")) {
                                         for (OfflinePlayer player : Bukkit.getWhitelistedPlayers()) {
-                                            Bukkit.dispatchCommand(sender, "keklist whitelist add " + player.getName());
+                                            Bukkit.dispatchCommand(sender, "keklist whitelist add " + player.getUniqueId());
                                         }
 
                                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.imported")));
@@ -197,6 +197,34 @@ public class KeklistCommand extends Command {
                                     } else {
                                         sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-disabled")));
                                     }
+                                }
+
+                                case "level" -> {
+                                    if (args.length >= 3) {
+                                        try {
+                                            int level = Integer.parseInt(args[2]);
+
+                                            Keklist.getInstance().getConfig().set("whitelist.level", level);
+
+                                            try {
+                                                Keklist.getInstance().getConfig().save(new File(Keklist.getInstance().getDataFolder(), "config.yml"));
+
+                                                for (Player player : Bukkit.getOnlinePlayers()) {
+                                                    if (player.hasPermission("keklist.manage.whitelist")) {
+                                                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.set", level)));
+                                                    }
+                                                }
+
+                                                Bukkit.getConsoleSender().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.set", level)));
+                                            } catch (IOException e) {
+                                                throw new RuntimeException(e);
+                                            }
+
+                                        } catch (NumberFormatException e) {
+                                            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.invalid")));
+                                        }
+                                    } else
+                                        sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.info", Keklist.getInstance().getConfig().getInt("whitelist.level"))));
                                 }
 
                                 default ->
@@ -517,6 +545,7 @@ public class KeklistCommand extends Command {
                                     .replace("%whitelisted%", String.valueOf(whitelisted))
                                     .replace("%blacklisted%", String.valueOf(blacklisted))
                                     .replace("%whitelist%", whitelist ? "<green>" + Keklist.getTranslations().get("enabled") : "<red>" + Keklist.getTranslations().get("disabled"))
+                                    .replace("%whitelistLevel%", String.valueOf(Keklist.getInstance().getConfig().getInt("whitelist.level")))
                                     .replace("%blacklist%", blacklist ? "<green>" + Keklist.getTranslations().get("enabled") : "<red>" + Keklist.getTranslations().get("disabled"))
                                     .replace("%database%", type.toString())
                                     .replace("%version%", version)
@@ -574,8 +603,7 @@ public class KeklistCommand extends Command {
                     && sender.hasPermission("keklist.manage.whitelist")
                     && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
 
-                suggestions.addAll(List.of("enable", "disable"));
-                suggestions.add("import");
+                suggestions.addAll(List.of("enable", "disable", "level", "import"));
 
             } else if (args[0].equalsIgnoreCase("blacklist")
                     && Keklist.getInstance().getConfig().getBoolean("enable-manage-command")
