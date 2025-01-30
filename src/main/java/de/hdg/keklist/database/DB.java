@@ -157,7 +157,7 @@ public class DB {
         onUpdate("CREATE TABLE IF NOT EXISTS blacklistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13), reason VARCHAR(1500) DEFAULT 'No reason given')");
         onUpdate("CREATE TABLE IF NOT EXISTS blacklistMotd (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13))");
 
-        onUpdate("CREATE TABLE IF NOT EXISTS lastSeen (uuid VARCHAR(36) PRIMARY KEY, ip VARCHAR(39) NOT NULL, protocolId INT(5) NOT NULL DEFAULT 'unknown', brand VARCHAR(1000) NOT NULL DEFAULT 'unknown', lastSeen BIGINT(13))");
+        onUpdate("CREATE TABLE IF NOT EXISTS lastSeen (uuid VARCHAR(36) PRIMARY KEY, ip VARCHAR(39) NOT NULL, protocolId INT(5) NOT NULL DEFAULT -2, brand VARCHAR(1000) NOT NULL DEFAULT 'unknown', lastSeen BIGINT(13))");
         onUpdate("CREATE TABLE IF NOT EXISTS mfa (uuid VARCHAR(36) PRIMARY KEY, secret VARCHAR(1000), recoveryCodes VARCHAR(1000))");
     }
 
