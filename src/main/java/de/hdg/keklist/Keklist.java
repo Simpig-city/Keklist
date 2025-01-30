@@ -33,7 +33,6 @@ import de.hdg.keklist.util.KeklistConfigUtil;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.extentions.PlanHook;
 import de.hdg.keklist.extentions.WebhookManager;
-import de.sage.util.UpdateChecker;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
@@ -61,7 +60,7 @@ public final class Keklist extends JavaPlugin {
     private KeklistMetrics metrics;
     private static final Random random = new Random();
     private KeklistConfigUtil configUtil;
-    private UpdateChecker updateChecker;
+    //private UpdateChecker updateChecker;
     //private final ScheduledThreadPoolExecutor updateExecutor = new ScheduledThreadPoolExecutor(1); // TODO : Uncomment this when the plugin is *publicly* released
 
     /* Extensions */

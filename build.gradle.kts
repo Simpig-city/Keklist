@@ -9,7 +9,7 @@ plugins {
     `java-library`
     `maven-publish`
 
-    id("io.freefair.lombok") version "8.11"
+    id("io.freefair.lombok") version "8.12"
     id("com.gradleup.shadow") version "8.3.5"
     id("com.modrinth.minotaur") version "2.+"
     id("org.ajoberstar.grgit") version "5.3.0"
@@ -74,7 +74,7 @@ dependencies {
     compileOnly(libs.org.mariadb.jdbc.mariadb.java.client)
     compileOnly(libs.com.squareup.okhttp3.okhttp)
     compileOnly(libs.club.minnced.discord.webhooks)
-    compileOnly(libs.de.sage.util.updatechecker)
+    //compileOnly(libs.de.sage.util.updatechecker) // Currently disabled due to repository issues
     compileOnly(libs.com.github.tominolp.mfa.api)
 
     // Other / Shaded
@@ -144,7 +144,7 @@ modrinth {
     versionType.set(if (version.toString().endsWith("SNAPSHOT")) "beta" else "release")
     //uploadFile.set(tasks.jar)
     uploadFile.set(tasks.getByPath("shadowJar"))
-    gameVersions.addAll("1.21.3")
+    gameVersions.addAll("1.21.3", "1.21.4")
     loaders.addAll("paper", "purpur", "velocity")
     syncBodyFrom.set(rootProject.file("README.md").readText())
     changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
