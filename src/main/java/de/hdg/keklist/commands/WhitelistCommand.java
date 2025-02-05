@@ -520,7 +520,7 @@ public class WhitelistCommand extends Command {
      */
     private void handleList(@NotNull CommandSender sender, int page) {
         try (ResultSet rs =
-                     Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM whitelist UNION ALL SELECT * FROM whitelistIp UNION ALL SELECT * FROM whitelistDomain) LIMIT 8 OFFSET ?", (page - 1) * 8)) {
+                     Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM whitelist UNION ALL SELECT * FROM whitelistIp UNION ALL SELECT * FROM whitelistDomain) LIMIT ?,8", (page - 1) * 8)) {
 
             if (!rs.next() || page < 1) {
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.list.empty")));

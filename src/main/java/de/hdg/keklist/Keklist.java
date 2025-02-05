@@ -11,10 +11,10 @@ import de.hdg.keklist.commands.BlacklistCommand;
 import de.hdg.keklist.commands.KeklistCommand;
 import de.hdg.keklist.commands.WhitelistCommand;
 import de.hdg.keklist.database.DB;
-import de.hdg.keklist.events.*;
+import de.hdg.keklist.events.command.ListCommandPageEvent;
 import de.hdg.keklist.events.feats.ListPingEvent;
 import de.hdg.keklist.events.feats.NotifyJoinEvent;
-import de.hdg.keklist.events.qol.ListCommandPageEvent;
+import de.hdg.keklist.events.qol.BlacklistRemoveMotd;
 import de.hdg.keklist.events.qol.ServerWhitelistChangeEvent;
 import de.hdg.keklist.events.command.NameChangeCommandEvent;
 import de.hdg.keklist.events.mfa.MFAEvent;
@@ -85,7 +85,7 @@ public final class Keklist extends JavaPlugin {
     @Override
     public void onLoad() {
         instance = this;
-        translations = new LanguageUtil(Objects.requireNonNull(getConfig().getString("language")), this.getDataFolder(), this.getSLF4JLogger());
+        translations = new LanguageUtil(getConfig().getString("language", "en-us"), this.getDataFolder(), this.getSLF4JLogger());
 
         //Check for paper
         try {
@@ -150,16 +150,21 @@ public final class Keklist extends JavaPlugin {
 
         PluginManager pm = getServer().getPluginManager();
 
-        pm.registerEvents(new ListPingEvent(), this);
-        pm.registerEvents(new PreLoginKickEvent(), this);
+        // command
         pm.registerEvents(new NameChangeCommandEvent(), this);
-        pm.registerEvents(new ServerWhitelistChangeEvent(), this);
-        pm.registerEvents(new NotifyJoinEvent(), this);
         pm.registerEvents(new ListCommandPageEvent(), this);
+
+        // features
+        pm.registerEvents(new ListPingEvent(), this);
+        pm.registerEvents(new NotifyJoinEvent(), this);
 
         // MFA
         pm.registerEvents(new CommandEvent(), this);
         pm.registerEvents(new MFAEvent(), this);
+
+        // QoL
+        pm.registerEvents(new BlacklistRemoveMotd(), this);
+        pm.registerEvents(new ServerWhitelistChangeEvent(), this);
 
         // GUI Listener
         pm.registerEvents(new MainGUIEvent(), this);
@@ -304,11 +309,11 @@ public final class Keklist extends JavaPlugin {
         };
     }
 
-    public void sendUserToLimbo(Player player) {
+    public void sendUserToLimbo(@NotNull Player player) {
         sendUserToLimbo(player.getUniqueId());
     }
 
-    public void sendUserToLimbo(UUID uuid) {
+    public void sendUserToLimbo(@NotNull UUID uuid) {
         try {
             ByteArrayDataOutput out = ByteStreams.newDataOutput();
 
@@ -328,7 +333,7 @@ public final class Keklist extends JavaPlugin {
         }
     }
 
-    private void registerCommand(Command command) {
+    private void registerCommand(@NotNull Command command) {
         getServer().getCommandMap().register("keklist", command);
     }
 
@@ -345,6 +350,7 @@ public final class Keklist extends JavaPlugin {
      * @return The API object
      * @throws IllegalStateException if the database is not connected, **really unlikely**
      */
+    @NotNull
     public static KeklistAPI getApi() {
         if (database.isConnected()) {
             return api;

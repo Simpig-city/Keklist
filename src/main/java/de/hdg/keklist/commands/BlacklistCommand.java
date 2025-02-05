@@ -451,7 +451,7 @@ public class BlacklistCommand extends Command {
      */
     private void handleList(@NotNull CommandSender sender, int page) {
         try (ResultSet rs =
-                     Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM blacklist UNION ALL SELECT ip, byPlayer, unix FROM blacklistIp UNION SELECT ip, byPlayer, unix FROM blacklistMotd) LIMIT 8 OFFSET ?", (page - 1) * 8)) {
+                     Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM blacklist UNION ALL SELECT ip, byPlayer, unix FROM blacklistIp UNION SELECT ip, byPlayer, unix FROM blacklistMotd) LIMIT ?,8", (page - 1) * 8)) {
 
             if (!rs.next() || page < 1) {
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.list.empty")));

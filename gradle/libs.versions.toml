@@ -4,12 +4,12 @@
 io-papermc-paper-paper-api = "1.21.4-R0.1-SNAPSHOT"
 com-velocitypowered-velocity-api = "3.4.0-SNAPSHOT"
 net-kyori-adventure-text-minimessage = "4.18.0"
-com-google-code-gson-gson = "2.11.0"
+com-google-code-gson-gson = "2.12.1"
 
 org-geysermc-floodgate-api = "2.2.3-SNAPSHOT"
 org-geysermc-geyser-api = "2.6.0-SNAPSHOT"
 net-elytrium-limboapi-api = "1.1.27"
-com-github-plan-player-analytics-plan = "5.6.2961"
+com-github-plan-player-analytics-plan = "5.6.2965"
 me-clip-placeholderapi = "2.11.6"
 net-luckperms-api = "5.4"
 
