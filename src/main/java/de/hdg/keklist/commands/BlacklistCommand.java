@@ -85,7 +85,7 @@ public class BlacklistCommand extends Command {
                     switch (type) {
                         case JAVA -> {
                             Request request = new Request.Builder().url("https://api.mojang.com/users/profiles/minecraft/" + args[1]).build();
-                            client.newCall(request).enqueue(new UserBlacklistAddCallback((sender instanceof Player) ? sender : null, reason, type));
+                            client.newCall(request).enqueue(new UserBlacklistAddCallback(sender, reason, type));
                         }
 
                         case IPv4, IPv6 -> {
@@ -374,12 +374,12 @@ public class BlacklistCommand extends Command {
     }
 
     private class UserBlacklistAddCallback implements Callback {
-        private final CommandSender player;
+        private final CommandSender sender;
         private final String reason;
         private final TypeUtil.EntryType type;
 
-        public UserBlacklistAddCallback(CommandSender player, String reason, TypeUtil.EntryType type) {
-            this.player = player;
+        public UserBlacklistAddCallback(@NotNull CommandSender sender, String reason, TypeUtil.EntryType type) {
+            this.sender = sender;
             this.reason = reason;
             this.type = type;
         }
@@ -388,10 +388,10 @@ public class BlacklistCommand extends Command {
         public void onResponse(@NotNull Call call, Response response) throws IOException {
             String body = response.body().string();
             if (checkForGoodResponse(body, type) != null) {
-                player.sendMessage(checkForGoodResponse(body, type));
+                sender.sendMessage(checkForGoodResponse(body, type));
 
             } else if (response.code() == 429) {
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.rate-limit")));
+                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.rate-limit")));
             } else {
                 Map<String, String> map = gson.fromJson(body, token);
 
@@ -406,7 +406,7 @@ public class BlacklistCommand extends Command {
                     name = Keklist.getInstance().getConfig().getString("floodgate.prefix") + map.get("gamertag");
                 }
 
-                blacklistUser(player, UUID.fromString(uuid.replaceFirst(
+                blacklistUser(sender, UUID.fromString(uuid.replaceFirst(
                         "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
                         "$1-$2-$3-$4-$5")), name, reason);
             }
@@ -415,8 +415,8 @@ public class BlacklistCommand extends Command {
 
         @Override
         public void onFailure(@NotNull Call call, IOException e) {
-            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.error")));
-            player.sendMessage(Component.text(Keklist.getTranslations().get("http.detail", e.getMessage())));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.error")));
+            sender.sendMessage(Component.text(Keklist.getTranslations().get("http.detail", e.getMessage())));
         }
     }
 
@@ -451,7 +451,7 @@ public class BlacklistCommand extends Command {
      */
     private void handleList(@NotNull CommandSender sender, int page) {
         try (ResultSet rs =
-                     Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM blacklist UNION ALL SELECT ip, byPlayer, unix FROM blacklistIp UNION SELECT ip, byPlayer, unix FROM blacklistMotd) LIMIT ?,8", (page - 1) * 8)) {
+                     Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM blacklist UNION ALL SELECT ip, byPlayer, unix FROM blacklistIp UNION SELECT ip, byPlayer, unix FROM blacklistMotd) as entries LIMIT ?,8", (page - 1) * 8)) {
 
             if (!rs.next() || page < 1) {
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.list.empty")));

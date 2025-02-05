@@ -442,12 +442,12 @@ public class WhitelistCommand extends Command {
     }
 
     private class UserWhitelistAddCallback implements Callback {
-        private final CommandSender player;
+        private final CommandSender sender;
         private final TypeUtil.EntryType type;
         private final int level;
 
-        public UserWhitelistAddCallback(CommandSender player, TypeUtil.EntryType type, int level) {
-            this.player = player;
+        public UserWhitelistAddCallback(@NotNull CommandSender sender, TypeUtil.EntryType type, int level) {
+            this.sender = sender;
             this.type = type;
             this.level = level;
         }
@@ -458,9 +458,9 @@ public class WhitelistCommand extends Command {
             String body = response.body().string();
 
             if (checkForGoodResponse(body, type) != null) {
-                player.sendMessage(checkForGoodResponse(body, type));
+                sender.sendMessage(checkForGoodResponse(body, type));
             } else if (response.code() == 429) {
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.rate-limit")));
+                sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.rate-limit")));
             } else {
                 Map<String, String> map = gson.fromJson(body, token);
 
@@ -475,7 +475,7 @@ public class WhitelistCommand extends Command {
                     name = Keklist.getInstance().getConfig().getString("floodgate.prefix") + map.get("gamertag");
                 }
 
-                whitelistUser(player, UUID.fromString(uuid.replaceFirst(
+                whitelistUser(sender, UUID.fromString(uuid.replaceFirst(
                         "(\\p{XDigit}{8})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}{4})(\\p{XDigit}+)",
                         "$1-$2-$3-$4-$5")), name, level);
             }
@@ -483,8 +483,8 @@ public class WhitelistCommand extends Command {
 
         @Override
         public void onFailure(@NotNull Call call, IOException e) {
-            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.error")));
-            player.sendMessage(Component.text(Keklist.getTranslations().get("http.detail", e.getMessage())));
+            sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("http.error")));
+            sender.sendMessage(Component.text(Keklist.getTranslations().get("http.detail", e.getMessage())));
         }
     }
 
@@ -520,7 +520,7 @@ public class WhitelistCommand extends Command {
      */
     private void handleList(@NotNull CommandSender sender, int page) {
         try (ResultSet rs =
-                     Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM whitelist UNION ALL SELECT * FROM whitelistIp UNION ALL SELECT * FROM whitelistDomain) LIMIT ?,8", (page - 1) * 8)) {
+                     Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM whitelist UNION ALL SELECT * FROM whitelistIp UNION ALL SELECT * FROM whitelistDomain) as `entries` LIMIT ?,8", (page - 1) * 8)) {
 
             if (!rs.next() || page < 1) {
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.list.empty")));
