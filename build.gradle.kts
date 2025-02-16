@@ -46,7 +46,7 @@ repositories {
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
 
     // Update Checker
-    maven("https://repo.sageee.xyz/snapshots")
+    //maven("https://repo.sageee.xyz/snapshots")
 
     // BkCommonLib
     maven("https://ci.mg-dev.eu/plugin/repository/everything")
