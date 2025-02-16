@@ -7,13 +7,10 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import de.hdg.keklist.api.KeklistAPI;
 import de.hdg.keklist.api.KeklistChannelListener;
-import de.hdg.keklist.commands.BlacklistCommand;
-import de.hdg.keklist.commands.WhitelistCommand;
 import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.command.ListCommandPageEvent;
 import de.hdg.keklist.events.feats.ListPingEvent;
 import de.hdg.keklist.events.feats.NotifyJoinEvent;
-import de.hdg.keklist.events.qol.BlacklistRemoveMotd;
 import de.hdg.keklist.events.qol.ServerWhitelistChangeEvent;
 import de.hdg.keklist.events.command.NameChangeCommandEvent;
 import de.hdg.keklist.events.mfa.MFAEvent;
@@ -39,11 +36,9 @@ import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.context.ContextCalculator;
 import net.luckperms.api.event.node.NodeAddEvent;
-import net.luckperms.api.event.user.UserDataRecalculateEvent;
 import net.luckperms.api.model.user.User;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
-import org.bukkit.command.Command;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -160,7 +155,6 @@ public final class Keklist extends JavaPlugin {
         pm.registerEvents(new MFAEvent(), this);
 
         // QoL
-        pm.registerEvents(new BlacklistRemoveMotd(), this);
         pm.registerEvents(new ServerWhitelistChangeEvent(), this);
 
         // GUI Listener
