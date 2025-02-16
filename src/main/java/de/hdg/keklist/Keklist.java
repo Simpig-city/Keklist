@@ -38,6 +38,9 @@ import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import net.luckperms.api.LuckPerms;
 import net.luckperms.api.context.ContextCalculator;
+import net.luckperms.api.event.node.NodeAddEvent;
+import net.luckperms.api.event.user.UserDataRecalculateEvent;
+import net.luckperms.api.model.user.User;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -63,7 +66,8 @@ public final class Keklist extends JavaPlugin {
     //private final ScheduledThreadPoolExecutor updateExecutor = new ScheduledThreadPoolExecutor(1); // TODO : Uncomment this when the plugin is *publicly* released
 
     /* Extensions */
-    private @Getter @Nullable FloodgateApi floodgateApi = null;
+    private @Getter
+    @Nullable FloodgateApi floodgateApi = null;
     private static @Getter PlanHook planHook;
     private PlaceholderAPIExtension placeholders;
     private @Getter LuckPerms luckPermsAPI;
@@ -122,7 +126,7 @@ public final class Keklist extends JavaPlugin {
 
         if (Bukkit.getPluginManager().getPlugin("BKCommonLib") == null && getConfig().getBoolean("2fa.enabled")) {
             getLogger().warning(translations.get("2fa.bkcommonlib"));
-           getConfig().set("2fa.enabled", false);
+            getConfig().set("2fa.enabled", false);
         }
 
         //updateChecker = new UpdateChecker("simpig-city", "Keklist", getPluginMeta().getVersion(), true, getLogger());
@@ -141,11 +145,6 @@ public final class Keklist extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        registerCommand(new WhitelistCommand());
-
-        // Manage commands are handled in the command itself
-        //registerCommand(new KeklistCommand());
-
         PluginManager pm = getServer().getPluginManager();
 
         // command
@@ -208,6 +207,12 @@ public final class Keklist extends JavaPlugin {
                 luckPermsAPI = provider.getProvider();
                 registeredCalculators.addAll(List.of(new WhitelistedCalculator(), new BlacklistedCalculator()));
                 registeredCalculators.forEach(luckPermsAPI.getContextManager()::registerCalculator);
+
+                luckPermsAPI.getEventBus().subscribe(getInstance(), NodeAddEvent.class, event -> {
+                    if (event.isUser())
+                        if (Bukkit.getPlayer(((User) event.getTarget()).getUniqueId()) != null)
+                            Bukkit.getPlayer(((User) event.getTarget()).getUniqueId()).updateCommands();
+                });
             }
         }
 
@@ -216,13 +221,13 @@ public final class Keklist extends JavaPlugin {
             geyserApi = GeyserApi.api();
 
             // We will not set the prefix if geyser is not enabled as the proxy could provide a different prefix than the floodgate api on sub server does
-            if(geyserApi.usernamePrefix() != null) {
+            if (geyserApi.usernamePrefix() != null) {
                 getConfig().set("floodgate.prefix", geyserApi.usernamePrefix());
                 getLogger().info(translations.get("geyser.prefix", geyserApi.usernamePrefix()));
             }
 
-           GeyserEventRegistrar eventRegistrar = new GeyserEventRegistrar(geyserApi, this);
-           eventRegistrar.registerEvents();
+            GeyserEventRegistrar eventRegistrar = new GeyserEventRegistrar(geyserApi, this);
+            eventRegistrar.registerEvents();
         }
 
         // Update checker
@@ -287,22 +292,21 @@ public final class Keklist extends JavaPlugin {
     public String getRandomizedKickMessage(@NotNull RandomType type) {
         return switch (type) {
             case BLACKLISTED ->
-                 getConfig().getStringList("messages.kick.blacklisted").get(random.nextInt(getConfig().getStringList("messages.kick.blacklisted").size()));
+                    getConfig().getStringList("messages.kick.blacklisted").get(random.nextInt(getConfig().getStringList("messages.kick.blacklisted").size()));
 
             case WHITELISTED ->
-                 getConfig().getStringList("messages.kick.whitelisted").get(random.nextInt(getConfig().getStringList("messages.kick.whitelisted").size()));
+                    getConfig().getStringList("messages.kick.whitelisted").get(random.nextInt(getConfig().getStringList("messages.kick.whitelisted").size()));
 
             case CONTINENT ->
-                 getConfig().getStringList("messages.kick.blacklist.continent").get(random.nextInt(getConfig().getStringList("messages.kick.blacklist.continent").size()));
+                    getConfig().getStringList("messages.kick.blacklist.continent").get(random.nextInt(getConfig().getStringList("messages.kick.blacklist.continent").size()));
 
             case COUNTRY ->
-                 getConfig().getStringList("messages.kick.blacklist.country").get(random.nextInt(getConfig().getStringList("messages.kick.blacklist.country").size()));
+                    getConfig().getStringList("messages.kick.blacklist.country").get(random.nextInt(getConfig().getStringList("messages.kick.blacklist.country").size()));
 
             case PROXY ->
                     getConfig().getStringList("messages.kick.proxy").get(random.nextInt(getConfig().getStringList("messages.kick.proxy").size()));
 
-            default ->
-                 "null";
+            default -> "null";
 
         };
     }
@@ -329,10 +333,6 @@ public final class Keklist extends JavaPlugin {
         } catch (NullPointerException | IllegalArgumentException ex) {
             getLogger().warning(translations.get("limbo.error"));
         }
-    }
-
-    private void registerCommand(@NotNull Command command) {
-        getServer().getCommandMap().register("keklist", command);
     }
 
     /**
