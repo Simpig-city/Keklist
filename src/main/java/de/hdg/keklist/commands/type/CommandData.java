@@ -13,6 +13,6 @@ public @interface CommandData {
 
     String descriptionKey() default "";
 
-    String[] aliases() default {};
+    String[] aliases() default {""};
 
 }

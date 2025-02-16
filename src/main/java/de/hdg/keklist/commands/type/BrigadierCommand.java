@@ -8,11 +8,12 @@ import io.papermc.paper.command.brigadier.CommandSourceStack;
 import io.papermc.paper.command.brigadier.Commands;
 import org.jetbrains.annotations.NotNull;
 
+@FunctionalInterface
 public interface BrigadierCommand {
 
     @NotNull LiteralCommandNode<CommandSourceStack> getCommand();
 
-        // Does not work for arguments => need to register .executes() self
+    // Does not work for arguments => need to register .executes() self
     default LiteralArgumentBuilder<CommandSourceStack> addExecutes(@NotNull LiteralArgumentBuilder<CommandSourceStack> node, @NotNull Command<CommandSourceStack> command) {
         // Add a default executes() to the current command
         node.executes(command);

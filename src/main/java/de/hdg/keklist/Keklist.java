@@ -142,7 +142,6 @@ public final class Keklist extends JavaPlugin {
     @Override
     public void onEnable() {
         registerCommand(new WhitelistCommand());
-        registerCommand(new BlacklistCommand());
 
         // Manage commands are handled in the command itself
         //registerCommand(new KeklistCommand());

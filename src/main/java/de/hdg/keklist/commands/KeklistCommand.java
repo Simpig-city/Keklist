@@ -43,7 +43,7 @@ public class KeklistCommand implements BrigadierCommand {
             descriptionKey = "keklist.description",
             aliases = {"kek"}
     )
-    public LiteralCommandNode<CommandSourceStack> getCommand() {
+    public @NotNull LiteralCommandNode<CommandSourceStack> getCommand() {
         LiteralArgumentBuilder<CommandSourceStack> blacklist = addExecutesLast(Commands.literal("blacklist")
                 .then(Commands.literal("enable"))
                 .then(Commands.literal("disable"))
