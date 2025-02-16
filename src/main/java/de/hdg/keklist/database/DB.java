@@ -8,10 +8,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
+import java.io.IOException;
 import java.sql.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class DB {
@@ -27,14 +26,14 @@ public class DB {
     }
 
     public void connect() {
-       if(count.get() >= 4){
-           plugin.getLogger().severe(Keklist.getTranslations().get("database.connect-fail"));
-           Bukkit.getPluginManager().disablePlugin(plugin);
-           return;
-         }
+        if (count.get() >= 4) {
+            plugin.getLogger().severe(Keklist.getTranslations().get("database.connect-fail"));
+            Bukkit.getPluginManager().disablePlugin(plugin);
+            return;
+        }
 
         try {
-            switch (type){
+            switch (type) {
                 case SQLITE -> {
                     File file = new File(Keklist.getInstance().getDataFolder(), "database.db");
                     if (!file.exists())
@@ -63,7 +62,7 @@ public class DB {
 
             createTables();
             count.incrementAndGet();
-        } catch (SQLException | java.io.IOException ex) {
+        } catch (SQLException | IOException ex) {
             ex.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(plugin);
         } catch (ClassNotFoundException e) {
@@ -110,6 +109,43 @@ public class DB {
             connect();
             onUpdate(statement, preparedArgs);
         }
+    }
+
+    @NotNull
+    public CompletableFuture<@Nullable ResultSet> onQueryAsync(@NotNull @Language("SQL") final String query, @Nullable Object... preparedArgs) {
+        if (!isConnected()) {
+            return CompletableFuture.failedFuture(new SQLException("Not connected"));
+        }
+
+        return CompletableFuture.supplyAsync(() -> {
+            try (PreparedStatement ps = connection.prepareStatement(query)) {
+
+                if (preparedArgs != null) {
+                    for (int i = 0; i < preparedArgs.length; i++) {
+                        ps.setObject(i + 1, preparedArgs[i]);
+                    }
+                }
+
+                return ps.executeQuery();
+            } catch (SQLException e) {
+                throw new CompletionException(e);
+            }
+        }).exceptionally(throwable -> {
+            Keklist.getInstance().getSLF4JLogger().error("Failed to execute update asynchronously", throwable);
+
+            return null;
+        }).whenComplete((resultSet, throwable) -> {
+            if (throwable != null) {
+                Keklist.getInstance().getSLF4JLogger().error("Failed to execute query asynchronously", throwable); // Keep in english for us to debug easier as this should not be seen by any user anyway
+            }
+
+            try {
+                resultSet.close();
+            } catch (SQLException e) {
+                Keklist.getInstance().getSLF4JLogger().error("Failed to close result set", e);
+
+            }
+        }).orTimeout(15, TimeUnit.SECONDS);
     }
 
     @Nullable

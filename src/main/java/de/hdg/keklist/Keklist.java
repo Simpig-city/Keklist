@@ -8,7 +8,6 @@ import com.google.gson.JsonPrimitive;
 import de.hdg.keklist.api.KeklistAPI;
 import de.hdg.keklist.api.KeklistChannelListener;
 import de.hdg.keklist.commands.BlacklistCommand;
-import de.hdg.keklist.commands.KeklistCommand;
 import de.hdg.keklist.commands.WhitelistCommand;
 import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.command.ListCommandPageEvent;
@@ -146,7 +145,7 @@ public final class Keklist extends JavaPlugin {
         registerCommand(new BlacklistCommand());
 
         // Manage commands are handled in the command itself
-        registerCommand(new KeklistCommand());
+        //registerCommand(new KeklistCommand());
 
         PluginManager pm = getServer().getPluginManager();
 

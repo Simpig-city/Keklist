@@ -76,6 +76,7 @@ dependencies {
     compileOnly(libs.club.minnced.discord.webhooks)
     //compileOnly(libs.de.sage.util.updatechecker) // Currently disabled due to repository issues
     compileOnly(libs.com.github.tominolp.mfa.api)
+    compileOnly(libs.org.reflections.reflections)
 
     // Other / Shaded
     implementation(libs.org.bstats.bstats.bukkit)
@@ -226,6 +227,10 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         relocate("org.bstats", "libs.bstats")
+
+        manifest {
+            attributes["paperweight-mappings-namespace"] = "mojang"
+        }
     }
 
     jar {
