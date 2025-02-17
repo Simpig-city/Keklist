@@ -8,6 +8,7 @@ website: https://keklist.pages.dev
 contributors: [ "LPTP1" ]
 default-perm: op
 loader: de.hdg.keklist.KeklistLoader
+bootstrapper: de.hdg.keklist.KeklistBootstrap
 
 dependencies:
   server:
