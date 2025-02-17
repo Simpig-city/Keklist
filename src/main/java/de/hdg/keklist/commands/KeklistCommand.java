@@ -115,7 +115,6 @@ public class KeklistCommand implements BrigadierCommand {
     }
 
     public int execute(CommandContext<CommandSourceStack> ctx) {
-        System.out.println("executing command");
         CommandSender sender = ctx.getSource().getSender();
 
         if (ctx.getNodes().getFirst() == null) {
