@@ -1,5 +1,7 @@
 package de.hdg.keklist.database;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import de.hdg.keklist.Keklist;
 import lombok.Getter;
 import org.bukkit.Bukkit;
@@ -16,10 +18,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class DB {
 
-    private Connection connection;
     private final @Getter DBType type;
     private final Keklist plugin;
     private final AtomicInteger count = new AtomicInteger(0);
+    private HikariDataSource dataSource;
+    private String sqlLiteJdbc;
 
     public DB(DBType dbType, Keklist plugin) {
         this.plugin = plugin;
@@ -27,25 +30,28 @@ public class DB {
     }
 
     public void connect() {
-       if(count.get() >= 4){
-           plugin.getLogger().severe(Keklist.getTranslations().get("database.connect-fail"));
-           Bukkit.getPluginManager().disablePlugin(plugin);
-           return;
-         }
+        if (count.get() >= 4) {
+            plugin.getLogger().severe(Keklist.getTranslations().get("database.connect-fail"));
+            Bukkit.getPluginManager().disablePlugin(plugin);
+            return;
+        }
 
         try {
-            switch (type){
+            switch (type) {
                 case SQLITE -> {
+                    Class.forName("org.sqlite.JDBC");
+
                     File file = new File(Keklist.getInstance().getDataFolder(), "database.db");
                     if (!file.exists())
                         file.createNewFile();
 
-                    String url = "jdbc:sqlite:" + file.getPath();
-                    connection = DriverManager.getConnection(url);
+                    sqlLiteJdbc = "jdbc:sqlite:" + file.getPath();
                 }
 
                 case MARIADB -> {
                     Class.forName("org.mariadb.jdbc.Driver");
+
+                    HikariConfig config = new HikariConfig();
 
                     String url = "jdbc:mariadb://";
 
@@ -57,13 +63,22 @@ public class DB {
                     String options = plugin.getConfig().getString("mariadb.options");
 
                     url += host + ":" + port + "/" + database + options;
-                    connection = DriverManager.getConnection(url, username, password);
+
+                    config.setUsername(username);
+                    config.setPassword(password);
+
+                    config.setConnectionTestQuery("SELECT 1");
+                    config.setMaximumPoolSize(20);
+                    config.setDriverClassName("org.mariadb.jdbc.Driver");
+                    config.setJdbcUrl(url);
+
+                    dataSource = new HikariDataSource(config);
                 }
             }
 
             createTables();
             count.incrementAndGet();
-        } catch (SQLException | java.io.IOException ex) {
+        } catch (java.io.IOException ex) {
             ex.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(plugin);
         } catch (ClassNotFoundException e) {
@@ -73,37 +88,29 @@ public class DB {
     }
 
     public boolean isConnected() {
-        return (connection != null);
+        return (dataSource != null && !dataSource.isClosed()) || (sqlLiteJdbc != null);
     }
 
     public void disconnect() {
-        try {
-            if (connection != null)
-                connection.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        if (dataSource != null)
+            dataSource.close();
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void onUpdate(@NotNull @Language("SQL") final String statement, Object... preparedArgs) {
+    public void onUpdate(@NotNull @Language("SQL") final String statement, @Nullable Object... preparedArgs) {
         if (isConnected()) {
-            new FutureTask(new Runnable() {
-                PreparedStatement preparedStatement;
+            new FutureTask(() -> {
+                try (Connection connection = dataSource == null ? DriverManager.getConnection(sqlLiteJdbc) : dataSource.getConnection();
+                     PreparedStatement preparedStatement = connection.prepareStatement(statement);
+                ) {
 
-                public void run() {
-                    try {
-                        this.preparedStatement = connection.prepareStatement(statement);
-
-                        for (int i = 0; i < preparedArgs.length; i++) {
-                            this.preparedStatement.setObject(i + 1, preparedArgs[i]);
-                        }
-
-                        this.preparedStatement.executeUpdate();
-                        this.preparedStatement.close();
-                    } catch (SQLException throwable) {
-                        throwable.printStackTrace();
+                    for (int i = 0; i < preparedArgs.length; i++) {
+                        preparedStatement.setObject(i + 1, preparedArgs[i]);
                     }
+
+                    preparedStatement.executeUpdate();
+                } catch (SQLException throwable) {
+                    throwable.printStackTrace();
                 }
             }, null).run();
         } else {
@@ -113,11 +120,12 @@ public class DB {
     }
 
     @Nullable
-    public ResultSet onQuery(@NotNull @Language("SQL") final String query, Object... preparedArgs) {
+    public ResultSet onQuery(@NotNull @Language("SQL") final String query, @Nullable Object... preparedArgs) {
         if (isConnected()) {
             try {
                 FutureTask<ResultSet> task = new FutureTask<>(new Callable<>() {
                     PreparedStatement ps;
+                    final Connection connection = dataSource == null ? DriverManager.getConnection(sqlLiteJdbc) : dataSource.getConnection();
 
                     public ResultSet call() throws Exception {
                         this.ps = connection.prepareStatement(query);
@@ -132,8 +140,8 @@ public class DB {
 
                 task.run();
                 return task.get();
-            } catch (InterruptedException | ExecutionException e) {
-                e.printStackTrace();
+            } catch (InterruptedException | ExecutionException | SQLException ex) {
+                ex.printStackTrace();
             }
         } else {
             connect();
