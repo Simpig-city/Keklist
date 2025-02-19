@@ -71,12 +71,12 @@ public class DB {
                     Class.forName("org.mariadb.jdbc.Driver");
                     HikariConfig config = new HikariConfig();
 
-                    String host = plugin.getConfig().getString("mariadb.host");
-                    String port = plugin.getConfig().getString("mariadb.port");
-                    String database = plugin.getConfig().getString("mariadb.database");
-                    String username = plugin.getConfig().getString("mariadb.username");
-                    String password = plugin.getConfig().getString("mariadb.password");
-                    String options = plugin.getConfig().getString("mariadb.options");
+                    String host = plugin.getConfig().getString("database.mariadb.host");
+                    String port = plugin.getConfig().getString("database.mariadb.port");
+                    String database = plugin.getConfig().getString("database.mariadb.database");
+                    String username = plugin.getConfig().getString("database.mariadb.username");
+                    String password = plugin.getConfig().getString("database.mariadb.password");
+                    String options = plugin.getConfig().getString("database.mariadb.options");
 
                     String url = "jdbc:mariadb://" + host + ":" + port + "/" + database + options;
                     config.setJdbcUrl(url);
