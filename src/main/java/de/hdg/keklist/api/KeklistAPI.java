@@ -14,7 +14,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Objects;
 import java.util.UUID;
@@ -83,9 +82,9 @@ public class KeklistAPI {
      * @return true if the uuid is blacklisted
      */
     public boolean isBlacklisted(@NotNull UUID uuid) {
-        try {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", uuid.toString());
-            return rs.next();
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", uuid.toString())
+        ) {
+            return rs.getResultSet().next();
         } catch (SQLException e) {
             Keklist.getInstance().getLogger().severe("Database is not available");
             e.printStackTrace();
@@ -105,9 +104,9 @@ public class KeklistAPI {
         if (ip.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$") || ip.matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$"))
             throw new IllegalArgumentException("IP is not valid");
 
-        try {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", ip);
-            return rs.next();
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", ip)
+        ) {
+            return rs.getResultSet().next();
         } catch (SQLException e) {
             Keklist.getInstance().getLogger().severe("Database is not available");
             e.printStackTrace();
@@ -127,9 +126,9 @@ public class KeklistAPI {
         if (ip.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$") || ip.matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$"))
             throw new IllegalArgumentException("IP is not valid");
 
-        try {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", ip);
-            return rs.next();
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", ip)
+        ) {
+            return rs.getResultSet().next();
         } catch (SQLException e) {
             Keklist.getInstance().getLogger().severe("Database is not available");
             e.printStackTrace();
@@ -157,9 +156,9 @@ public class KeklistAPI {
      * @return true if the uuid is whitelisted
      */
     public boolean isWhitelisted(@NotNull UUID uuid) {
-        try {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
-            return rs.next();
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString())
+        ) {
+            return rs.getResultSet().next();
         } catch (SQLException e) {
             Keklist.getInstance().getLogger().severe("Database is not available");
             e.printStackTrace();
@@ -179,8 +178,8 @@ public class KeklistAPI {
         if (ip.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$") || ip.matches("^(?:[0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$"))
             throw new IllegalArgumentException("IP is not valid");
 
-        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", ip)) {
-            return rs.next();
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", ip)) {
+            return rs.getResultSet().next();
         } catch (SQLException e) {
             Keklist.getInstance().getLogger().severe("Database is not available");
             e.printStackTrace();
@@ -476,7 +475,7 @@ public class KeklistAPI {
 
 
     /**
-     *  Returns the language for the plugin set in the config
+     * Returns the language for the plugin set in the config
      *
      * @return the language code
      */

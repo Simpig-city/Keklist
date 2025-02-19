@@ -6,6 +6,7 @@ import de.hdg.keklist.gui.GuiManager;
 import de.hdg.keklist.util.IpUtil;
 import de.hdg.keklist.util.TypeUtil;
 import de.hdg.keklist.util.mfa.MFAUtil;
+import lombok.Cleanup;
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -18,7 +19,6 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -270,9 +270,11 @@ public class KeklistCommand extends Command {
                                     Player target = Bukkit.getPlayer(args[1]);
                                     assert target != null;
 
-                                    try {
-                                        boolean whitelisted = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", target.getUniqueId().toString()).next();
-                                        boolean blacklisted = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", target.getUniqueId().toString()).next();
+                                    try (DB.QueryResult whitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", target.getUniqueId().toString());
+                                         DB.QueryResult blacklistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", target.getUniqueId().toString())
+                                    ) {
+                                        boolean whitelisted = whitelistedRs.getResultSet().next();
+                                        boolean blacklisted = blacklistedRs.getResultSet().next();
 
                                         String brand = target.getClientBrandName();
                                         int ping = target.getPing();
@@ -308,18 +310,22 @@ public class KeklistCommand extends Command {
                                 } else {
                                     OfflinePlayer offlinePlayer = Bukkit.getOfflinePlayer(args[1]);
 
-                                    try {
-                                        boolean whitelisted = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next();
-                                        boolean blacklisted = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next();
+                                    try (DB.QueryResult whitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", offlinePlayer.getUniqueId().toString());
+                                         DB.QueryResult blacklistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", offlinePlayer.getUniqueId().toString())
+                                    ) {
+                                        boolean whitelisted = whitelistedRs.getResultSet().next();
+                                        boolean blacklisted = blacklistedRs.getResultSet().next();
 
                                         String latestIp = "unknown";
                                         int protocolId = -1;
                                         String brand = "unknown";
 
-                                        if (Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).next()) {
-                                            latestIp = Keklist.getDatabase().onQuery("SELECT ip FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getString("ip");
-                                            protocolId = Keklist.getDatabase().onQuery("SELECT protocolId FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getInt("protocolId");
-                                            brand = Keklist.getDatabase().onQuery("SELECT brand FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString()).getString("brand");
+                                        @Cleanup DB.QueryResult lastSeenRs = Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", offlinePlayer.getUniqueId().toString());
+
+                                        if (lastSeenRs.getResultSet().next()) {
+                                            latestIp = lastSeenRs.getResultSet().getString("ip");
+                                            protocolId = lastSeenRs.getResultSet().getInt("protocolId");
+                                            brand = lastSeenRs.getResultSet().getString("brand");
                                         }
 
                                         Location location = offlinePlayer.getLocation();
@@ -402,9 +408,9 @@ public class KeklistCommand extends Command {
 
                                 case "codes" -> {
                                     if (MFAUtil.hasMFAEnabled(player)) {
-                                        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT recoveryCodes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
-                                            if (rs.next()) {
-                                                String[] recoveryCodes = rs.getString("recoveryCodes").split(",");
+                                        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT recoveryCodes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
+                                            if (rs.getResultSet().next()) {
+                                                String[] recoveryCodes = rs.getResultSet().getString("recoveryCodes").split(",");
                                                 StringBuilder builder = new StringBuilder();
 
                                                 for (String code : recoveryCodes) {
@@ -459,9 +465,9 @@ public class KeklistCommand extends Command {
                             if (args[1].equalsIgnoreCase("delete")) {
                                 if (Keklist.getInstance().getConfig().getBoolean("2fa.console-can-delete-2fa")) {
                                     if (args.length >= 3) {
-                                        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM mfa WHERE uuid = ?", args[2])) {
+                                        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM mfa WHERE uuid = ?", args[2])) {
 
-                                            if (rs.next()) {
+                                            if (rs.getResultSet().next()) {
                                                 Keklist.getDatabase().onUpdate("DELETE FROM mfa WHERE uuid = ?", args[2]);
                                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.2fa.deleted", args[2])));
 
@@ -530,10 +536,11 @@ public class KeklistCommand extends Command {
                             return false;
                         }
 
-                        try {
-                            int whitelisted = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM whitelist UNION ALL SELECT COUNT(*) FROM whitelistIp UNION ALL SELECT COUNT(*) FROM whitelistDomain) as whitelistCound").getInt(1);
-                            int blacklisted = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM blacklist UNION ALL SELECT COUNT(*) FROM blacklistIp) as blacklistCount").getInt(1);
-
+                        try (DB.QueryResult whitelistedRs = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM whitelist UNION ALL SELECT COUNT(*) FROM whitelistIp UNION ALL SELECT COUNT(*) FROM whitelistDomain) as whitelistCound");
+                             DB.QueryResult blacklistedRs = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM blacklist UNION ALL SELECT COUNT(*) FROM blacklistIp) as blacklistCount")
+                        ) {
+                            int whitelisted = whitelistedRs.getResultSet().getInt(1);
+                            int blacklisted = blacklistedRs.getResultSet().getInt(1);
                             boolean whitelist = Keklist.getInstance().getConfig().getBoolean("whitelist.enabled");
                             boolean blacklist = Keklist.getInstance().getConfig().getBoolean("blacklist.enabled");
 
@@ -643,9 +650,9 @@ public class KeklistCommand extends Command {
                     && Keklist.getInstance().getConfig().getBoolean("2fa.console-can-delete-2fa")
                     && Keklist.getInstance().getConfig().getBoolean("2fa.enabled")) {
 
-                try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT uuid FROM mfa LIMIT 10")) {
-                    while (rs.next()) {
-                        suggestions.add(rs.getString("uuid"));
+                try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT uuid FROM mfa LIMIT 10")) {
+                    while (rs.getResultSet().next()) {
+                        suggestions.add(rs.getResultSet().getString("uuid"));
                     }
 
                     suggestions.add("uuid");

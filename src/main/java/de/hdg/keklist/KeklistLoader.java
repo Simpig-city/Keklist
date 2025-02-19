@@ -25,6 +25,7 @@ public class KeklistLoader implements PluginLoader {
         resolver.addDependency(new Dependency(new DefaultArtifact("club.minnced:discord-webhooks:0.8.4"), "compile"));
         resolver.addDependency(new Dependency(new DefaultArtifact("com.github.TominoLP:2FA-API:1.3.2"), "compile"));
         resolver.addDependency(new Dependency(new DefaultArtifact("com.zaxxer:HikariCP:6.2.1"), "compile"));
+        resolver.addDependency(new Dependency(new DefaultArtifact("com.h2database:h2:2.3.232"), "compile"));
         //resolver.addDependency(new Dependency(new DefaultArtifact("de.sage.util:updatechecker:1.0.3-SNAPSHOT"), "compile"));
 
         pluginClasspathBuilder.addLibrary(resolver);

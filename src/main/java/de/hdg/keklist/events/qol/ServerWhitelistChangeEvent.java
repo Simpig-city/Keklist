@@ -3,14 +3,15 @@ package de.hdg.keklist.events.qol;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.api.events.whitelist.PlayerRemovedFromWhitelistEvent;
 import de.hdg.keklist.api.events.whitelist.UUIDAddToWhitelistEvent;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.extentions.WebhookManager;
 import io.papermc.paper.event.server.WhitelistStateUpdateEvent;
+import lombok.Cleanup;
 import org.bukkit.Bukkit;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -24,11 +25,11 @@ public class ServerWhitelistChangeEvent implements Listener {
 
         switch (event.getStatus()) {
             case ADDED -> {
-                ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getPlayerProfile().getId());
-                ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", event.getPlayerProfile().getName());
+                @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getPlayerProfile().getId());
+                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", event.getPlayerProfile().getName());
 
-                if (!rs.next()) {
-                    if (rsUserFix.next()) {
+                if (!rs.getResultSet().next()) {
+                    if (rsUserFix.getResultSet().next()) {
                         Keklist.getDatabase().onUpdate("UPDATE whitelist SET name = ? WHERE name = ?", playerName + " (Old Name)", playerName);
                     }
 
@@ -46,9 +47,9 @@ public class ServerWhitelistChangeEvent implements Listener {
             }
 
             case REMOVED -> {
-                ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
+                @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
 
-                if (rs.next()) {
+                if (rs.getResultSet().next()) {
                     new PlayerRemovedFromWhitelistEvent(playerName).callEvent();
                     Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE uuid = ?", uuid.toString());
 

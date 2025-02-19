@@ -1,6 +1,7 @@
 package de.hdg.keklist.gui.events.whitelist;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.util.LanguageUtil;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -16,7 +17,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.sql.ResultSet;
+
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.Collections;
@@ -49,13 +50,12 @@ public class WhitelistEntryEvent implements Listener {
                     ItemStack item = event.getCurrentItem();
 
                     String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
-                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", username);
-
-                    try {
-                        if (rs.next()) {
-                            long unix = rs.getLong("unix");
-                            String byPlayer = rs.getString("byPlayer");
-                            UUID uuid = UUID.fromString(rs.getString("uuid"));
+                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", username)
+                    ) {
+                        if (rs.getResultSet().next()) {
+                            long unix = rs.getResultSet().getLong("unix");
+                            String byPlayer = rs.getResultSet().getString("byPlayer");
+                            UUID uuid = UUID.fromString(rs.getResultSet().getString("uuid"));
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
@@ -104,12 +104,11 @@ public class WhitelistEntryEvent implements Listener {
                     ItemStack item = event.getCurrentItem();
 
                     String ip = serializer.serialize(item.getItemMeta().displayName());
-                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", ip);
 
-                    try {
-                        if (rs.next()) {
-                            long unix = rs.getLong("unix");
-                            String byPlayer = rs.getString("byPlayer");
+                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", ip)) {
+                        if (rs.getResultSet().next()) {
+                            long unix = rs.getResultSet().getLong("unix");
+                            String byPlayer = rs.getResultSet().getString("byPlayer");
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 

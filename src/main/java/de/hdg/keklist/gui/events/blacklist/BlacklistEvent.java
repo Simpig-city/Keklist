@@ -1,7 +1,9 @@
 package de.hdg.keklist.gui.events.blacklist;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.gui.GuiManager;
+import lombok.Cleanup;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -23,7 +25,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -210,32 +211,32 @@ public class BlacklistEvent implements Listener {
 
 
         if (pageIndex == 0) {
-            ResultSet players = Keklist.getDatabase().onQuery("SELECT * FROM blacklist");
-            ResultSet ips = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp");
-            ResultSet motds = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd");
+            @Cleanup DB.QueryResult players = Keklist.getDatabase().onQuery("SELECT * FROM blacklist");
+            @Cleanup DB.QueryResult ips = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp");
+            @Cleanup DB.QueryResult motds = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd");
 
-            while (players.next()) {
+            while (players.getResultSet().next()) {
                 ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
                 SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
                 skullMeta.displayName(
-                        Keklist.getInstance().getMiniMessage().deserialize(players.getString("name"))
+                        Keklist.getInstance().getMiniMessage().deserialize(players.getResultSet().getString("name"))
                 );
                 skullMeta.lore(Collections.singletonList(
                         Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
                 ));
 
-                if(Bukkit.getOfflinePlayerIfCached(players.getString("name")) != null)
-                    skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getString("name")));
+                if(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")) != null)
+                    skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")));
 
                 skull.setItemMeta(skullMeta);
                 playerHeads.add(skull);
             }
 
-            while (ips.next()) {
+            while (ips.getResultSet().next()) {
                 ItemStack ip = new ItemStack(Material.BOOK);
                 ItemMeta ipMeta = ip.getItemMeta();
                 ipMeta.displayName(
-                        Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip"))
+                        Keklist.getInstance().getMiniMessage().deserialize(ips.getResultSet().getString("ip"))
                 );
                 ipMeta.lore(Collections.singletonList(
                         Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
@@ -244,11 +245,11 @@ public class BlacklistEvent implements Listener {
                 ipItems.add(ip);
             }
 
-            while (motds.next()) {
+            while (motds.getResultSet().next()) {
                 ItemStack motd = new ItemStack(Material.WRITABLE_BOOK);
                 ItemMeta motdItemMeta = motd.getItemMeta();
                 motdItemMeta.displayName(
-                        Keklist.getInstance().getMiniMessage().deserialize(motds.getString("ip") + "(MOTD)")
+                        Keklist.getInstance().getMiniMessage().deserialize(motds.getResultSet().getString("ip") + "(MOTD)")
                 );
                 motdItemMeta.lore(Collections.singletonList(
                         Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
@@ -345,15 +346,15 @@ public class BlacklistEvent implements Listener {
         if (pageIndex > 0) {
             // Next Page
             if (onlyIP) {
-                ResultSet ips = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp");
-                ResultSet isMOTDthere = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistMotd LIMIT 1");
+                @Cleanup DB.QueryResult ips = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp");
+                @Cleanup DB.QueryResult isMOTDthere = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistMotd LIMIT 1");
                 List<ItemStack> skippedIPs;
 
-                while (ips.next()) {
+                while (ips.getResultSet().next()) {
                     ItemStack ip = new ItemStack(Material.BOOK);
                     ItemMeta ipMeta = ip.getItemMeta();
                     ipMeta.displayName(
-                            Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip"))
+                            Keklist.getInstance().getMiniMessage().deserialize(ips.getResultSet().getString("ip"))
                     );
                     ipMeta.lore(Collections.singletonList(
                             Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
@@ -384,14 +385,14 @@ public class BlacklistEvent implements Listener {
                         i++;
                     }
 
-                    if (isMOTDthere.next()) {
-                        ResultSet motds = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd");
+                    if (isMOTDthere.getResultSet().next()) {
+                        @Cleanup DB.QueryResult motds = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd");
 
-                        while (motds.next()) {
+                        while (motds.getResultSet().next()) {
                             ItemStack motd = new ItemStack(Material.WRITABLE_BOOK);
                             ItemMeta motdItemMeta = motd.getItemMeta();
                             motdItemMeta.displayName(
-                                    Keklist.getInstance().getMiniMessage().deserialize(motds.getString("ip") + "(MOTD)")
+                                    Keklist.getInstance().getMiniMessage().deserialize(motds.getResultSet().getString("ip") + "(MOTD)")
                             );
                             motdItemMeta.lore(Collections.singletonList(
                                     Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
@@ -429,14 +430,14 @@ public class BlacklistEvent implements Listener {
 
                 // NOTE : pageIndex*18 = player heads to skip if not onlyIP mode is active
             } else if (onlyMOTD) {
-                ResultSet motds = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd");
+                @Cleanup DB.QueryResult motds = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd");
                 List<ItemStack> skippedMOTDs;
 
-                while (motds.next()) {
+                while (motds.getResultSet().next()) {
                     ItemStack motd = new ItemStack(Material.WRITABLE_BOOK);
                     ItemMeta motdItemMeta = motd.getItemMeta();
                     motdItemMeta.displayName(
-                            Keklist.getInstance().getMiniMessage().deserialize(motds.getString("ip") + "(MOTD)")
+                            Keklist.getInstance().getMiniMessage().deserialize(motds.getResultSet().getString("ip") + "(MOTD)")
                     );
                     motdItemMeta.lore(Collections.singletonList(
                             Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
@@ -478,24 +479,24 @@ public class BlacklistEvent implements Listener {
 
 
             } else {
-                ResultSet players = Keklist.getDatabase().onQuery("SELECT * FROM blacklist");
-                ResultSet isIPThere = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistIp LIMIT 1");
-                ResultSet isMOTDthere = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistMotd LIMIT 1");
+                @Cleanup DB.QueryResult players = Keklist.getDatabase().onQuery("SELECT * FROM blacklist");
+                @Cleanup DB.QueryResult isIPThere = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistIp LIMIT 1");
+                @Cleanup DB.QueryResult isMOTDthere = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistMotd LIMIT 1");
 
                 List<ItemStack> skippedHeads;
 
-                while (players.next()) {
+                while (players.getResultSet().next()) {
                     ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
                     SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
                     skullMeta.displayName(
-                            Keklist.getInstance().getMiniMessage().deserialize(players.getString("name"))
+                            Keklist.getInstance().getMiniMessage().deserialize(players.getResultSet().getString("name"))
                     );
                     skullMeta.lore(Collections.singletonList(
                             Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
                     ));
 
-                    if(Bukkit.getOfflinePlayerIfCached(players.getString("name")) != null)
-                        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getString("name")));
+                    if(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")) != null)
+                        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")));
 
                     skull.setItemMeta(skullMeta);
                     playerHeads.add(skull);
@@ -526,14 +527,14 @@ public class BlacklistEvent implements Listener {
                     }
 
 
-                    if (isIPThere.next()) {
-                        ResultSet ips = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp");
+                    if (isIPThere.getResultSet().next()) {
+                        @Cleanup DB.QueryResult ips = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp");
 
-                        while (ips.next()) {
+                        while (ips.getResultSet().next()) {
                             ItemStack ip = new ItemStack(Material.BOOK);
                             ItemMeta ipMeta = ip.getItemMeta();
                             ipMeta.displayName(
-                                    Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip"))
+                                    Keklist.getInstance().getMiniMessage().deserialize(ips.getResultSet().getString("ip"))
                             );
                             ipMeta.lore(Collections.singletonList(
                                     Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))
@@ -562,14 +563,14 @@ public class BlacklistEvent implements Listener {
                                 i++;
                             }
 
-                            if (isMOTDthere.next()) {
-                                ResultSet motds = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd");
+                            if (isMOTDthere.getResultSet().next()) {
+                                @Cleanup DB.QueryResult motds = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd");
 
-                                while (motds.next()) {
+                                while (motds.getResultSet().next()) {
                                     ItemStack motd = new ItemStack(Material.WRITABLE_BOOK);
                                     ItemMeta motdItemMeta = motd.getItemMeta();
                                     motdItemMeta.displayName(
-                                            Keklist.getInstance().getMiniMessage().deserialize(motds.getString("ip") + "(MOTD)")
+                                            Keklist.getInstance().getMiniMessage().deserialize(motds.getResultSet().getString("ip") + "(MOTD)")
                                     );
                                     motdItemMeta.lore(Collections.singletonList(
                                             Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.list.entry"))

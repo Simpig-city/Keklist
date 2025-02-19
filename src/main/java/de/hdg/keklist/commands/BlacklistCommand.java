@@ -1,15 +1,14 @@
 package de.hdg.keklist.commands;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.api.events.blacklist.*;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.extentions.WebhookManager;
 import de.hdg.keklist.util.TypeUtil;
+import lombok.Cleanup;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import okhttp3.*;
@@ -21,7 +20,6 @@ import org.geysermc.floodgate.api.FloodgateApi;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -31,7 +29,7 @@ import static de.hdg.keklist.util.TypeUtil.getEntryType;
 public class BlacklistCommand extends Command {
 
     private static final OkHttpClient client = new OkHttpClient();
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().create();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().setStrictness(Strictness.LENIENT).create();
     private static final TypeToken<Map<String, String>> token = new TypeToken<>() {
     };
 
@@ -89,9 +87,9 @@ public class BlacklistCommand extends Command {
                         }
 
                         case IPv4, IPv6 -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
+                            @Cleanup DB.QueryResult exists = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklistIp WHERE ip = ?", args[1]);
 
-                            if (!rs.next()) {
+                            if (!exists.getResultSet().next()) {
                                 if (reason == null) {
                                     new IpAddToBlacklistEvent(args[1], null).callEvent();
                                     Keklist.getDatabase().onUpdate("INSERT INTO blacklistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
@@ -113,8 +111,8 @@ public class BlacklistCommand extends Command {
                                     }
                                 }
 
-                                ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
-                                if (!rsMotd.next()) {
+                                @Cleanup DB.QueryResult motdExists = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklistMotd WHERE ip = ?", args[1]);
+                                if (!motdExists.getResultSet().next()) {
                                     new IpAddToMOTDBlacklistEvent(args[1]).callEvent();
                                     Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                                 }
@@ -162,8 +160,8 @@ public class BlacklistCommand extends Command {
 
                     switch (type) {
                         case TypeUtil.EntryType.JAVA, TypeUtil.EntryType.BEDROCK -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1]);
-                            if (rs.next()) {
+                            @Cleanup DB.QueryResult exists = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1]);
+                            if (exists.getResultSet().next()) {
                                 new PlayerRemovedFromBlacklist(args[1]).callEvent();
                                 Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", args[1]);
 
@@ -176,8 +174,8 @@ public class BlacklistCommand extends Command {
                                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.notify.remove", args[1], senderName)), "keklist.notify.blacklist");
 
                             } else {
-                                ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
-                                if (rsUserFix.next()) {
+                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
+                                if (rsUserFix.getResultSet().next()) {
                                     new PlayerRemovedFromBlacklist(args[1]).callEvent();
                                     Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
 
@@ -196,9 +194,9 @@ public class BlacklistCommand extends Command {
                         }
 
                         case TypeUtil.EntryType.IPv4, TypeUtil.EntryType.IPv6 -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
-                            ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
-                            if (rs.next() || rsMotd.next()) {
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
+                            @Cleanup DB.QueryResult rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
+                            if (rs.getResultSet().next() || rsMotd.getResultSet().next()) {
                                 new IpRemovedFromBlacklistEvent(args[1]).callEvent();
                                 new IpRemovedFromMOTDBlacklistEvent(args[1]).callEvent();
 
@@ -225,8 +223,8 @@ public class BlacklistCommand extends Command {
                     }
 
                     if (type.equals(TypeUtil.EntryType.IPv4)) {
-                        ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
-                        if (rs.next()) {
+                        @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
+                        if (rs.getResultSet().next()) {
                             sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.motd.already-blacklisted", args[1])));
                         } else {
                             new IpAddToMOTDBlacklistEvent(args[1]).callEvent();
@@ -248,18 +246,18 @@ public class BlacklistCommand extends Command {
 
                     switch (type) {
                         case TypeUtil.EntryType.IPv4, TypeUtil.EntryType.IPv6 -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
-                            ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", args[1]);
+                            @Cleanup DB.QueryResult rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", args[1]);
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
                             LanguageUtil translations = Keklist.getTranslations();
                             MiniMessage miniMessage = Keklist.getInstance().getMiniMessage();
 
-                            if (rs.next()) {
+                            if (rs.getResultSet().next()) {
                                 sendInfo(rs, sender, args[1]);
-                            } else if (rsMotd.next()) {
-                                String byPlayer = rsMotd.getString("byPlayer");
-                                String unix = sdf.format(rsMotd.getLong("unix"));
+                            } else if (rsMotd.getResultSet().next()) {
+                                String byPlayer = rsMotd.getResultSet().getString("byPlayer");
+                                String unix = sdf.format(rsMotd.getResultSet().getLong("unix"));
 
                                 sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info")));
                                 sender.sendMessage(miniMessage.deserialize(translations.get("blacklist.info.entry", args[1])));
@@ -271,16 +269,17 @@ public class BlacklistCommand extends Command {
                         }
 
                         case TypeUtil.EntryType.JAVA, TypeUtil.EntryType.BEDROCK -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1]);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1]);
 
-                            if (rs.next()) {
+                            if (rs.getResultSet().next()) {
                                 sendInfo(rs, sender, args[1]);
                             } else {
-                                ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
-                                if (rsUserFix.next()) {
+                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", args[1] + " (Old Name)");
+                                if (rsUserFix.getResultSet().next()) {
                                     sendInfo(rsUserFix, sender, args[1]);
-                                } else
+                                } else {
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.not-blacklisted", args[1])));
+                                }
                             }
                         }
                     }
@@ -299,14 +298,14 @@ public class BlacklistCommand extends Command {
         return true;
     }
 
-    private void sendInfo(@NotNull ResultSet resultSet, @NotNull CommandSender sender, @NotNull String entry) {
-        try {
+    private void sendInfo(@NotNull DB.QueryResult resultSet, @NotNull CommandSender sender, @NotNull String entry) throws SQLException {
+        try (resultSet) {
             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
-            String byPlayer = resultSet.getString("byPlayer");
-            String blacklistedReason = resultSet.getString("reason");
+            String byPlayer = resultSet.getResultSet().getString("byPlayer");
+            String blacklistedReason = resultSet.getResultSet().getString("reason");
             blacklistedReason = blacklistedReason == null ? "No reason given" : blacklistedReason;
-            String unix = sdf.format(resultSet.getLong("unix"));
+            String unix = sdf.format(resultSet.getResultSet().getLong("unix"));
 
             LanguageUtil translations = Keklist.getTranslations();
             MiniMessage miniMessage = Keklist.getInstance().getMiniMessage();
@@ -322,13 +321,13 @@ public class BlacklistCommand extends Command {
     }
 
     private void blacklistUser(CommandSender from, UUID uuid, String playerName, String reason) {
-        try {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", uuid.toString());
-            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", playerName);
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", uuid.toString());
+             DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE name = ?", playerName)
+        ) {
 
             //User is not blacklisted
-            if (!rs.next()) {
-                if (rsUserFix.next()) {
+            if (!rs.getResultSet().next()) {
+                if (rsUserFix.getResultSet().next()) {
                     Keklist.getDatabase().onUpdate("UPDATE blacklist SET name = ? WHERE name = ?", playerName + " (Old Name)", playerName);
                 }
 
@@ -353,8 +352,8 @@ public class BlacklistCommand extends Command {
 
                 Player blacklisted = Bukkit.getPlayer(playerName);
                 if (blacklisted != null) {
-                    ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", blacklisted.getAddress().getAddress().getHostAddress());
-                    if (!rsMotd.next()) {
+                    @Cleanup DB.QueryResult rsMotd = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", blacklisted.getAddress().getAddress().getHostAddress());
+                    if (!rsMotd.getResultSet().next()) {
                         Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new IpAddToMOTDBlacklistEvent(blacklisted.getAddress().getAddress().getHostAddress()).callEvent());
                         Keklist.getDatabase().onUpdate("INSERT INTO blacklistMotd (ip, byPlayer, unix) VALUES (?, ?, ?)", blacklisted.getAddress().getAddress().getHostAddress(), from.getName(), System.currentTimeMillis());
                     }
@@ -450,10 +449,10 @@ public class BlacklistCommand extends Command {
      * @param page   the page to display
      */
     private void handleList(@NotNull CommandSender sender, int page) {
-        try (ResultSet rs =
+        try (DB.QueryResult rs =
                      Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM blacklist UNION ALL SELECT ip, byPlayer, unix FROM blacklistIp UNION SELECT ip, byPlayer, unix FROM blacklistMotd) as entries LIMIT ?,8", (page - 1) * 8)) {
 
-            if (!rs.next() || page < 1) {
+            if (!rs.getResultSet().next() || page < 1) {
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.list.empty")));
                 return;
             }
@@ -465,32 +464,32 @@ public class BlacklistCommand extends Command {
             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
             do {
-                String entry = rs.getString(1);
-                String byPlayer = rs.getString(2);
-                String date = sdf.format(new Date(rs.getLong(3)));
+                String entry = rs.getResultSet().getString(1);
+                String byPlayer = rs.getResultSet().getString(2);
+                String date = sdf.format(new Date(rs.getResultSet().getLong(3)));
 
                 TypeUtil.EntryType type = TypeUtil.getEntryType(entry);
 
                 switch (type) {
                     case IPv4, IPv6, DOMAIN -> {
-                        ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT CASE WHEN EXISTS (SELECT 1 FROM blacklistIp WHERE ip = ?) THEN NULL ELSE (SELECT 1 FROM blacklistMotd WHERE ip = ?) END", entry, entry);
+                        @Cleanup DB.QueryResult rsMotd = Keklist.getDatabase().onQuery("SELECT CASE WHEN EXISTS (SELECT 1 FROM blacklistIp WHERE ip = ?) THEN NULL ELSE (SELECT 1 FROM blacklistMotd WHERE ip = ?) END", entry, entry);
                         boolean isMotd = false;
 
-                        if (rsMotd.next())
-                            isMotd = rsMotd.getInt(1) == 1;
+                        if (rsMotd.getResultSet().next())
+                            isMotd = rsMotd.getResultSet().getInt(1) == 1;
 
                         listMessage.append(Keklist.getTranslations().get("blacklist.list.entry", date, isMotd ? entry + " (MOTD)" : entry, byPlayer)).append("\n");
                     }
 
                     case UUID -> {
-                        ResultSet rsName = Keklist.getDatabase().onQuery("SELECT name FROM blacklist WHERE uuid = ?", entry);
-                        String name = rsName.next() ? rsName.getString("name") : "Unknown";
+                        @Cleanup DB.QueryResult rsName = Keklist.getDatabase().onQuery("SELECT name FROM blacklist WHERE uuid = ?", entry);
+                        String name = rsName.getResultSet().next() ? rsName.getResultSet().getString("name") : "Unknown";
 
                         listMessage.append(Keklist.getTranslations().get("blacklist.list.entry.player", date, entry, name, byPlayer)).append("\n");
                     }
                 }
 
-            } while (rs.next());
+            } while (rs.getResultSet().next());
 
             listMessage.append("\n").append(Keklist.getTranslations().get("blacklist.list.footer", Math.max(page - 1, 0), page, page + 1));
 
@@ -502,8 +501,7 @@ public class BlacklistCommand extends Command {
     }
 
     @Override
-    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[]
-            args) throws IllegalArgumentException {
+    public @NotNull List<String> tabComplete(@NotNull CommandSender sender, @NotNull String alias, @NotNull String[] args) throws IllegalArgumentException {
         if (args.length < 2) {
             return List.of("add", "remove", "motd", "info", "list");
         } else if (args.length == 2) {
@@ -517,23 +515,23 @@ public class BlacklistCommand extends Command {
 
                         List<String> list = new ArrayList<>();
 
-                        ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM blacklist");
-                        while (rsUser.next()) {
-                            list.add(rsUser.getString("name"));
+                        @Cleanup DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT name FROM blacklist");
+                        while (rsUser.getResultSet().next()) {
+                            list.add(rsUser.getResultSet().getString("name"));
                         }
 
-                        ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistIp");
-                        while (rsIp.next()) {
-                            list.add(rsIp.getString("ip"));
+                        @Cleanup DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistIp");
+                        while (rsIp.getResultSet().next()) {
+                            list.add(rsIp.getResultSet().getString("ip"));
                         }
 
-                        ResultSet rsMotd = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistMotd");
-                        while (rsMotd.next()) {
-                            if (list.contains(rsMotd.getString("ip"))) {
+                        @Cleanup DB.QueryResult rsMotd = Keklist.getDatabase().onQuery("SELECT ip FROM blacklistMotd");
+                        while (rsMotd.getResultSet().next()) {
+                            if (list.contains(rsMotd.getResultSet().getString("ip"))) {
                                 continue;
                             }
 
-                            list.add(rsMotd.getString("ip") + "(motd)");
+                            list.add(rsMotd.getResultSet().getString("ip") + "(motd)");
                         }
 
                         return list;
@@ -545,9 +543,9 @@ public class BlacklistCommand extends Command {
                         List<String> completions = new ArrayList<>();
 
                         Bukkit.getOnlinePlayers().forEach(player -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", player.getName());
-                            try {
-                                if (!rs.next()) {
+                            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", player.getName())
+                            ) {
+                                if (!rs.getResultSet().next()) {
                                     completions.add(player.getName());
                                 }
                             } catch (SQLException e) {
@@ -557,9 +555,9 @@ public class BlacklistCommand extends Command {
                         });
 
                         Bukkit.getOnlinePlayers().forEach(player -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", player.getAddress().getAddress().getHostAddress());
-                            try {
-                                if (!rs.next()) {
+                            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", player.getAddress().getAddress().getHostAddress())
+                            ) {
+                                if (!rs.getResultSet().next()) {
                                     completions.add(player.getAddress().getAddress().getHostAddress() + "(" + player.getName() + ")");
                                 }
                             } catch (SQLException e) {
@@ -575,10 +573,9 @@ public class BlacklistCommand extends Command {
 
                         List<String> completions = new ArrayList<>();
                         Bukkit.getOnlinePlayers().forEach(player -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", player.getAddress().getAddress().getHostAddress());
-
-                            try {
-                                if (!rs.next()) {
+                            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", player.getAddress().getAddress().getHostAddress())
+                            ) {
+                                if (!rs.getResultSet().next()) {
                                     completions.add(player.getAddress().getAddress().getHostAddress() + "(" + player.getName() + ")");
                                 }
                             } catch (SQLException e) {

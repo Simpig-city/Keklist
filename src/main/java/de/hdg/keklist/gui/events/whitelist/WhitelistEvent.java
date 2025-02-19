@@ -1,7 +1,9 @@
 package de.hdg.keklist.gui.events.whitelist;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.gui.GuiManager;
+import lombok.Cleanup;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -23,7 +25,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -193,32 +194,32 @@ public class WhitelistEvent implements Listener {
 
 
         if (pageIndex == 0) {
-            ResultSet players = Keklist.getDatabase().onQuery("SELECT * FROM whitelist");
-            ResultSet ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
+            @Cleanup DB.QueryResult players = Keklist.getDatabase().onQuery("SELECT * FROM whitelist");
+            @Cleanup DB.QueryResult ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
 
-            while (players.next()) {
+            while (players.getResultSet().next()) {
                 ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
                 SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
                 skullMeta.displayName(
-                        Keklist.getInstance().getMiniMessage().deserialize(players.getString("name"))
+                        Keklist.getInstance().getMiniMessage().deserialize(players.getResultSet().getString("name"))
                 );
                 skullMeta.lore(Collections.singletonList(
                         Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
                 ));
 
-                if(Bukkit.getOfflinePlayerIfCached(players.getString("name")) != null)
-                    skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getString("name")));
+                if(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")) != null)
+                    skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")));
 
 
                 skull.setItemMeta(skullMeta);
                 playerHeads.add(skull);
             }
 
-            while (ips.next()) {
+            while (ips.getResultSet().next()) {
                 ItemStack ip = new ItemStack(Material.BOOK);
                 ItemMeta ipMeta = ip.getItemMeta();
                 ipMeta.displayName(
-                        Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip"))
+                        Keklist.getInstance().getMiniMessage().deserialize(ips.getResultSet().getString("ip"))
                 );
                 ipMeta.lore(Collections.singletonList(
                         Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
@@ -284,14 +285,14 @@ public class WhitelistEvent implements Listener {
         if (pageIndex > 0) {
             // Next Page
             if (onlyIP) {
-                ResultSet ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
+                @Cleanup DB.QueryResult ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
                 List<ItemStack> skippedIPs;
 
-                while (ips.next()) {
+                while (ips.getResultSet().next()) {
                     ItemStack ip = new ItemStack(Material.BOOK);
                     ItemMeta ipMeta = ip.getItemMeta();
                     ipMeta.displayName(
-                            Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip"))
+                            Keklist.getInstance().getMiniMessage().deserialize(ips.getResultSet().getString("ip"))
                     );
                     ipMeta.lore(Collections.singletonList(
                             Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
@@ -333,22 +334,22 @@ public class WhitelistEvent implements Listener {
 
                 // NOTE: pageIndex*18 = player heads to skip if not onlyIP mode is active
             } else {
-                ResultSet players = Keklist.getDatabase().onQuery("SELECT * FROM whitelist");
-                ResultSet isIPThere = Keklist.getDatabase().onQuery("SELECT ip FROM whitelistIp LIMIT 1");
+                @Cleanup DB.QueryResult players = Keklist.getDatabase().onQuery("SELECT * FROM whitelist");
+                @Cleanup DB.QueryResult isIPThere = Keklist.getDatabase().onQuery("SELECT ip FROM whitelistIp LIMIT 1");
                 List<ItemStack> skippedHeads;
 
-                while (players.next()) {
+                while (players.getResultSet().next()) {
                     ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
                     SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
                     skullMeta.displayName(
-                            Keklist.getInstance().getMiniMessage().deserialize(players.getString("name"))
+                            Keklist.getInstance().getMiniMessage().deserialize(players.getResultSet().getString("name"))
                     );
                     skullMeta.lore(Collections.singletonList(
                             Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
                     ));
 
-                    if(Bukkit.getOfflinePlayerIfCached(players.getString("name")) != null)
-                        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getString("name")));
+                    if(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")) != null)
+                        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")));
 
                     skull.setItemMeta(skullMeta);
                     playerHeads.add(skull);
@@ -379,14 +380,14 @@ public class WhitelistEvent implements Listener {
                     }
 
 
-                    if (isIPThere.next()) {
-                        ResultSet ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
+                    if (isIPThere.getResultSet().next()) {
+                        @Cleanup DB.QueryResult ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
 
-                        while (ips.next()) {
+                        while (ips.getResultSet().next()) {
                             ItemStack ip = new ItemStack(Material.BOOK);
                             ItemMeta ipMeta = ip.getItemMeta();
                             ipMeta.displayName(
-                                    Keklist.getInstance().getMiniMessage().deserialize(ips.getString("ip"))
+                                    Keklist.getInstance().getMiniMessage().deserialize(ips.getResultSet().getString("ip"))
                             );
                             ipMeta.lore(Collections.singletonList(
                                     Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))

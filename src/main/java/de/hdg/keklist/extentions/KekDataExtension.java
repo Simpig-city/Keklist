@@ -9,8 +9,9 @@ import com.djrapitops.plan.extension.annotation.StringProvider;
 import com.djrapitops.plan.extension.icon.Color;
 import com.djrapitops.plan.extension.icon.Family;
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
+import org.jetbrains.annotations.NotNull;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
 
@@ -44,9 +45,9 @@ public class KekDataExtension implements DataExtension {
             showInPlayerTable = true,
             conditionName = "isWhitelisted"
     )
-    public boolean isWhitelisted(UUID uuid) {
-        try {
-           return Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", uuid.toString()).next();
+    public boolean isWhitelisted(@NotNull UUID uuid) {
+        try (DB.QueryResult isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", uuid.toString())) {
+            return isWhitelistedRs.getResultSet().next();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -62,11 +63,10 @@ public class KekDataExtension implements DataExtension {
     )
     @Conditional("isWhitelisted")
     public String whitelistedBy(UUID uuid) {
-        try {
-            ResultSet result = Keklist.getDatabase().onQuery("SELECT byPlayer FROM whitelist WHERE uuid = ?", uuid.toString());
-            if (result.next()) {
-                return result.getString("byPlayer");
-            }
+        try (DB.QueryResult result = Keklist.getDatabase().onQuery("SELECT byPlayer FROM whitelist WHERE uuid = ?", uuid.toString())) {
+            if (result.getResultSet().next())
+                return result.getResultSet().getString("byPlayer");
+
             return "Unknown";
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -82,9 +82,9 @@ public class KekDataExtension implements DataExtension {
             showInPlayerTable = true,
             conditionName = "isBlacklisted"
     )
-    public boolean isBlacklisted(UUID uuid) {
-        try {
-           return Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", uuid.toString()).next();
+    public boolean isBlacklisted(@NotNull UUID uuid) {
+        try (DB.QueryResult isBlacklistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", uuid.toString())) {
+            return isBlacklistedRs.getResultSet().next();
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -100,11 +100,10 @@ public class KekDataExtension implements DataExtension {
     )
     @Conditional("isBlacklisted")
     public String blacklistedBy(UUID uuid) {
-        try {
-            ResultSet result = Keklist.getDatabase().onQuery("SELECT byPlayer FROM blacklist WHERE uuid = ?", uuid.toString());
-            if (result.next()) {
-                return result.getString("byPlayer");
-            }
+        try (DB.QueryResult result = Keklist.getDatabase().onQuery("SELECT byPlayer FROM blacklist WHERE uuid = ?", uuid.toString())) {
+            if (result.getResultSet().next())
+                return result.getResultSet().getString("byPlayer");
+
             return "Unknown";
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -120,11 +119,10 @@ public class KekDataExtension implements DataExtension {
             showInPlayerTable = true
     )
     public String lastSeenIp(UUID uuid) {
-        try {
-            ResultSet result = Keklist.getDatabase().onQuery("SELECT ip FROM lastSeen WHERE uuid = ?", uuid.toString());
-            if (result.next()) {
-                return result.getString("ip");
-            }
+        try (DB.QueryResult result = Keklist.getDatabase().onQuery("SELECT ip FROM lastSeen WHERE uuid = ?", uuid.toString())) {
+            if (result.getResultSet().next())
+                return result.getResultSet().getString("ip");
+
             return "Unknown";
         } catch (SQLException e) {
             throw new RuntimeException(e);

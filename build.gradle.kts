@@ -77,6 +77,7 @@ dependencies {
     //compileOnly(libs.de.sage.util.updatechecker) // Currently disabled due to repository issues
     compileOnly(libs.com.github.tominolp.mfa.api)
     compileOnly(libs.com.zaxxer.hikaricp)
+    compileOnly(libs.com.h2database.h2)
 
     // Other / Shaded
     implementation(libs.org.bstats.bstats.bukkit)

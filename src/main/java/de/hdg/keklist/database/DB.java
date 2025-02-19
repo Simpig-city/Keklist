@@ -11,49 +11,64 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.sql.*;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Class for handling database connections.
+ */
 public class DB {
 
-    private final @Getter DBType type;
+    @Getter
+    private final DBType type;
     private final Keklist plugin;
-    private final AtomicInteger count = new AtomicInteger(0);
     private HikariDataSource dataSource;
-    private String sqlLiteJdbc;
+    private String sqliteJdbcUrl;
 
-    public DB(DBType dbType, Keklist plugin) {
+    /**
+     * Constructor for the database connection.
+     *
+     * @param dbType The type of database to connect to.
+     * @param plugin The plugin instance.
+     */
+    public DB(@NotNull DBType dbType, @NotNull Keklist plugin) {
         this.plugin = plugin;
-        type = dbType;
+        this.type = dbType;
     }
 
+    /**
+     * Connects to the database.
+     */
     public void connect() {
-        if (count.get() >= 4) {
-            plugin.getLogger().severe(Keklist.getTranslations().get("database.connect-fail"));
-            Bukkit.getPluginManager().disablePlugin(plugin);
-            return;
-        }
-
         try {
             switch (type) {
                 case SQLITE -> {
                     Class.forName("org.sqlite.JDBC");
 
-                    File file = new File(Keklist.getInstance().getDataFolder(), "database.db");
-                    if (!file.exists())
-                        file.createNewFile();
+                    File file = new File(plugin.getDataFolder(), "database.db");
+                    // SQLite will create the file automatically if needed
+                    sqliteJdbcUrl = "jdbc:sqlite:" + file.getAbsolutePath() + "?journal_mode=WAL&busy_timeout=5000"; // WAL mode for better performance
+                }
 
-                    sqlLiteJdbc = "jdbc:sqlite:" + file.getPath();
+                case H2 -> {
+                    Class.forName("org.h2.Driver");
+                    File file = new File(plugin.getDataFolder(), "database.h2db");
+
+                    HikariConfig config = new HikariConfig();
+
+                    config.setJdbcUrl("jdbc:h2:file:" + file.getAbsolutePath());
+                    config.setDriverClassName("org.h2.Driver");
+                    config.setConnectionTestQuery("SELECT 1");
+                    config.setMaximumPoolSize(10);
+                    config.setMinimumIdle(2);
+                    config.setIdleTimeout(600000);
+                    config.setMaxLifetime(1800000);
+                    config.setConnectionTimeout(30000);
+
+                    dataSource = new HikariDataSource(config);
                 }
 
                 case MARIADB -> {
                     Class.forName("org.mariadb.jdbc.Driver");
-
                     HikariConfig config = new HikariConfig();
-
-                    String url = "jdbc:mariadb://";
 
                     String host = plugin.getConfig().getString("mariadb.host");
                     String port = plugin.getConfig().getString("mariadb.port");
@@ -62,117 +77,154 @@ public class DB {
                     String password = plugin.getConfig().getString("mariadb.password");
                     String options = plugin.getConfig().getString("mariadb.options");
 
-                    url += host + ":" + port + "/" + database + options;
-
+                    String url = "jdbc:mariadb://" + host + ":" + port + "/" + database + options;
+                    config.setJdbcUrl(url);
+                    config.setDriverClassName("org.mariadb.jdbc.Driver");
                     config.setUsername(username);
                     config.setPassword(password);
-
                     config.setConnectionTestQuery("SELECT 1");
-                    config.setMaximumPoolSize(20);
-                    config.setDriverClassName("org.mariadb.jdbc.Driver");
-                    config.setJdbcUrl(url);
+                    config.setMaximumPoolSize(25);
+                    config.setMinimumIdle(5);
 
                     dataSource = new HikariDataSource(config);
                 }
             }
-
             createTables();
-            count.incrementAndGet();
-        } catch (java.io.IOException ex) {
+        } catch (Exception ex) {
             ex.printStackTrace();
             Bukkit.getPluginManager().disablePlugin(plugin);
-        } catch (ClassNotFoundException e) {
-            plugin.getLogger().severe(Keklist.getTranslations().get("database.driver-missing"));
-            Bukkit.getPluginManager().disablePlugin(plugin);
         }
     }
 
-    public boolean isConnected() {
-        return (dataSource != null && !dataSource.isClosed()) || (sqlLiteJdbc != null);
-    }
+    /**
+     * Returns a QueryResult wrapper containing the ResultSet and underlying resources.
+     * Caller must call close() on the returned QueryResult when done.
+     *
+     * @param query  The SQL query to execute.
+     *               Use ? as a placeholder for parameters.
+     *               Example: "SELECT * FROM whitelist WHERE uuid = ?"
+     * @param params Optional parameters to bind to the query.
+     * @return QueryResult wrapper containing the ResultSet and underlying resources.
+     * @throws RuntimeException if an SQLException occurs.
+     */
+    @NotNull
+    public QueryResult onQuery(@NotNull @Language("SQL") final String query, @Nullable Object... params) {
+        if (!isConnected()) {
+            connect();
+        }
+        try {
+            Connection connection = (dataSource != null)
+                    ? dataSource.getConnection()
+                    : DriverManager.getConnection(sqliteJdbcUrl);
+            PreparedStatement ps = connection.prepareStatement(query);
 
-    public void disconnect() {
-        if (dataSource != null)
-            dataSource.close();
-    }
-
-    @SuppressWarnings({"rawtypes", "unchecked"})
-    public void onUpdate(@NotNull @Language("SQL") final String statement, @Nullable Object... preparedArgs) {
-        if (isConnected()) {
-            new FutureTask(() -> {
-                try (Connection connection = dataSource == null ? DriverManager.getConnection(sqlLiteJdbc) : dataSource.getConnection();
-                     PreparedStatement preparedStatement = connection.prepareStatement(statement);
-                ) {
-
-                    for (int i = 0; i < preparedArgs.length; i++) {
-                        preparedStatement.setObject(i + 1, preparedArgs[i]);
-                    }
-
-                    preparedStatement.executeUpdate();
-                } catch (SQLException throwable) {
-                    throwable.printStackTrace();
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    ps.setObject(i + 1, params[i]);
                 }
-            }, null).run();
-        } else {
-            connect();
-            onUpdate(statement, preparedArgs);
-        }
-    }
-
-    @Nullable
-    public ResultSet onQuery(@NotNull @Language("SQL") final String query, @Nullable Object... preparedArgs) {
-        if (isConnected()) {
-            try {
-                FutureTask<ResultSet> task = new FutureTask<>(new Callable<>() {
-                    PreparedStatement ps;
-                    final Connection connection = dataSource == null ? DriverManager.getConnection(sqlLiteJdbc) : dataSource.getConnection();
-
-                    public ResultSet call() throws Exception {
-                        this.ps = connection.prepareStatement(query);
-
-                        for (int i = 0; i < preparedArgs.length; i++) {
-                            this.ps.setObject(i + 1, preparedArgs[i]);
-                        }
-
-                        return this.ps.executeQuery();
-                    }
-                });
-
-                task.run();
-                return task.get();
-            } catch (InterruptedException | ExecutionException | SQLException ex) {
-                ex.printStackTrace();
             }
-        } else {
-            connect();
-            return onQuery(query);
+            ResultSet rs = ps.executeQuery();
+            return new QueryResult(connection, ps, rs);
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
         }
-        return null;
     }
 
+    /**
+     * Executes an SQL update statement.
+     */
+    public void onUpdate(@NotNull @Language("SQL") final String statement, @Nullable Object... params) {
+        if (!isConnected()) {
+            connect();
+        }
+        try (Connection connection = (dataSource != null)
+                ? dataSource.getConnection()
+                : DriverManager.getConnection(sqliteJdbcUrl);
+             PreparedStatement ps = connection.prepareStatement(statement)) {
+
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    ps.setObject(i + 1, params[i]);
+                }
+            }
+            ps.executeUpdate();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private void createTables() {
+        onUpdate("CREATE TABLE IF NOT EXISTS whitelist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16) UNIQUE, byPlayer VARCHAR(16), unix BIGINT)");
+        onUpdate("CREATE TABLE IF NOT EXISTS whitelistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT)");
+        onUpdate("CREATE TABLE IF NOT EXISTS whitelistDomain (domain VARCHAR(253) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT)");
+        onUpdate("CREATE TABLE IF NOT EXISTS whitelistLevel (entry VARCHAR(253) PRIMARY KEY, whitelistLevel INTEGER NOT NULL DEFAULT 0, byPlayer VARCHAR(16) NOT NULL)");
+
+        onUpdate("CREATE TABLE IF NOT EXISTS blacklist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16) UNIQUE, byPlayer VARCHAR(16), unix BIGINT, reason VARCHAR(1500) DEFAULT 'No reason given')");
+        onUpdate("CREATE TABLE IF NOT EXISTS blacklistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT, reason VARCHAR(1500) DEFAULT 'No reason given')");
+        onUpdate("CREATE TABLE IF NOT EXISTS blacklistMotd (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT)");
+
+        onUpdate("CREATE TABLE IF NOT EXISTS lastSeen (uuid VARCHAR(36) PRIMARY KEY, ip VARCHAR(39) NOT NULL, protocolId INT NOT NULL DEFAULT -2, brand VARCHAR(1000) NOT NULL DEFAULT 'unknown', lastSeen BIGINT)");
+        onUpdate("CREATE TABLE IF NOT EXISTS mfa (uuid VARCHAR(36) PRIMARY KEY, secret VARCHAR(1000), recoveryCodes VARCHAR(1000))");
+    }
+
+    /**
+     * Checks if the database connection is active.
+     *
+     * @return True if the connection is active, false otherwise.
+     */
+    public boolean isConnected() {
+        return (dataSource != null && !dataSource.isClosed()) || (sqliteJdbcUrl != null);
+    }
+
+    /**
+     * Disconnects from the database.
+     */
+    public void disconnect() {
+        if (dataSource != null) {
+            dataSource.close();
+        }
+    }
+
+    /**
+     * Reconnects the database
+     */
     public void reconnect() {
         disconnect();
         connect();
     }
 
-    private void createTables() {
-        onUpdate("CREATE TABLE IF NOT EXISTS whitelist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16) UNIQUE, byPlayer VARCHAR(16), unix BIGINT(13))");
-        onUpdate("CREATE TABLE IF NOT EXISTS whitelistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13))");
-        onUpdate("CREATE TABLE IF NOT EXISTS whitelistDomain (domain VARCHAR(253) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13))");
-        onUpdate("CREATE TABLE IF NOT EXISTS whitelistLevel (entry VARCHAR(253) PRIMARY KEY, whitelistLevel INTEGER NOT NULL DEFAULT 0, byPlayer VARCHAR(16) NOT NULL)");
+    /**
+     * Wrapper class that holds a ResultSet along with its underlying resources.
+     * Use try-with-resources or call close() when finished processing.
+     */
+    public static class QueryResult implements AutoCloseable {
+        private final Connection connection;
+        private final PreparedStatement preparedStatement;
+        private final @Getter ResultSet resultSet;
 
-        onUpdate("CREATE TABLE IF NOT EXISTS blacklist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16) UNIQUE, byPlayer VARCHAR(16), unix BIGINT(13), reason VARCHAR(1500) DEFAULT 'No reason given')");
-        onUpdate("CREATE TABLE IF NOT EXISTS blacklistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13), reason VARCHAR(1500) DEFAULT 'No reason given')");
-        onUpdate("CREATE TABLE IF NOT EXISTS blacklistMotd (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT(13))");
+        public QueryResult(@NotNull Connection connection, @NotNull PreparedStatement preparedStatement, @NotNull ResultSet resultSet) {
+            this.connection = connection;
+            this.preparedStatement = preparedStatement;
+            this.resultSet = resultSet;
+        }
 
-        onUpdate("CREATE TABLE IF NOT EXISTS lastSeen (uuid VARCHAR(36) PRIMARY KEY, ip VARCHAR(39) NOT NULL, protocolId INT(5) NOT NULL DEFAULT -2, brand VARCHAR(1000) NOT NULL DEFAULT 'unknown', lastSeen BIGINT(13))");
-        onUpdate("CREATE TABLE IF NOT EXISTS mfa (uuid VARCHAR(36) PRIMARY KEY, secret VARCHAR(1000), recoveryCodes VARCHAR(1000))");
+        @Override
+        public void close() throws SQLException {
+            if (!resultSet.isClosed())
+                resultSet.close();
+
+            if (!preparedStatement.isClosed())
+                preparedStatement.close();
+
+            if (!connection.isClosed())
+                connection.close();
+        }
     }
 
     /**
-     * Database types supported by the plugin
+     * Enum for supported database types.
      */
     public enum DBType {
-        MARIADB, SQLITE
+        MARIADB, SQLITE, H2
     }
 }

@@ -1,13 +1,13 @@
 package de.hdg.keklist.events.feats;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.extentions.WebhookManager;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.geysermc.geyser.api.event.connection.ConnectionRequestEvent;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class GeyserConnectionEvent {
@@ -17,8 +17,8 @@ public class GeyserConnectionEvent {
     public static void onConnectionRequestEvent(ConnectionRequestEvent event) {
         String ip = event.inetSocketAddress().getAddress().getHostAddress();
 
-        try (ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", ip)) {
-            if (rsIp.next()) {
+        try (DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", ip)) {
+            if (rsIp.getResultSet().next()) {
                 if (config.getBoolean("blacklist.allow-join-with-admin")) {
                     for (Player player : Keklist.getInstance().getServer().getOnlinePlayers()) {
                         if (player.hasPermission(config.getString("blacklist.admin-permission"))) {
@@ -31,7 +31,7 @@ public class GeyserConnectionEvent {
                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", ip)), "keklist.notify.kicked");
 
                 if (Keklist.getWebhookManager() != null)
-                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, ip, rsIp.getString("byPlayer"), null, System.currentTimeMillis());
+                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, ip, rsIp.getResultSet().getString("byPlayer"), null, System.currentTimeMillis());
 
                 Bukkit.getConsoleSender().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", ip)));
 
