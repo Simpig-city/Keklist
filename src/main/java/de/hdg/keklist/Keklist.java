@@ -130,10 +130,16 @@ public final class Keklist extends JavaPlugin {
         //updateChecker = new UpdateChecker("simpig-city", "Keklist", getPluginMeta().getVersion(), true, getLogger());
 
         //SQL
-        if (getConfig().getBoolean("mariadb.enabled")) {
-            database = new DB(DB.DBType.MARIADB, instance);
-        } else
-            database = new DB(DB.DBType.SQLITE, instance);
+        switch (DB.DBType.valueOf(getConfig().getString("database.type", "H2"))) {
+            case H2 -> database = new DB(DB.DBType.H2, instance);
+            case SQLITE -> database = new DB(DB.DBType.SQLITE, instance);
+            case MARIADB -> database = new DB(DB.DBType.MARIADB, instance);
+            default -> {
+                getLogger().severe(translations.get("database.error", getConfig().getString("database.type")));
+                Bukkit.getPluginManager().disablePlugin(this);
+                return;
+            }
+        }
 
         database.connect();
 

@@ -11,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.sql.*;
+import java.util.Arrays;
 
 /**
  * Class for handling database connections.
@@ -89,9 +90,11 @@ public class DB {
                     dataSource = new HikariDataSource(config);
                 }
             }
+
             createTables();
+            updateTables();
         } catch (Exception ex) {
-            ex.printStackTrace();
+            plugin.getSLF4JLogger().error(Keklist.getTranslations().get("database.connection-fail"), ex);
             Bukkit.getPluginManager().disablePlugin(plugin);
         }
     }
@@ -109,9 +112,9 @@ public class DB {
      */
     @NotNull
     public QueryResult onQuery(@NotNull @Language("SQL") final String query, @Nullable Object... params) {
-        if (!isConnected()) {
+        if (!isConnected())
             connect();
-        }
+
         try {
             Connection connection = (dataSource != null)
                     ? dataSource.getConnection()
@@ -123,8 +126,8 @@ public class DB {
                     ps.setObject(i + 1, params[i]);
                 }
             }
-            ResultSet rs = ps.executeQuery();
-            return new QueryResult(connection, ps, rs);
+
+            return new QueryResult(connection, ps, ps.executeQuery());
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
@@ -134,9 +137,9 @@ public class DB {
      * Executes an SQL update statement.
      */
     public void onUpdate(@NotNull @Language("SQL") final String statement, @Nullable Object... params) {
-        if (!isConnected()) {
+        if (!isConnected())
             connect();
-        }
+
         try (Connection connection = (dataSource != null)
                 ? dataSource.getConnection()
                 : DriverManager.getConnection(sqliteJdbcUrl);
@@ -149,10 +152,13 @@ public class DB {
             }
             ps.executeUpdate();
         } catch (SQLException ex) {
-            ex.printStackTrace();
+            plugin.getSLF4JLogger().error(Keklist.getTranslations().get("database.error", statement, Arrays.toString(params)), ex);
         }
     }
 
+    /**
+     * Creates the necessary tables if they do not exist.
+     */
     private void createTables() {
         onUpdate("CREATE TABLE IF NOT EXISTS whitelist (uuid VARCHAR(36) PRIMARY KEY, name VARCHAR(16) UNIQUE, byPlayer VARCHAR(16), unix BIGINT)");
         onUpdate("CREATE TABLE IF NOT EXISTS whitelistIp (ip VARCHAR(39) PRIMARY KEY, byPlayer VARCHAR(16), unix BIGINT)");
@@ -165,6 +171,13 @@ public class DB {
 
         onUpdate("CREATE TABLE IF NOT EXISTS lastSeen (uuid VARCHAR(36) PRIMARY KEY, ip VARCHAR(39) NOT NULL, protocolId INT NOT NULL DEFAULT -2, brand VARCHAR(1000) NOT NULL DEFAULT 'unknown', lastSeen BIGINT)");
         onUpdate("CREATE TABLE IF NOT EXISTS mfa (uuid VARCHAR(36) PRIMARY KEY, secret VARCHAR(1000), recoveryCodes VARCHAR(1000))");
+    }
+
+    /**
+     * Updates the tables if necessary.
+     */
+    private void updateTables() {
+        // Add ALTER TABLE statements here to update the database schema after release
     }
 
     /**
@@ -197,16 +210,8 @@ public class DB {
      * Wrapper class that holds a ResultSet along with its underlying resources.
      * Use try-with-resources or call close() when finished processing.
      */
-    public static class QueryResult implements AutoCloseable {
-        private final Connection connection;
-        private final PreparedStatement preparedStatement;
-        private final @Getter ResultSet resultSet;
-
-        public QueryResult(@NotNull Connection connection, @NotNull PreparedStatement preparedStatement, @NotNull ResultSet resultSet) {
-            this.connection = connection;
-            this.preparedStatement = preparedStatement;
-            this.resultSet = resultSet;
-        }
+    public record QueryResult(@NotNull Connection connection, @NotNull PreparedStatement preparedStatement,
+                               @Getter @NotNull ResultSet resultSet) implements AutoCloseable {
 
         @Override
         public void close() throws SQLException {
