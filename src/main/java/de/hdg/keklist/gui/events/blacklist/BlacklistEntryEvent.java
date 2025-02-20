@@ -1,6 +1,7 @@
 package de.hdg.keklist.gui.events.blacklist;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.util.LanguageUtil;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -16,7 +17,6 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -47,14 +47,14 @@ public class BlacklistEntryEvent implements Listener {
                     ItemStack item = event.getCurrentItem();
 
                     String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
-                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", username);
 
-                    try {
-                        if (rs.next()) {
-                            long unix = rs.getLong("unix");
-                            String byPlayer = rs.getString("byPlayer");
-                            UUID uuid = UUID.fromString(rs.getString("uuid"));
-                            String reason = Objects.equals(rs.getString("reason") == null ? "No reason given" : "Some reason", "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
+                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", username)
+                    ) {
+                        if (rs.getResultSet().next()) {
+                            long unix = rs.getResultSet().getLong("unix");
+                            String byPlayer = rs.getResultSet().getString("byPlayer");
+                            UUID uuid = UUID.fromString(rs.getResultSet().getString("uuid"));
+                            String reason = Objects.equals(rs.getResultSet().getString("reason") == null ? "No reason given" : "Some reason", "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
@@ -104,13 +104,12 @@ public class BlacklistEntryEvent implements Listener {
                     ItemStack item = event.getCurrentItem();
 
                     String ip = serializer.serialize(item.getItemMeta().displayName());
-                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", ip);
 
-                    try {
-                        if (rs.next()) {
-                            long unix = rs.getLong("unix");
-                            String byPlayer = rs.getString("byPlayer");
-                            String reason = Objects.equals(rs.getString("reason") == null ? "No reason given" : "Some reason", "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
+                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", ip)) {
+                        if (rs.getResultSet().next()) {
+                            long unix = rs.getResultSet().getLong("unix");
+                            String byPlayer = rs.getResultSet().getString("byPlayer");
+                            String reason = Objects.equals(rs.getResultSet().getString("reason") == null ? "No reason given" : "Some reason", "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
@@ -162,12 +161,11 @@ public class BlacklistEntryEvent implements Listener {
                     ItemStack item = event.getCurrentItem();
 
                     String ip = serializer.serialize(item.getItemMeta().displayName()).replace("(MOTD)", "");
-                    ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", ip);
 
-                    try {
-                        if (rs.next()) {
-                            long unix = rs.getLong("unix");
-                            String byPlayer = rs.getString("byPlayer");
+                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", ip)) {
+                        if (rs.getResultSet().next()) {
+                            long unix = rs.getResultSet().getLong("unix");
+                            String byPlayer = rs.getResultSet().getString("byPlayer");
 
                             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 

@@ -3,11 +3,11 @@ package de.hdg.keklist.util.mfa;
 import com.bergerkiller.bukkit.common.map.MapDisplay;
 import com.bergerkiller.bukkit.common.map.MapTexture;
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.mfa.MFAEvent;
 import de.tomino.AuthSys;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.title.Title;
 import org.bukkit.Bukkit;
 import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Player;
@@ -22,7 +22,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.security.SecureRandom;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -63,10 +62,10 @@ public class MFAUtil {
      * @return true if the code is valid, false otherwise
      */
     public static boolean validateCode(@NotNull Player player, @NotNull String code) {
-        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT secret FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
-            if (rs.next()) {
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT secret FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
+            if (rs.getResultSet().next()) {
                 try {
-                    return AuthSys.validateCode(rs.getString("secret"), code);
+                    return AuthSys.validateCode(rs.getResultSet().getString("secret"), code);
                 } catch (NumberFormatException e) {
                     return false;
                 }
@@ -86,9 +85,9 @@ public class MFAUtil {
      * @return true if the code is valid, false otherwise
      */
     public static boolean validateRecoveryCode(@NotNull Player player, @NotNull String code) {
-        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT recoveryCodes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
-            if (rs.next()) {
-                String[] recoveryCodes = rs.getString("recoveryCodes").split(",");
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT recoveryCodes FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
+            if (rs.getResultSet().next()) {
+                String[] recoveryCodes = rs.getResultSet().getString("recoveryCodes").split(",");
                 for (String recoveryCode : recoveryCodes) {
                     if (recoveryCode.contains(code)) {
                         Keklist.getDatabase().onUpdate("UPDATE mfa SET recoveryCodes = ? WHERE uuid = ?", Arrays.toString(Arrays.stream(recoveryCodes).filter(s -> !s.contains(code)).toArray()), player.getUniqueId().toString());
@@ -113,8 +112,8 @@ public class MFAUtil {
         if (hasEnabledMfaCache.contains(player))
             return true;
 
-        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT secret FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
-            if (rs.next()) {
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT secret FROM mfa WHERE uuid = ?", player.getUniqueId().toString())) {
+            if (rs.getResultSet().next()) {
                 hasEnabledMfaCache.add(player);
                 return true;
             }

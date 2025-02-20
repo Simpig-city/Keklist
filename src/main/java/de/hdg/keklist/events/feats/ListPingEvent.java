@@ -2,6 +2,7 @@ package de.hdg.keklist.events.feats;
 
 import com.destroystokyo.paper.event.server.PaperServerListPingEvent;
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -24,8 +25,8 @@ public class ListPingEvent implements Listener {
         if (Keklist.getInstance().getConfig().getBoolean("blacklist.enabled") && Keklist.getInstance().getConfig().getBoolean("blacklist.change-motd")) {
             boolean isBlacklisted = false;
 
-            try {
-                isBlacklisted = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklistMotd WHERE ip = ?", event.getAddress().getHostAddress()).next();
+            try (DB.QueryResult isBlacklistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklistMotd WHERE ip = ?", event.getAddress().getHostAddress())) {
+                isBlacklisted = isBlacklistedRs.getResultSet().next();
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -62,8 +63,8 @@ public class ListPingEvent implements Listener {
         if (Keklist.getInstance().getConfig().getBoolean("whitelist.enabled") && (Keklist.getInstance().getConfig().getBoolean("whitelist.change-motd") || Keklist.getInstance().getConfig().getBoolean("whitelist.hide-online-players"))) {
             boolean isWhitelisted = false;
 
-            try {
-                isWhitelisted = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress()).next();
+            try (DB.QueryResult isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress())) {
+                isWhitelisted = isWhitelistedRs.getResultSet().next();
             } catch (Exception e) {
                 e.printStackTrace();
             }

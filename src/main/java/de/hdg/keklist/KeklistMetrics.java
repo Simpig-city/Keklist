@@ -1,10 +1,9 @@
 package de.hdg.keklist;
 
+import de.hdg.keklist.database.DB;
 import org.bstats.bukkit.Metrics;
 import org.bstats.charts.SimplePie;
 import org.bstats.charts.SingleLineChart;
-
-import java.sql.ResultSet;
 
 public class KeklistMetrics {
 
@@ -30,34 +29,36 @@ public class KeklistMetrics {
         metrics.addCustomChart(new SimplePie("keklist_blacklist", () -> plugin.getConfig().getBoolean("blacklist.enabled") ? "enabled" : "disabled"));
 
         metrics.addCustomChart(new SingleLineChart("keklist_whitelisted", () -> {
-            ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");
-            ResultSet rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelistIp");
-            try {
+            try (DB.QueryResult rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");
+                 DB.QueryResult rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelistIp")
+            ) {
                 int count = 0;
-                if (rsPlayers.next())
-                    count += rsPlayers.getInt(1);
+                if (rsPlayers.getResultSet().next())
+                    count += rsPlayers.getResultSet().getInt(1);
 
-                if (rsIPs.next())
-                    count += rsIPs.getInt(1);
+                if (rsIPs.getResultSet().next())
+                    count += rsIPs.getResultSet().getInt(1);
 
                 return count;
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             return 0;
         }));
 
         metrics.addCustomChart(new SingleLineChart("keklist_blacklisted", () -> {
-            ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklist");
-            ResultSet rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistIp");
-            try {
+            try (DB.QueryResult rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklist");
+                 DB.QueryResult rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistIp")
+            ) {
                 int count = 0;
-                if (rsPlayers.next())
-                    count += rsPlayers.getInt(1);
+                if (rsPlayers.getResultSet().next())
+                    count += rsPlayers.getResultSet().getInt(1);
 
-                if (rsIPs.next())
-                    count += rsIPs.getInt(1);
+                if (rsIPs.getResultSet().next())
+                    count += rsIPs.getResultSet().getInt(1);
 
                 return count;
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             return 0;
         }));
 

@@ -3,9 +3,11 @@ package de.hdg.keklist.events;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.events.feats.ListPingEvent;
 import de.hdg.keklist.extentions.WebhookManager;
 import de.hdg.keklist.util.IpUtil;
+import lombok.Cleanup;
 import net.kyori.adventure.text.Component;
 import okhttp3.*;
 import org.bukkit.Bukkit;
@@ -23,7 +25,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.io.IOException;
 import java.net.InetAddress;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 
 public class PreLoginKickEvent implements Listener {
@@ -33,8 +34,8 @@ public class PreLoginKickEvent implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPreLogin(@NotNull AsyncPlayerPreLoginEvent event) {
-        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", event.getUniqueId().toString())) {
-            if (!rs.next()) {
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM lastSeen WHERE uuid = ?", event.getUniqueId().toString())) {
+            if (!rs.getResultSet().next()) {
                 Keklist.getDatabase().onUpdate("INSERT INTO lastSeen (uuid, ip, lastSeen) VALUES (?, ?, ?)", event.getUniqueId().toString(), event.getAddress().getHostAddress(), System.currentTimeMillis());
             } else {
                 Keklist.getDatabase().onUpdate("UPDATE lastSeen SET ip = ?, lastSeen = ? WHERE uuid = ?", event.getAddress().getHostAddress(), System.currentTimeMillis(), event.getUniqueId().toString());
@@ -80,11 +81,11 @@ public class PreLoginKickEvent implements Listener {
         }
 
         if (config.getBoolean("blacklist.enabled")) {
-            try (ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getUniqueId().toString());
-                 ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getRawAddress().getHostName())) {
+            try (DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getUniqueId().toString());
+                 DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getRawAddress().getHostName())) {
 
-                boolean isIpBanned = rsIp.next();
-                boolean isUserBanned = rsUser.next();
+                boolean isIpBanned = rsIp.getResultSet().next();
+                boolean isUserBanned = rsUser.getResultSet().next();
 
                 if (isUserBanned || isIpBanned) {
                     if (config.getBoolean("blacklist.allow-join-with-admin")) {
@@ -105,7 +106,7 @@ public class PreLoginKickEvent implements Listener {
                             Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", event.getRawAddress().getHostName())), "keklist.notify.kicked");
 
                         if (Keklist.getWebhookManager() != null)
-                            Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getRawAddress().getHostName(), rsIp.getString("byPlayer"), null, System.currentTimeMillis());
+                            Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getRawAddress().getHostName(), rsIp.getResultSet().getString("byPlayer"), null, System.currentTimeMillis());
 
                         event.disallow(AsyncPlayerPreLoginEvent.Result.KICK_BANNED, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)));
                         return;
@@ -115,17 +116,17 @@ public class PreLoginKickEvent implements Listener {
                         if (Keklist.getInstance().getFloodgateApi() != null) {
                             if (Keklist.getInstance().getFloodgateApi().isFloodgatePlayer(event.getUniqueId())) {
                                 if (Keklist.getWebhookManager() != null)
-                                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, Keklist.getInstance().getFloodgateApi().getPlayer(event.getUniqueId()).getUsername(), rsUser.getString("byPlayer"), null, System.currentTimeMillis());
+                                    Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, Keklist.getInstance().getFloodgateApi().getPlayer(event.getUniqueId()).getUsername(), rsUser.getResultSet().getString("byPlayer"), null, System.currentTimeMillis());
 
                                 if (Keklist.getInstance().getConfig().getBoolean("chat-notify"))
                                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("notify.kick", Keklist.getInstance().getFloodgateApi().getPlayer(event.getUniqueId()).getUsername())), "keklist.notify.kicked");
                             } else {
                                 Request request = new Request.Builder().url("https://sessionserver.mojang.com/session/minecraft/profile/" + event.getUniqueId()).build();
-                                client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getAddress().getHostAddress(), rsUser.getString("byPlayer"), System.currentTimeMillis()));
+                                client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getAddress().getHostAddress(), rsUser.getResultSet().getString("byPlayer"), System.currentTimeMillis()));
                             }
                         } else {
                             Request request = new Request.Builder().url("https://sessionserver.mojang.com/session/minecraft/profile/" + event.getUniqueId()).build();
-                            client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getAddress().getHostAddress(), rsUser.getString("byPlayer"), System.currentTimeMillis()));
+                            client.newCall(request).enqueue(new PreLoginKickEvent.WebhooknameCallback(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getAddress().getHostAddress(), rsUser.getResultSet().getString("byPlayer"), System.currentTimeMillis()));
                         }
                     }
 
@@ -138,33 +139,33 @@ public class PreLoginKickEvent implements Listener {
         }
 
         if (config.getBoolean("whitelist.enabled")) {
-            try (ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getUniqueId().toString());
-                 ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress())) {
+            try (DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getUniqueId().toString());
+                 DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress())) {
 
 
-                boolean isWhitelistedUser = rsUser.next();
-                boolean isWhitelistedIp = rsIp.next();
+                boolean isWhitelistedUser = rsUser.getResultSet().next();
+                boolean isWhitelistedIp = rsIp.getResultSet().next();
 
                 int level = 0;
 
                 // Ip level is lower ranked as user level
-                try (ResultSet rsLevelUser = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", event.getUniqueId().toString());
-                     ResultSet rsLevelIp = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", event.getAddress().getHostAddress())) {
-                    if (rsLevelIp.next())
-                        level = rsLevelIp.getInt("whitelistLevel");
+                try (DB.QueryResult rsLevelUser = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", event.getUniqueId().toString());
+                     DB.QueryResult rsLevelIp = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", event.getAddress().getHostAddress())) {
+                    if (rsLevelIp.getResultSet().next())
+                        level = rsLevelIp.getResultSet().getInt("whitelistLevel");
 
-                    if (rsLevelUser.next())
-                        level = rsLevelUser.getInt("whitelistLevel");
+                    if (rsLevelUser.getResultSet().next())
+                        level = rsLevelUser.getResultSet().getInt("whitelistLevel");
                 } catch (SQLException e) {
                     throw new RuntimeException(e);
                 }
 
 
                 if (!isWhitelistedIp) { // Is not on the ip whitelist
-                    ResultSet rsDDNS = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain");
+                    @Cleanup DB.QueryResult rsDDNS = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain");
 
-                    while (rsDDNS.next()) {
-                        InetAddress address = InetAddress.getByName(rsDDNS.getString("domain"));
+                    while (rsDDNS.getResultSet().next()) {
+                        InetAddress address = InetAddress.getByName(rsDDNS.getResultSet().getString("domain"));
 
                         if (address.getHostAddress().equals(event.getAddress().getHostAddress()) ||
                                 address.getHostName().equals(event.getAddress().getHostName()) ||
@@ -225,11 +226,11 @@ public class PreLoginKickEvent implements Listener {
     public void onLogin(PlayerLoginEvent event) {
         // May add a hidden config option for this to explicitly enable it.
         if (config.getBoolean("blacklist.enabled")) { // Backup check
-            try (ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
-                 ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getAddress().getHostAddress())) {
+            try (DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
+                 DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getAddress().getHostAddress())) {
 
-                boolean isIpBanned = rsIp.next();
-                boolean isUserBanned = rsUser.next();
+                boolean isIpBanned = rsIp.getResultSet().next();
+                boolean isUserBanned = rsUser.getResultSet().next();
 
                 if (isIpBanned || isUserBanned) {
                     if (config.getBoolean("blacklist.allow-join-with-admin")) {
@@ -246,10 +247,10 @@ public class PreLoginKickEvent implements Listener {
                     }
 
                     if (isIpBanned && Keklist.getWebhookManager() != null)
-                        Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getAddress().getHostName(), rsIp.getString("byPlayer"), null, System.currentTimeMillis());
+                        Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getAddress().getHostName(), rsIp.getResultSet().getString("byPlayer"), null, System.currentTimeMillis());
 
                     if (isUserBanned && Keklist.getWebhookManager() != null)
-                        Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getPlayer().getName(), rsIp.getString("byPlayer"), null, System.currentTimeMillis());
+                        Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getPlayer().getName(), rsIp.getResultSet().getString("byPlayer"), null, System.currentTimeMillis());
 
                     event.disallow(PlayerLoginEvent.Result.KICK_BANNED, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)));
                     return;
@@ -261,11 +262,11 @@ public class PreLoginKickEvent implements Listener {
 
         // Backup check
         if (config.getBoolean("whitelist.enabled")) {
-            try (ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
-                 ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress())) {
+            try (DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
+                 DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress())) {
 
-                if (rsIp.next()) return;
-                if (rsUser.next()) return;
+                if (rsIp.getResultSet().next()) return;
+                if (rsUser.getResultSet().next()) return;
 
                 if (Keklist.getWebhookManager() != null)
                     Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getPlayer().getName() + "/" + event.getAddress().getHostAddress(), null, System.currentTimeMillis());
@@ -283,10 +284,10 @@ public class PreLoginKickEvent implements Listener {
         Keklist.getDatabase().onUpdate("UPDATE lastSeen SET protocolId = ?, brand = ? WHERE uuid = ?", event.getPlayer().getProtocolVersion(), (event.getPlayer().getClientBrandName() == null ? "unknown" : event.getPlayer().getClientBrandName()), event.getPlayer().getUniqueId().toString());
 
         if (config.getBoolean("blacklist.enabled")) {
-            try (ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
-                 ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getPlayer().getAddress().getAddress().getHostAddress())) {
+            try (DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
+                 DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getPlayer().getAddress().getAddress().getHostAddress())) {
 
-                if (rsUser.next() || rsIp.next()) {
+                if (rsUser.getResultSet().next() || rsIp.getResultSet().next()) {
                     event.joinMessage(Component.empty());
                     Keklist.getInstance().sendUserToLimbo(event.getPlayer());
 

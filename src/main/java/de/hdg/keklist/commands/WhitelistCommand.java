@@ -4,9 +4,11 @@ import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.api.events.whitelist.*;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.extentions.WebhookManager;
 import de.hdg.keklist.util.TypeUtil;
+import lombok.Cleanup;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import okhttp3.*;
@@ -21,7 +23,6 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -31,7 +32,7 @@ import static de.hdg.keklist.util.TypeUtil.getEntryType;
 public class WhitelistCommand extends Command {
 
     private static final OkHttpClient client = new OkHttpClient();
-    private static final Gson gson = new GsonBuilder().setPrettyPrinting().setLenient().create();
+    private static final Gson gson = new GsonBuilder().setPrettyPrinting().setStrictness(Strictness.LENIENT).create();
     private static final TypeToken<Map<String, String>> token = new TypeToken<>() {
     };
 
@@ -96,9 +97,9 @@ public class WhitelistCommand extends Command {
                         }
 
                         case IPv4, IPv6 -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistIp WHERE ip = ?", args[1]);
 
-                            if (!rs.next()) {
+                            if (!rs.getResultSet().next()) {
                                 new IpAddToWhitelistEvent(args[1]).callEvent();
                                 Keklist.getDatabase().onUpdate("INSERT INTO whitelistIp (ip, byPlayer, unix) VALUES (?, ?, ?)", args[1], senderName, System.currentTimeMillis());
                                 Keklist.getDatabase().onUpdate("INSERT INTO whitelistLevel (entry, whitelistLevel, byPlayer) VALUES (?, ?, ?)", args[1], level, System.currentTimeMillis());
@@ -137,9 +138,9 @@ public class WhitelistCommand extends Command {
                         }
 
                         case DOMAIN -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistDomain WHERE domain = ?", args[1]);
 
-                            if (!rs.next()) {
+                            if (!rs.getResultSet().next()) {
                                 try {
                                     InetAddress address = InetAddress.getByName(args[1]);
 
@@ -176,8 +177,8 @@ public class WhitelistCommand extends Command {
 
                     switch (type) {
                         case JAVA, BEDROCK -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
-                            if (rs.next()) {
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE name = ?", args[1]);
+                            if (rs.getResultSet().next()) {
                                 new PlayerRemovedFromWhitelistEvent(args[1]).callEvent();
                                 Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1]);
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
@@ -189,8 +190,8 @@ public class WhitelistCommand extends Command {
                                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", args[1], senderName)), "keklist.notify.whitelist");
 
                             } else {
-                                ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
-                                if (rsUserFix.next()) {
+                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
+                                if (rsUserFix.getResultSet().next()) {
                                     Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1] + " (Old Name)")));
 
@@ -207,8 +208,8 @@ public class WhitelistCommand extends Command {
                         }
 
                         case IPv4, IPv6 -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
-                            if (rs.next()) {
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistIp WHERE ip = ?", args[1]);
+                            if (rs.getResultSet().next()) {
                                 new IpRemovedFromWhitelistEvent(args[1]).callEvent();
                                 Keklist.getDatabase().onUpdate("DELETE FROM whitelistIp WHERE ip = ?", args[1]);
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
@@ -225,8 +226,8 @@ public class WhitelistCommand extends Command {
                         }
 
                         case DOMAIN -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
-                            if (rs.next()) {
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistDomain WHERE domain = ?", args[1]);
+                            if (rs.getResultSet().next()) {
                                 new DomainRemovedFromWhitelistEvent(args[1]).callEvent();
                                 Keklist.getDatabase().onUpdate("DELETE FROM whitelistDomain WHERE domain = ?", args[1]);
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", args[1])));
@@ -254,22 +255,22 @@ public class WhitelistCommand extends Command {
 
                     switch (type) {
                         case IPv4, IPv6 -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
+                            DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", args[1]);
 
-                            if (rs.next()) {
+                            if (rs.getResultSet().next()) {
                                 sendInfo(rs, sender, args[1]);
                             } else
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
                         }
 
                         case JAVA, BEDROCK -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
+                            DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1]);
 
-                            if (rs.next()) {
+                            if (rs.getResultSet().next()) {
                                 sendInfo(rs, sender, args[1]);
                             } else {
-                                ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
-                                if (rsUserFix.next()) {
+                                DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", args[1] + " (Old Name)");
+                                if (rsUserFix.getResultSet().next()) {
                                     sendInfo(rsUserFix, sender, args[1] + " (Old Name)");
                                 } else
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
@@ -277,9 +278,9 @@ public class WhitelistCommand extends Command {
                         }
 
                         case DOMAIN -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
+                            DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", args[1]);
 
-                            if (rs.next()) {
+                            if (rs.getResultSet().next()) {
                                 sendInfo(rs, sender, args[1]);
                             } else
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.not-whitelisted", args[1])));
@@ -303,9 +304,9 @@ public class WhitelistCommand extends Command {
                                 case JAVA -> {
                                     entry = Objects.requireNonNull(Bukkit.getPlayerUniqueId(args[1])).toString();
 
-                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", entry);
+                                    @Cleanup DB.QueryResult isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", entry);
 
-                                    if (!isWhitelistedRs.next()) {
+                                    if (!isWhitelistedRs.getResultSet().next()) {
                                         throw new NullPointerException("User not found on whitelist");
                                     }
                                 }
@@ -313,40 +314,40 @@ public class WhitelistCommand extends Command {
 
                                 case BEDROCK -> {
                                     assert Keklist.getInstance().getFloodgateApi() != null;
-                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", Keklist.getInstance().getFloodgateApi().getUuidFor(entry).join()); // Please don't judge
+                                    @Cleanup DB.QueryResult isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", Keklist.getInstance().getFloodgateApi().getUuidFor(entry).join()); // Please don't judge
 
-                                    if (!isWhitelistedRs.next()) {
+                                    if (!isWhitelistedRs.getResultSet().next()) {
                                         throw new NullPointerException("User not found on whitelist");
                                     }
                                 }
 
                                 case DOMAIN -> {
-                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", entry);
+                                    @Cleanup DB.QueryResult isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistDomain WHERE domain = ?", entry);
 
-                                    if (!isWhitelistedRs.next()) {
+                                    if (!isWhitelistedRs.getResultSet().next()) {
                                         throw new NullPointerException("Domain not found on whitelist");
                                     }
                                 }
 
                                 case IPv4, IPv6 -> {
-                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", entry);
+                                    @Cleanup DB.QueryResult isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistIp WHERE ip = ?", entry);
 
-                                    if (!isWhitelistedRs.next()) {
+                                    if (!isWhitelistedRs.getResultSet().next()) {
                                         throw new NullPointerException("IP not found on whitelist");
                                     }
                                 }
 
                                 case UUID -> {
-                                    ResultSet isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", entry);
+                                    @Cleanup DB.QueryResult isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", entry);
 
-                                    if (!isWhitelistedRs.next()) {
+                                    if (!isWhitelistedRs.getResultSet().next()) {
                                         throw new NullPointerException("IP not found on whitelist");
                                     }
                                 }
                             }
 
-                            try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE entry = ?", entry)) {
-                                if (rs.next()) {
+                            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE entry = ?", entry)) {
+                                if (rs.getResultSet().next()) {
                                     Keklist.getDatabase().onUpdate("UPDATE whitelistLevel SET whitelistLevel = ? WHERE entry = ?", level, entry);
                                 } else {
                                     Keklist.getDatabase().onUpdate("INSERT INTO whitelistLevel VALUES (?, ?, ?)", entry, level, senderName);
@@ -364,8 +365,8 @@ public class WhitelistCommand extends Command {
                         }
 
                     } else {
-                        try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE entry = ?", args[1])) {
-                            if (rs.next()) {
+                        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE entry = ?", args[1])) {
+                            if (rs.getResultSet().next()) {
                                 execute(sender, commandLabel, new String[]{"info", args[1]});
                             } else
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.level.not-set", args[1])));
@@ -389,20 +390,20 @@ public class WhitelistCommand extends Command {
         return false;
     }
 
-    private void sendInfo(@NotNull ResultSet resultSet, @NotNull CommandSender sender, @NotNull String entry) {
-        try {
+    private void sendInfo(@NotNull DB.QueryResult queryResult, @NotNull CommandSender sender, @NotNull String entry) {
+        try (queryResult) {
             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
-            String byPlayer = resultSet.getString("byPlayer");
-            String unix = sdf.format(resultSet.getLong("unix"));
+            String byPlayer = queryResult.getResultSet().getString("byPlayer");
+            String unix = sdf.format(queryResult.getResultSet().getLong("unix"));
 
             LanguageUtil translations = Keklist.getTranslations();
             MiniMessage miniMessage = Keklist.getInstance().getMiniMessage();
 
             int level = 0;
-            try (ResultSet rs = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", entry)) {
-                if (rs.next()) {
-                    level = rs.getInt("whitelistLevel");
+            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", entry)) {
+                if (rs.getResultSet().next()) {
+                    level = rs.getResultSet().getInt("whitelistLevel");
                 }
             }
 
@@ -412,14 +413,13 @@ public class WhitelistCommand extends Command {
         }
     }
 
-    private void whitelistUser(@NotNull CommandSender from, @NotNull UUID uuid, @NotNull String playerName,
-                               int level) {
-        try {
-            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
-            ResultSet rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", playerName);
+    private void whitelistUser(@NotNull CommandSender from, @NotNull UUID uuid, @NotNull String playerName, int level) {
+        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", uuid.toString());
+             DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", playerName)
+        ) {
 
-            if (!rs.next()) {
-                if (rsUserFix.next()) {
+            if (!rs.getResultSet().next()) {
+                if (rsUserFix.getResultSet().next()) {
                     Keklist.getDatabase().onUpdate("UPDATE whitelist SET name = ? WHERE name = ?", playerName + " (Old Name)", playerName);
                 }
 
@@ -519,10 +519,10 @@ public class WhitelistCommand extends Command {
      * @param page   the page to display
      */
     private void handleList(@NotNull CommandSender sender, int page) {
-        try (ResultSet rs =
+        try (DB.QueryResult rs =
                      Keklist.getDatabase().onQuery("SELECT * FROM (SELECT uuid, byPlayer, unix FROM whitelist UNION ALL SELECT * FROM whitelistIp UNION ALL SELECT * FROM whitelistDomain) as `entries` LIMIT ?,8", (page - 1) * 8)) {
 
-            if (!rs.next() || page < 1) {
+            if (!rs.getResultSet().next() || page < 1) {
                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.list.empty")));
                 return;
             }
@@ -534,14 +534,14 @@ public class WhitelistCommand extends Command {
             SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
             do {
-                String entry = rs.getString(1);
-                String byPlayer = rs.getString(2);
-                String date = sdf.format(new Date(rs.getLong(3)));
+                String entry = rs.getResultSet().getString(1);
+                String byPlayer = rs.getResultSet().getString(2);
+                String date = sdf.format(new Date(rs.getResultSet().getLong(3)));
 
                 int level = 0;
-                try (ResultSet levelRs = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", entry)) {
-                    if (!levelRs.next()) {
-                        level = levelRs.getInt("whitelistLevel");
+                try (DB.QueryResult levelRs = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", entry)) {
+                    if (!levelRs.getResultSet().next()) {
+                        level = levelRs.getResultSet().getInt("whitelistLevel");
                     }
                 }
 
@@ -552,14 +552,14 @@ public class WhitelistCommand extends Command {
                             listMessage.append(Keklist.getTranslations().get("whitelist.list.entry", date, level, entry, byPlayer)).append("\n");
 
                     case UUID -> {
-                        ResultSet rsName = Keklist.getDatabase().onQuery("SELECT name FROM whitelist WHERE uuid = ?", entry);
-                        String name = rsName.next() ? rsName.getString("name") : "Unknown";
+                        @Cleanup DB.QueryResult rsName = Keklist.getDatabase().onQuery("SELECT name FROM whitelist WHERE uuid = ?", entry);
+                        String name = rsName.getResultSet().next() ? rsName.getResultSet().getString("name") : "Unknown";
 
                         listMessage.append(Keklist.getTranslations().get("whitelist.list.entry.player", date, level, entry, name, byPlayer)).append("\n");
                     }
                 }
 
-            } while (rs.next());
+            } while (rs.getResultSet().next());
 
             listMessage.append("\n").append(Keklist.getTranslations().get("whitelist.list.footer", Math.max(page - 1, 0), page, page + 1));
 
@@ -584,19 +584,20 @@ public class WhitelistCommand extends Command {
 
                         List<String> list = new ArrayList<>();
 
-                        ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT name FROM whitelist");
-                        while (rsUser.next()) {
-                            list.add(rsUser.getString("name"));
+                        @Cleanup DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT name FROM whitelist");
+                        while (rsUser.getResultSet().next()) {
+                            list.add(rsUser.getResultSet().getString("name"));
                         }
 
-                        ResultSet rsIp = Keklist.getDatabase().onQuery("SELECT ip FROM whitelistIp");
-                        while (rsIp.next()) {
-                            list.add(rsIp.getString("ip"));
+
+                        @Cleanup DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT ip FROM whitelistIp");
+                        while (rsIp.getResultSet().next()) {
+                            list.add(rsIp.getResultSet().getString("ip"));
                         }
 
-                        ResultSet rsDomain = Keklist.getDatabase().onQuery("SELECT domain FROM whitelistDomain");
-                        while (rsDomain.next()) {
-                            list.add(rsDomain.getString("domain"));
+                        @Cleanup DB.QueryResult rsDomain = Keklist.getDatabase().onQuery("SELECT domain FROM whitelistDomain");
+                        while (rsDomain.getResultSet().next()) {
+                            list.add(rsDomain.getResultSet().getString("domain"));
                         }
 
                         return list;
@@ -608,9 +609,9 @@ public class WhitelistCommand extends Command {
                         List<String> completions = new ArrayList<>();
 
                         Bukkit.getOnlinePlayers().forEach(player -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", player.getUniqueId().toString());
-                            try {
-                                if (!rs.next())
+                            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", player.getUniqueId().toString())
+                            ) {
+                                if (!rs.getResultSet().next())
                                     completions.add(player.getName());
                             } catch (SQLException e) {
                                 e.printStackTrace();
@@ -618,9 +619,9 @@ public class WhitelistCommand extends Command {
                         });
 
                         Bukkit.getOnlinePlayers().forEach(player -> {
-                            ResultSet rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", player.getAddress().getAddress().getHostAddress());
-                            try {
-                                if (!rs.next())
+                            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", player.getAddress().getAddress().getHostAddress())
+                            ) {
+                                if (!rs.getResultSet().next())
                                     completions.add(player.getAddress().getAddress().getHostAddress() + "(" + player.getName() + ")");
 
                             } catch (SQLException e) {
@@ -636,9 +637,9 @@ public class WhitelistCommand extends Command {
 
                         List<String> completions = new ArrayList<>();
 
-                        ResultSet rsUser = Keklist.getDatabase().onQuery("SELECT entry FROM whitelistLevel");
-                        while (rsUser.next()) {
-                            completions.add(rsUser.getString("entry"));
+                        @Cleanup DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT entry FROM whitelistLevel");
+                        while (rsUser.getResultSet().next()) {
+                            completions.add(rsUser.getResultSet().getString("entry"));
                         }
 
                         completions.addAll(Bukkit.getOnlinePlayers().stream().map(Player::getName).toList());

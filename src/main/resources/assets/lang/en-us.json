@@ -284,6 +284,10 @@
 
   "2fa.bkcommonlib": "The 2fa feature requires BKCommonLib to be installed! Please install it to use this feature!",
 
+  "database.unsupported": "The database type %s is not supported! Please reffer to the documentation to see the supported databases!",
+  "database.connection-fail": "Could not connect to the database! Disabling plugin...",
+  "database.error": "An error occurred while executing the database query: %s || Objects: %s",
+
   "enabled": "enabled",
   "disabled": "disabled",
   "yes": "yes",

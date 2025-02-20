@@ -71,14 +71,16 @@ discord:
 
 # Settings for the database
 # This is useful to share the blacklist and whitelist between multiple servers
-mariadb:
-  enabled: false
-  host: localhost
-  port: 3306
-  database: keklist
-  username: root
-  password: root
-  options: "?useSSL=false&serverTimezone=UTC"
+database:
+  type: H2 # Possible values are: H2 (preferred over SQLITE), SQLITE, MARIADB
+
+  mariadb:
+    host: localhost
+    port: 3306
+    database: keklist
+    username: root
+    password: root
+    options: "?useSSL=false&serverTimezone=UTC"
 
 # Messages for the plugin
 # This fully supports minimessage

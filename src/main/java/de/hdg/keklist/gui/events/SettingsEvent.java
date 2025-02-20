@@ -1,6 +1,7 @@
 package de.hdg.keklist.gui.events;
 
 import de.hdg.keklist.Keklist;
+import de.hdg.keklist.database.DB;
 import de.hdg.keklist.gui.GuiManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -12,7 +13,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import java.sql.ResultSet;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class SettingsEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            if(!player.hasPermission("keklist.gui.settings"))
+            if (!player.hasPermission("keklist.gui.settings"))
                 player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
             switch (event.getCurrentItem().getType()) {
@@ -47,7 +47,7 @@ public class SettingsEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            if(!player.hasPermission("keklist.manage.whitelist"))
+            if (!player.hasPermission("keklist.manage.whitelist"))
                 player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
             switch (event.getCurrentItem().getType()) {
@@ -89,15 +89,14 @@ public class SettingsEvent implements Listener {
     private void openWhitelistGUI(Player player) {
         Inventory whitelist = Keklist.getInstance().getServer().createInventory(player, 9 * 3, Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Whitelist Settings"));
 
-        ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");
-        ResultSet rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelistIp");
-
         int whitelistedPlayers = 0;
         int whitelistedIPs = 0;
 
-        try {
-            if (rsPlayers.next()) whitelistedPlayers = rsPlayers.getInt(1);
-            if (rsIPs.next()) whitelistedIPs = rsIPs.getInt(1);
+        try (DB.QueryResult rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");
+             DB.QueryResult rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelistIp")
+        ) {
+            if (rsPlayers.getResultSet().next()) whitelistedPlayers = rsPlayers.getResultSet().getInt(1);
+            if (rsIPs.getResultSet().next()) whitelistedIPs = rsIPs.getResultSet().getInt(1);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -159,7 +158,7 @@ public class SettingsEvent implements Listener {
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
 
-            if(!player.hasPermission("keklist.manage.blacklist"))
+            if (!player.hasPermission("keklist.manage.blacklist"))
                 player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
             switch (event.getCurrentItem().getType()) {
@@ -203,18 +202,17 @@ public class SettingsEvent implements Listener {
     private void openBlacklistGUI(Player player) {
         Inventory blacklist = Keklist.getInstance().getServer().createInventory(player, 9 * 3, Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Blacklist Settings"));
 
-        ResultSet rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklist");
-        ResultSet rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistIp");
-        ResultSet rsMOTD = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistMotd");
-
         int blacklistedPlayers = 0;
         int blacklistedIPS = 0;
         int blacklistedMotd = 0;
 
-        try {
-            if (rsPlayers.next()) blacklistedPlayers = rsPlayers.getInt(1);
-            if (rsIPs.next()) blacklistedIPS = rsIPs.getInt(1);
-            if (rsMOTD.next()) blacklistedMotd = rsMOTD.getInt(1);
+        try (DB.QueryResult rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklist");
+             DB.QueryResult rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistIp");
+             DB.QueryResult rsMOTD = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM blacklistMotd")
+        ) {
+            if (rsPlayers.getResultSet().next()) blacklistedPlayers = rsPlayers.getResultSet().getInt(1);
+            if (rsIPs.getResultSet().next()) blacklistedIPS = rsIPs.getResultSet().getInt(1);
+            if (rsMOTD.getResultSet().next()) blacklistedMotd = rsMOTD.getResultSet().getInt(1);
         } catch (Exception e) {
             e.printStackTrace();
         }
