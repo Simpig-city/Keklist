@@ -8,6 +8,7 @@ import com.google.gson.JsonPrimitive;
 import de.hdg.keklist.api.KeklistAPI;
 import de.hdg.keklist.api.KeklistChannelListener;
 import de.hdg.keklist.database.DB;
+import de.hdg.keklist.events.PreLoginKickEvent;
 import de.hdg.keklist.events.command.ListCommandPageEvent;
 import de.hdg.keklist.events.feats.ListPingEvent;
 import de.hdg.keklist.events.feats.NotifyJoinEvent;
@@ -155,6 +156,7 @@ public final class Keklist extends JavaPlugin {
         // features
         pm.registerEvents(new ListPingEvent(), this);
         pm.registerEvents(new NotifyJoinEvent(), this);
+        pm.registerEvents(new PreLoginKickEvent(), this);
 
         // MFA
         pm.registerEvents(new CommandEvent(), this);

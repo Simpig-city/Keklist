@@ -149,7 +149,7 @@ public class GuiManager {
                         plugin.getMiniMessage().deserialize(translations.get("gui.settings.info.version", plugin.getPluginMeta().getVersion())),
                         plugin.getMiniMessage().deserialize(translations.get("gui.settings.info.authors")),
                         plugin.getMiniMessage().deserialize("<white><b>" + String.join(", ", plugin.getPluginMeta().getAuthors())),
-                        plugin.getMiniMessage().deserialize(translations.get("gui.settings.info.database", Keklist.getInstance().getConfig().getBoolean("mariadb.enabled") ? "MariaDB" : "SQLite"))
+                        plugin.getMiniMessage().deserialize(translations.get("gui.settings.info.database", Keklist.getDatabase().getType().toString()))
                 ));
                 info.setItemMeta(infoMeta);
 
