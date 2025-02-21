@@ -273,14 +273,14 @@ public class WhitelistCommand implements BrigadierCommand {
                     String entry = ctx.getArgument("entry", String.class);
                     TypeUtil.EntryType type = getEntryType(entry);
 
-                    Keklist.getDatabase().onUpdate("DELETE FROM whitelistLevel WHERE entry = ? ", entry);
+                    Keklist.getDatabase().onUpdate("DELETE FROM whitelistLevel WHERE UPPER(entry) = UPPER(?) ", entry);
 
                     switch (type) {
                         case JAVA, BEDROCK -> {
-                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE name = ?", entry);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE UPPER(name) = UPPER(?)", entry);
                             if (rs.resultSet().next()) {
                                 new PlayerRemovedFromWhitelistEvent(entry).callEvent();
-                                Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", entry);
+                                Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE UPPER(name) = UPPER(?)", entry);
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", entry)));
 
                                 if (Keklist.getWebhookManager() != null)
@@ -290,9 +290,9 @@ public class WhitelistCommand implements BrigadierCommand {
                                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.notify.remove", entry, senderName)), "keklist.notify.whitelist");
 
                             } else {
-                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE name = ?", entry + " (Old Name)");
+                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE UPPER(name) = UPPER(?)", entry + " (Old Name)");
                                 if (rsUserFix.resultSet().next()) {
-                                    Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE name = ?", entry + " (Old Name)");
+                                    Keklist.getDatabase().onUpdate("DELETE FROM whitelist WHERE UPPER(name) = UPPER(?)", entry + " (Old Name)");
                                     sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", entry + " (Old Name)")));
 
                                     if (Keklist.getWebhookManager() != null)
@@ -326,10 +326,10 @@ public class WhitelistCommand implements BrigadierCommand {
                         }
 
                         case DOMAIN -> {
-                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistDomain WHERE domain = ?", entry);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistDomain WHERE UPPER(domain) = UPPER(?)", entry);
                             if (rs.resultSet().next()) {
                                 new DomainRemovedFromWhitelistEvent(entry).callEvent();
-                                Keklist.getDatabase().onUpdate("DELETE FROM whitelistDomain WHERE domain = ?", entry);
+                                Keklist.getDatabase().onUpdate("DELETE FROM whitelistDomain WHERE UPPER(domain) = UPPER(?)", entry);
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.removed", entry)));
 
                                 if (Keklist.getWebhookManager() != null)
@@ -367,12 +367,12 @@ public class WhitelistCommand implements BrigadierCommand {
                         }
 
                         case JAVA, BEDROCK -> {
-                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", entry);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE UPPER(name) = UPPER(?)", entry);
 
                             if (rs.resultSet().next()) {
                                 sendInfo(rs, sender, entry);
                             } else {
-                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE name = ?", entry + " (Old Name)");
+                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE UPPER(name) = UPPER(?)", entry + " (Old Name)");
                                 if (rsUserFix.resultSet().next()) {
                                     sendInfo(rsUserFix, sender, entry + " (Old Name)");
                                 } else
@@ -381,7 +381,7 @@ public class WhitelistCommand implements BrigadierCommand {
                         }
 
                         case DOMAIN -> {
-                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE domain = ?", entry);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM whitelistDomain WHERE UPPER(domain) = UPPER(?)", entry);
 
                             if (rs.resultSet().next()) {
                                 sendInfo(rs, sender, entry);
@@ -426,7 +426,7 @@ public class WhitelistCommand implements BrigadierCommand {
                                 }
 
                                 case DOMAIN -> {
-                                    @Cleanup DB.QueryResult isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistDomain WHERE domain = ?", entry);
+                                    @Cleanup DB.QueryResult isWhitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistDomain WHERE UPPER(domain) = UPPER(?)", entry);
 
                                     if (!isWhitelistedRs.resultSet().next()) {
                                         throw new NullPointerException("Domain not found on whitelist");
@@ -450,9 +450,9 @@ public class WhitelistCommand implements BrigadierCommand {
                                 }
                             }
 
-                            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE entry = ?", entry)) {
+                            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE UPPER(entry) = UPPER(?)", entry)) {
                                 if (rs.resultSet().next()) {
-                                    Keklist.getDatabase().onUpdate("UPDATE whitelistLevel SET whitelistLevel = ? WHERE entry = ?", level, entry);
+                                    Keklist.getDatabase().onUpdate("UPDATE whitelistLevel SET whitelistLevel = ? WHERE UPPER(entry) = UPPER(?)", level, entry);
                                 } else {
                                     Keklist.getDatabase().onUpdate("INSERT INTO whitelistLevel VALUES (?, ?, ?)", entry, level, senderName);
                                 }
@@ -466,7 +466,7 @@ public class WhitelistCommand implements BrigadierCommand {
                         }
 
                     } else {
-                        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE entry = ?", entry)) {
+                        try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelistLevel WHERE UPPER(entry) = UPPER(?)", entry)) {
                             if (rs.resultSet().next()) {
                                 Keklist.getInstance().getServer().dispatchCommand(sender, "whitelist info " + entry);
                             } else
@@ -504,7 +504,7 @@ public class WhitelistCommand implements BrigadierCommand {
             MiniMessage miniMessage = Keklist.getInstance().getMiniMessage();
 
             int level = 0;
-            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE entry = ?", entry)) {
+            try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT whitelistLevel FROM whitelistLevel WHERE UPPER(entry) = UPPER(?)", entry)) {
                 if (rs.resultSet().next()) {
                     level = rs.resultSet().getInt("whitelistLevel");
                 }
@@ -518,12 +518,12 @@ public class WhitelistCommand implements BrigadierCommand {
 
     private void whitelistUser(@NotNull CommandSender from, @NotNull UUID uuid, @NotNull String playerName, int level) {
         try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", uuid.toString());
-             DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE name = ?", playerName)
+             DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE UPPER(name) = UPPER(?)", playerName)
         ) {
 
             if (!rs.resultSet().next()) {
                 if (rsUserFix.resultSet().next()) {
-                    Keklist.getDatabase().onUpdate("UPDATE whitelist SET name = ? WHERE name = ?", playerName + " (Old Name)", playerName);
+                    Keklist.getDatabase().onUpdate("UPDATE whitelist SET name = ? WHERE UPPER(name) = UPPER(?)", playerName + " (Old Name)", playerName);
                 }
 
                 Bukkit.getScheduler().runTask(Keklist.getInstance(), () -> new UUIDAddToWhitelistEvent(uuid).callEvent());

@@ -287,10 +287,10 @@ public class BlacklistCommand implements BrigadierCommand {
 
                     switch (type) {
                         case TypeUtil.EntryType.JAVA, TypeUtil.EntryType.BEDROCK -> {
-                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE name = ?", entry);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE UPPER(name) = UPPER(?)", entry);
                             if (rs.resultSet().next()) {
                                 new PlayerRemovedFromBlacklist(entry).callEvent();
-                                Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", entry);
+                                Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE UPPER(name) = UPPER(?)", entry);
 
                                 if (Keklist.getWebhookManager() != null)
                                     Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_REMOVE, entry, senderName, null, System.currentTimeMillis());
@@ -301,7 +301,7 @@ public class BlacklistCommand implements BrigadierCommand {
                                     Bukkit.broadcast(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("blacklist.notify.remove", entry, senderName)), "keklist.notify.blacklist");
 
                             } else {
-                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE name = ?", entry + " (Old Name)");
+                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE UPPER(name) = UPPER(?)", entry + " (Old Name)");
                                 if (rsUserFix.resultSet().next()) {
                                     new PlayerRemovedFromBlacklist(entry).callEvent();
                                     Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", entry + " (Old Name)");
@@ -406,12 +406,12 @@ public class BlacklistCommand implements BrigadierCommand {
                         }
 
                         case TypeUtil.EntryType.JAVA, TypeUtil.EntryType.BEDROCK -> {
-                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", entry);
+                            @Cleanup DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE UPPER(name) = UPPER(?)", entry);
 
                             if (rs.resultSet().next()) {
                                 sendInfo(rs, sender, entry);
                             } else {
-                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", entry + " (Old Name)");
+                                @Cleanup DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE UPPER(name) = UPPER(?)", entry + " (Old Name)");
                                 if (rsUserFix.resultSet().next()) {
                                     sendInfo(rsUserFix, sender, entry);
                                 } else
@@ -464,7 +464,7 @@ public class BlacklistCommand implements BrigadierCommand {
 
     private void blacklistUser(CommandSender from, UUID uuid, String playerName, String reason) {
         try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", uuid.toString());
-             DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE name = ?", playerName)
+             DB.QueryResult rsUserFix = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE UPPER(name) = UPPER(?)", playerName)
         ) {
             //User is not blacklisted
             if (!rs.resultSet().next()) {

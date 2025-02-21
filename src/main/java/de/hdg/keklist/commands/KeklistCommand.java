@@ -131,7 +131,7 @@ public class KeklistCommand implements BrigadierCommand {
                 }
 
                 if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
-                    switch (ctx.getNodes().get(1).getNode().getName()) {
+                    switch (ctx.getNodes().get(2).getNode().getName()) {
                         case "enable" -> {
                             if (!Keklist.getInstance().getConfig().getBoolean("blacklist.enabled")) {
                                 Keklist.getInstance().getConfig().set("blacklist.enabled", true);
@@ -226,10 +226,10 @@ public class KeklistCommand implements BrigadierCommand {
                     return Command.SINGLE_SUCCESS;
                 }
 
-                switch (ctx.getNodes().get(1).getNode().getName()) {
+                switch (ctx.getNodes().get(2).getNode().getName()) {
                     case "import" -> {
-                        if (ctx.getNodes().get(2) != null) {
-                            if (ctx.getNodes().get(2).getNode().getName().equalsIgnoreCase("vanilla")) {
+                        if (ctx.getNodes().get(3) != null) {
+                            if (ctx.getNodes().get(3).getNode().getName().equalsIgnoreCase("vanilla")) {
                                 for (OfflinePlayer player : Bukkit.getWhitelistedPlayers()) {
                                     Bukkit.dispatchCommand(sender, "keklist whitelist add " + player.getUniqueId());
                                 }
@@ -242,7 +242,7 @@ public class KeklistCommand implements BrigadierCommand {
                 }
 
                 if (Keklist.getInstance().getConfig().getBoolean("enable-manage-command")) {
-                    switch (ctx.getNodes().get(1).getNode().getName()) {
+                    switch (ctx.getNodes().get(2).getNode().getName()) {
                         case "enable" -> {
                             if (!Keklist.getInstance().getConfig().getBoolean("whitelist.enabled")) {
                                 Keklist.getInstance().getConfig().set("whitelist.enabled", true);
@@ -284,7 +284,7 @@ public class KeklistCommand implements BrigadierCommand {
                         }
 
                         case "level" -> {
-                            if (ctx.getNodes().get(2) != null) {
+                            if (ctx.getNodes().get(3) != null) {
                                 try {
                                     int level = ctx.getArgument("whitelist level", Integer.class);
 
@@ -463,7 +463,7 @@ public class KeklistCommand implements BrigadierCommand {
                 }
 
                 if (sender instanceof Player player) {
-                    switch (ctx.getNodes().get(1).getNode().getName()) {
+                    switch (ctx.getNodes().get(2).getNode().getName()) {
                         case "enable" -> {
                             if (!MFAUtil.hasMFAEnabled(player)) {
                                 MFAUtil.setupPlayer(player);
@@ -474,7 +474,7 @@ public class KeklistCommand implements BrigadierCommand {
 
                         case "disable" -> {
                             if (MFAUtil.hasMFAEnabled(player)) {
-                                if (ctx.getNodes().get(2).getNode() != null) {
+                                if (ctx.getNodes().get(3).getNode() != null) {
                                     String code = ctx.getArgument("2fa code", String.class);
 
                                     if (MFAUtil.validateCode(player, code) || MFAUtil.validateRecoveryCode(player, code)) {
@@ -529,7 +529,7 @@ public class KeklistCommand implements BrigadierCommand {
                         }
 
                         case "verify" -> {
-                            if (ctx.getNodes().get(2) != null) {
+                            if (ctx.getNodes().get(3) != null) {
                                 if (MFAUtil.hasMFAEnabled(player)) {
 
                                     if (MFAUtil.validateCode(player, ctx.getArgument("2fa code", String.class))) {
@@ -548,9 +548,9 @@ public class KeklistCommand implements BrigadierCommand {
                     }
 
                 } else {
-                    if (ctx.getNodes().get(1).getNode().getName().equalsIgnoreCase("delete")) {
+                    if (ctx.getNodes().get(2).getNode().getName().equalsIgnoreCase("delete")) {
                         if (Keklist.getInstance().getConfig().getBoolean("2fa.console-can-delete-2fa")) {
-                            if (ctx.getNodes().get(2) != null) {
+                            if (ctx.getNodes().get(3) != null) {
                                 try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT 1 FROM mfa WHERE uuid = ?", ctx.getArgument("player", String.class))) {
 
                                     if (rs.resultSet().next()) {
