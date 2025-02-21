@@ -24,6 +24,7 @@ com-zaxxer-hikaricp = "6.2.1"
 com-h2database-h2 = "2.3.232"
 
 org-bstats-bstats-bukkit = "3.1.0"
+org-reflections-reflections = "0.10.2"
 
 [libraries]
 club-minnced-discord-webhooks = { module = "club.minnced:discord-webhooks", version.ref = "club-minnced-discord-webhooks" }
@@ -46,3 +47,4 @@ org-mariadb-jdbc-mariadb-java-client = { module = "org.mariadb.jdbc:mariadb-java
 org-xerial-sqlite-jdbc = { module = "org.xerial:sqlite-jdbc", version.ref = "org-xerial-sqlite-jdbc" }
 com-zaxxer-hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "com-zaxxer-hikaricp" }
 com-h2database-h2 = { module = "com.h2database:h2", version.ref = "com-h2database-h2" }
+org-reflections-reflections = { module = "org.reflections:reflections", version.ref = "org-reflections-reflections"}

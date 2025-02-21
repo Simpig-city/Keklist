@@ -78,6 +78,7 @@ dependencies {
     compileOnly(libs.com.github.tominolp.mfa.api)
     compileOnly(libs.com.zaxxer.hikaricp)
     compileOnly(libs.com.h2database.h2)
+    compileOnly(libs.org.reflections.reflections)
 
     // Other / Shaded
     implementation(libs.org.bstats.bstats.bukkit)
@@ -228,6 +229,10 @@ tasks {
     shadowJar {
         archiveClassifier.set("")
         relocate("org.bstats", "libs.bstats")
+
+        manifest {
+            attributes["paperweight-mappings-namespace"] = "mojang"
+        }
     }
 
     jar {
@@ -252,7 +257,12 @@ tasks {
             serverDir.mkdirs()
             pluginDir.mkdirs()
             URI.create("https://api.purpurmc.org/v2/purpur/1.21.4/latest/download").toURL().openStream().use {
-                Files.delete(serverDir.resolve("server.jar").toPath()).also { _ -> Files.copy(it, serverDir.resolve("server.jar").toPath()) }
+                if (serverDir.resolve("server.jar").exists()) {
+                    Files.delete(serverDir.resolve("server.jar").toPath())
+                        .also { _ -> Files.copy(it, serverDir.resolve("server.jar").toPath()) }
+                } else
+                    Files.copy(it, serverDir.resolve("server.jar").toPath())
+
             }
         }
     }
@@ -305,9 +315,14 @@ tasks {
     register("runServer", JavaExec::class) {
         group = "purpur"
         dependsOn("shadowJar")
-        if (!serverDir.resolve("server.jar").exists() || serverDir.resolve("server.jar").lastModified() < System.currentTimeMillis() - (((1000 * 60) * 60) * 24) * 7) {
+
+        if (!serverDir.resolve("server.jar").exists())
             dependsOn("downloadServer")
-        }
+        else if (serverDir.resolve("server.jar")
+                .lastModified() < System.currentTimeMillis() - (((1000 * 60) * 60) * 24) * 7
+        )
+            dependsOn("downloadServer")
+
         doFirst {
             pluginDir.resolve("keklist.jar").delete()
             Files.copy(
@@ -317,7 +332,11 @@ tasks {
         }
         classpath = files(serverDir.resolve("server.jar"))
         workingDir = serverDir
-        jvmArgs = listOf("-Dcom.mojang.eula.agree=true", "--add-modules=jdk.incubator.vector", "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005")
+        jvmArgs = listOf(
+            "-Dcom.mojang.eula.agree=true",
+            "--add-modules=jdk.incubator.vector",
+            "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+        )
         // args = listOf("--nogui")
         standardInput = System.`in`
     }
