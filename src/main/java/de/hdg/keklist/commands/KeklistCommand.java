@@ -354,8 +354,7 @@ public class KeklistCommand implements BrigadierCommand {
 
                     case JAVA, BEDROCK -> {
                         if (Bukkit.getPlayer(entry) != null) {
-                            Player target = Bukkit.getPlayer(entry);
-                            assert target != null;
+                            Player target = Objects.requireNonNull(Bukkit.getPlayer(entry));
 
                             try (DB.QueryResult whitelistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM whitelist WHERE uuid = ?", target.getUniqueId().toString());
                                  DB.QueryResult blacklistedRs = Keklist.getDatabase().onQuery("SELECT 1 FROM blacklist WHERE uuid = ?", target.getUniqueId().toString())
@@ -424,7 +423,7 @@ public class KeklistCommand implements BrigadierCommand {
                                 SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
 
                                 sender.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("keklist.offline-player-info")
-                                        .replace("%name%", offlinePlayer.getName())
+                                        .replace("%name%", offlinePlayer.getName()==null ? "<red>" + Keklist.getTranslations().get("unknown") : offlinePlayer.getName())
                                         .replace("%uuid%", offlinePlayer.getUniqueId().toString())
                                         .replace("%whitelisted%", whitelisted ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
                                         .replace("%blacklisted%", blacklisted ? "<green>" + Keklist.getTranslations().get("yes") : "<red>" + Keklist.getTranslations().get("no"))
@@ -620,6 +619,10 @@ public class KeklistCommand implements BrigadierCommand {
                 try (DB.QueryResult whitelistedRs = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM whitelist UNION ALL SELECT COUNT(*) FROM whitelistIp UNION ALL SELECT COUNT(*) FROM whitelistDomain) as whitelistCound");
                      DB.QueryResult blacklistedRs = Keklist.getDatabase().onQuery("SELECT SUM(c) FROM (SELECT COUNT(*) AS c FROM blacklist UNION ALL SELECT COUNT(*) FROM blacklistIp) as blacklistCount")
                 ) {
+                    whitelistedRs.resultSet().next();
+                    blacklistedRs.resultSet().next();
+
+                    // No need to check if resultSet is empty, as we are using COUNT(*) which will always return a value
                     int whitelisted = whitelistedRs.resultSet().getInt(1);
                     int blacklisted = blacklistedRs.resultSet().getInt(1);
 
