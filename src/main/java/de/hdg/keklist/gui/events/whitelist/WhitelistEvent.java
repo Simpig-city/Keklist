@@ -3,7 +3,7 @@ package de.hdg.keklist.gui.events.whitelist;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
 import de.hdg.keklist.gui.GuiManager;
-import lombok.Cleanup;
+import de.hdg.keklist.util.TypeUtil;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
@@ -24,6 +24,8 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SkullMeta;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Range;
 
 import java.sql.SQLException;
 import java.util.*;
@@ -36,7 +38,7 @@ public class WhitelistEvent implements Listener {
     private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);
 
     @EventHandler
-    public void onWhitelistClick(InventoryClickEvent event) throws SQLException {
+    public void onWhitelistClick(@NotNull InventoryClickEvent event) throws SQLException {
         if (event.getCurrentItem() == null) return;
         if (event.getClickedInventory() == null) return;
         if (!(event.getWhoClicked() instanceof Player player)) return;
@@ -101,14 +103,14 @@ public class WhitelistEvent implements Listener {
                     Bukkit.getOnlinePlayers().forEach(p -> p.sendBlockChange(location, Material.AIR.createBlockData()));
                     Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> player.openSign(sign, Side.FRONT), 5);
                 }
-                case PLAYER_HEAD -> player.openInventory(getPage(0, 0, false, false));
+                case PLAYER_HEAD -> player.openInventory(getPage(0));
                 case ARROW -> GuiManager.openMainGUI(player);
             }
         }
     }
 
     @EventHandler
-    public void onSignDestroy(BlockBreakEvent event) {
+    public void onSignDestroy(@NotNull BlockBreakEvent event) {
         if (event.getBlock().getType().equals(Material.SPRUCE_SIGN)) {
             Sign sign = (Sign) event.getBlock().getState();
 
@@ -120,7 +122,7 @@ public class WhitelistEvent implements Listener {
     }
 
     @EventHandler
-    public void onSign(SignChangeEvent event) {
+    public void onSign(@NotNull SignChangeEvent event) {
         if (event.getBlock().getType().equals(Material.SPRUCE_SIGN)) {
             Sign sign = (Sign) event.getBlock().getWorld().getBlockState(event.getBlock().getLocation());
 
@@ -135,306 +137,130 @@ public class WhitelistEvent implements Listener {
                 sign.getWorld().setBlockData(sign.getLocation(), signMap.get(sign.getLocation()));
                 signMap.remove(sign.getLocation());
 
-                GuiManager.handleMainGUICLick("whitelist", event.getPlayer());
+                GuiManager.handleMainGUICLick(GuiManager.GuiPage.WHITELIST, event.getPlayer());
             }
         }
     }
 
     @EventHandler
-    public void onPageChange(InventoryClickEvent event) throws SQLException {
+    public void onPageChange(@NotNull InventoryClickEvent event) throws SQLException {
         if (event.getCurrentItem() == null) return;
         if (event.getClickedInventory() == null) return;
         if (!(event.getWhoClicked() instanceof Player player)) return;
 
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<white><b>Whitelist Players"))) {
-            if (event.getCurrentItem().getType().equals(Material.ARROW)) {
-                event.setCancelled(true);
+            switch (event.getCurrentItem().getType()) {
+                case BARRIER -> GuiManager.handleMainGUICLick(GuiManager.GuiPage.WHITELIST, player);
+                case ARROW -> {
+                    if (event.getClickedInventory().getItem(22) != null) {
+                        if (event.getClickedInventory().getItem(22).getItemMeta() != null && event.getClickedInventory().getItem(22).getType().equals(Material.GRAY_DYE)) {
+                            int currentPageIndex = event.getClickedInventory().getItem(22).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
 
-                int pageIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                int skipIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER);
-                boolean onlyPlayer = false;
-                boolean onlyIp = false;
-                try {
-                    onlyPlayer = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER);
-                } catch (Exception ignored) {
+                            switch (event.getSlot()) {
+                                case 18 -> player.openInventory(getPage(Math.max(0, currentPageIndex - 1)));
+                                case 26 -> player.openInventory(getPage(currentPageIndex + 1));
+                                default -> player.openInventory(getPage(0)); /* Failsafe */
+                            }
+                        }
+                    }
                 }
-
-                try {
-                    onlyIp = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER);
-                } catch (Exception ignored) {
-                }
-
-                player.openInventory(getPage(pageIndex, skipIndex, onlyPlayer, onlyIp));
-            }
-
-            if (event.getCurrentItem().getType().equals(Material.BARRIER)) {
-                event.setCancelled(true);
-                GuiManager.handleMainGUICLick("whitelist", player);
             }
         }
     }
 
-    public static Inventory getPage(int pageIndex, int skipIndex, boolean onlyPlayer, boolean onlyIP) throws SQLException {
-        Inventory whitelist = Bukkit.createInventory(null, 9 * 3, Keklist.getInstance().getMiniMessage().deserialize("<white><b>Whitelist Players"));
 
-        List<ItemStack> playerHeads = new ArrayList<>();
-        List<ItemStack> ipItems = new ArrayList<>();
+    public static @NotNull Inventory getPage(@Range(from = 0, to = Integer.MAX_VALUE) int pageIndex) throws SQLException {
+        Inventory whitelistInv = Bukkit.createInventory(null, 9 * 3, Keklist.getInstance().getMiniMessage().deserialize("<white><b>Whitelist Players"));
+
+        List<ItemStack> pageEntryItems = new ArrayList<>();
 
         ItemStack nextPage = new ItemStack(Material.ARROW);
-        ItemMeta nextPageMeta = nextPage.getItemMeta();
-        nextPageMeta.displayName(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.next"))
+        nextPage.editMeta(meta ->
+                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.next")))
         );
 
         ItemStack previousPage = new ItemStack(Material.ARROW);
-        ItemMeta previousPageMeta = previousPage.getItemMeta();
-        previousPageMeta.displayName(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.previous"))
+        previousPage.editMeta(meta ->
+                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.previous")))
         );
 
+        ItemStack mainMenu = new ItemStack(Material.BARRIER);
+        previousPage.editMeta(meta ->
+                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.back")))
+        );
 
-        if (pageIndex == 0) {
-            @Cleanup DB.QueryResult players = Keklist.getDatabase().onQuery("SELECT * FROM whitelist");
-            @Cleanup DB.QueryResult ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
-
-            while (players.getResultSet().next()) {
-                ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-                SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-                skullMeta.displayName(
-                        Keklist.getInstance().getMiniMessage().deserialize(players.getResultSet().getString("name"))
-                );
-                skullMeta.lore(Collections.singletonList(
-                        Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
-                ));
-
-                if(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")) != null)
-                    skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")));
-
-
-                skull.setItemMeta(skullMeta);
-                playerHeads.add(skull);
-            }
-
-            while (ips.getResultSet().next()) {
-                ItemStack ip = new ItemStack(Material.BOOK);
-                ItemMeta ipMeta = ip.getItemMeta();
-                ipMeta.displayName(
-                        Keklist.getInstance().getMiniMessage().deserialize(ips.getResultSet().getString("ip"))
-                );
-                ipMeta.lore(Collections.singletonList(
-                        Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
-                ));
-                ip.setItemMeta(ipMeta);
-                ipItems.add(ip);
-            }
-
-
-            if (playerHeads.size() > 18) {
-                for (int i = 0; i < 18; i++) {
-                    whitelist.setItem(i, playerHeads.get(i));
+        ItemStack pageInfo = new ItemStack(Material.GRAY_DYE);
+        pageInfo.editMeta(meta -> {
+                    meta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex);
+                    meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.index", pageIndex + 1)));
                 }
+        );
 
+        try (DB.QueryResult entries = Keklist.getDatabase().onQuery("SELECT entries.entry, entries.name FROM (SELECT uuid AS entry, name AS name FROM whitelist UNION ALL SELECT ip AS entry, 'nul' AS name FROM whitelistIp UNION ALL SELECT domain AS entry, 'nul' AS entry FROM whitelistDomain) AS entries LIMIT ?,19", pageIndex * 18)) {
+            while (entries.resultSet().next()) {
+                switch (TypeUtil.getEntryType(entries.resultSet().getString("entry"))) {
+                    case UUID -> {
+                        ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
+                        SkullMeta meta = (SkullMeta) skull.getItemMeta();
+                        meta.displayName(
+                                Keklist.getInstance().getMiniMessage().deserialize(entries.resultSet().getString("name"))
+                        );
+                        meta.lore(Collections.singletonList(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                        ));
+                        meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString(entries.resultSet().getString("entry"))));
 
-                nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, 1);
-                nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, 18); // We have 18 heads
+                        skull.setItemMeta(meta);
+                        pageEntryItems.add(skull);
+                    }
 
-                nextPage.setItemMeta(nextPageMeta);
-                whitelist.setItem(26, nextPage);
+                    case IPv4, IPv6 -> {
+                        ItemStack ip = new ItemStack(Material.BOOK);
+                        ItemMeta ipMeta = ip.getItemMeta();
+                        ipMeta.displayName(
+                                Keklist.getInstance().getMiniMessage().deserialize(entries.resultSet().getString("entry"))
+                        );
+                        ipMeta.lore(Collections.singletonList(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                        ));
+                        ip.setItemMeta(ipMeta);
+                        pageEntryItems.add(ip);
+                    }
 
-            } else if ((playerHeads.size() + ipItems.size()) > 18) {
-                int sharedI = 0;
-                for (ItemStack playerHead : playerHeads) {
-                    whitelist.setItem(sharedI, playerHead);
-                    sharedI++;
-                }
-
-                int ipIndex = 0;
-                for (ItemStack ipItem : ipItems) {
-                    if (sharedI == 18) break;
-                    whitelist.setItem(sharedI, ipItem);
-                    sharedI++;
-                    ipIndex++;
-                }
-
-                nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, 1);
-                nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER, 1); // Workaround for missing boolean
-                nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, ipIndex); // We used X ips already
-
-                nextPage.setItemMeta(nextPageMeta);
-                whitelist.setItem(26, nextPage);
-            } else {
-                int sharedI = 0;
-                for (ItemStack playerHead : playerHeads) {
-                    whitelist.setItem(sharedI, playerHead);
-                    sharedI++;
-                }
-
-                for (ItemStack ipItem : ipItems) {
-                    whitelist.setItem(sharedI, ipItem);
-                    sharedI++;
+                    case DOMAIN -> {
+                        ItemStack domain = new ItemStack(Material.PAPER);
+                        ItemMeta domainMeta = domain.getItemMeta();
+                        domainMeta.displayName(
+                                Keklist.getInstance().getMiniMessage().deserialize(entries.resultSet().getString("entry"))
+                        );
+                        domainMeta.lore(Collections.singletonList(
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                        ));
+                        domain.setItemMeta(domainMeta);
+                        pageEntryItems.add(domain);
+                    }
                 }
             }
-
-            ItemStack back = new ItemStack(Material.BARRIER);
-            ItemMeta backMeta = back.getItemMeta();
-            backMeta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.back")));
-            back.setItemMeta(backMeta);
-            whitelist.setItem(22, back);
         }
 
-        if (pageIndex > 0) {
-            // Next Page
-            if (onlyIP) {
-                @Cleanup DB.QueryResult ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
-                List<ItemStack> skippedIPs;
+        if (pageEntryItems.isEmpty() && pageIndex != 0)
+            return getPage(pageIndex - 1);
 
-                while (ips.getResultSet().next()) {
-                    ItemStack ip = new ItemStack(Material.BOOK);
-                    ItemMeta ipMeta = ip.getItemMeta();
-                    ipMeta.displayName(
-                            Keklist.getInstance().getMiniMessage().deserialize(ips.getResultSet().getString("ip"))
-                    );
-                    ipMeta.lore(Collections.singletonList(
-                            Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
-                    ));
-                    ip.setItemMeta(ipMeta);
-                    ipItems.add(ip);
-                }
-
-                skippedIPs = ipItems.stream().skip(skipIndex).toList();
-
-
-                // There is a next page
-                if (skippedIPs.size() > 18) {
-                    for (int i = 0; i < 18; i++) {
-                        whitelist.setItem(i, skippedIPs.get(i));
-                    }
-
-                    nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex + 1);
-                    nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER, 1); // Workaround for missing boolean
-                    nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, skipIndex + 18); // We used skipIndex + 18 ips already
-
-                    nextPage.setItemMeta(nextPageMeta);
-                    whitelist.setItem(26, nextPage);
-                } else {
-                    int i = 0;
-                    for (ItemStack ipItem : skippedIPs) {
-                        whitelist.setItem(i, ipItem);
-                        i++;
-                    }
-                }
-
-
-                // The Last page must be only IPs
-                if (skipIndex > 18) {
-                    previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER, 1); // Workaround for missing boolean
-                    previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, skipIndex - 18); // We must start at skipIndex - 18 for the page before
-                } else
-                    previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, -1); // We must start at 0 for the page before
-
-                // NOTE: pageIndex*18 = player heads to skip if not onlyIP mode is active
-            } else {
-                @Cleanup DB.QueryResult players = Keklist.getDatabase().onQuery("SELECT * FROM whitelist");
-                @Cleanup DB.QueryResult isIPThere = Keklist.getDatabase().onQuery("SELECT ip FROM whitelistIp LIMIT 1");
-                List<ItemStack> skippedHeads;
-
-                while (players.getResultSet().next()) {
-                    ItemStack skull = new ItemStack(Material.PLAYER_HEAD);
-                    SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
-                    skullMeta.displayName(
-                            Keklist.getInstance().getMiniMessage().deserialize(players.getResultSet().getString("name"))
-                    );
-                    skullMeta.lore(Collections.singletonList(
-                            Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
-                    ));
-
-                    if(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")) != null)
-                        skullMeta.setOwningPlayer(Bukkit.getOfflinePlayerIfCached(players.getResultSet().getString("name")));
-
-                    skull.setItemMeta(skullMeta);
-                    playerHeads.add(skull);
-                }
-
-                if (skipIndex == -1) {
-                    skippedHeads = playerHeads.stream().skip(18L * pageIndex).toList();
-                } else
-                    skippedHeads = playerHeads.stream().skip(skipIndex).toList();
-
-
-                if (skippedHeads.size() > 18) {
-                    for (int i = 0; i < 18; i++) {
-                        whitelist.setItem(i, skippedHeads.get(i));
-                    }
-
-                    nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex + 1);
-                    nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER, 1); // Workaround for missing boolean
-                    nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, skipIndex + 18); // We used skipIndex + 18 ips already
-
-                    nextPage.setItemMeta(nextPageMeta);
-                    whitelist.setItem(26, nextPage);
-                } else {
-                    int invI = 0;
-                    for (ItemStack ipItem : skippedHeads) {
-                        whitelist.setItem(invI, ipItem);
-                        invI++;
-                    }
-
-
-                    if (isIPThere.getResultSet().next()) {
-                        @Cleanup DB.QueryResult ips = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp");
-
-                        while (ips.getResultSet().next()) {
-                            ItemStack ip = new ItemStack(Material.BOOK);
-                            ItemMeta ipMeta = ip.getItemMeta();
-                            ipMeta.displayName(
-                                    Keklist.getInstance().getMiniMessage().deserialize(ips.getResultSet().getString("ip"))
-                            );
-                            ipMeta.lore(Collections.singletonList(
-                                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
-                            ));
-                            ip.setItemMeta(ipMeta);
-                            ipItems.add(ip);
-                        }
-
-
-                        // There is a next page
-                        if (ipItems.size() > 18 - invI) {
-                            for (int i = invI; i < 18; i++) {
-                                whitelist.setItem(i, ipItems.get(i));
-                            }
-
-                            nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex + 1);
-                            nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER, 1); // Workaround for missing boolean
-                            nextPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, 18 - invI); // We used 18 - invI ips already
-
-                            nextPage.setItemMeta(nextPageMeta);
-                            whitelist.setItem(26, nextPage);
-                        } else {
-                            int i = 0;
-                            for (ItemStack ipItem : ipItems) {
-                                whitelist.setItem(i, ipItem);
-                                i++;
-                            }
-                        }
-                    }
-                }
-
-                // The Last page must be only Players
-                if (skipIndex > 18 && onlyPlayer) {
-                    previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER, 1); // Workaround for missing boolean
-                    previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, skipIndex - 18); // We must start at skipIndex - 18 for the page before
-                } else
-                    previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, -1); // We must start at 0 for the page before
-
-                // NOTE: pageIndex shows if it's the first page
-            }
-
-
-            previousPageMeta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex - 1);
-            previousPage.setItemMeta(previousPageMeta);
-            whitelist.setItem(18, previousPage);
+        if (pageEntryItems.size() > 18) {
+            /* We limit to 19, so we know if there are more entries; one query more is no significant hit and still adds QoL */
+            whitelistInv.setItem(26, nextPage);
+            pageEntryItems.removeLast(); // Remove the last entry, which is the one we used to check if there are more entries
         }
 
-        return whitelist;
+        if (pageIndex > 0)
+            whitelistInv.setItem(18, previousPage);
+        else
+            whitelistInv.setItem(18, mainMenu);
+
+        whitelistInv.setItem(22, pageInfo);
+
+        pageEntryItems.forEach(whitelistInv::addItem);
+
+        return whitelistInv;
     }
 }

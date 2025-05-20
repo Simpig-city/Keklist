@@ -146,7 +146,7 @@ public class BlacklistEvent implements Listener {
 
             if (event.getCurrentItem().getType().equals(Material.BARRIER)) {
                 event.setCancelled(true);
-                GuiManager.handleMainGUICLick("blacklist", player);
+                GuiManager.handleMainGUICLick(GuiManager.GuiPage.BLACKLIST, player);
             }
         }
     }
@@ -184,7 +184,7 @@ public class BlacklistEvent implements Listener {
                 sign.getWorld().setBlockData(sign.getLocation(), signMap.get(sign.getLocation()));
                 signMap.remove(sign.getLocation());
 
-                GuiManager.handleMainGUICLick("blacklist", event.getPlayer());
+                GuiManager.handleMainGUICLick(GuiManager.GuiPage.BLACKLIST, event.getPlayer());
             }
         }
     }
