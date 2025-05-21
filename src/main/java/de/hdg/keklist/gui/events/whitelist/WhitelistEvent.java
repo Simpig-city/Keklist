@@ -128,12 +128,15 @@ public class WhitelistEvent implements Listener {
             Sign sign = (Sign) event.getBlock().getWorld().getBlockState(event.getBlock().getLocation());
 
             if (sign.getPersistentDataContainer().has(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING)) {
-                switch (sign.getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING)) {
-                    case "add" ->
-                            Bukkit.dispatchCommand(event.getPlayer(), "whitelist add " + PlainTextComponentSerializer.plainText().serialize(event.lines().get(1)));
-                    case "remove" ->
-                            Bukkit.dispatchCommand(event.getPlayer(), "whitelist remove " + PlainTextComponentSerializer.plainText().serialize(event.lines().get(1)));
-                }
+                String entry = PlainTextComponentSerializer.plainText().serialize(event.lines().get(1));
+
+                if (!entry.isBlank())
+                    switch (sign.getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "whitelistMode"), PersistentDataType.STRING)) {
+                        case "add" -> Bukkit.dispatchCommand(event.getPlayer(), "whitelist add " + entry);
+                        case "remove" -> Bukkit.dispatchCommand(event.getPlayer(), "whitelist remove " + entry);
+                    }
+                else
+                    event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.sign.empty")));
 
                 sign.getWorld().setBlockData(sign.getLocation(), signMap.get(sign.getLocation()));
                 signMap.remove(sign.getLocation());
@@ -288,9 +291,9 @@ public class WhitelistEvent implements Listener {
     /**
      * Replaces the head of the player in the inventory with the given profile
      *
-     * @param inventory The whitelist page inventory
+     * @param inventory  The whitelist page inventory
      * @param playerName The name of the player
-     * @param profile The profile of the player provided by the future
+     * @param profile    The profile of the player provided by the future
      */
     private static void replaceHead(@NotNull Inventory inventory, @NotNull String playerName, @NotNull PlayerProfile profile) {
         Arrays.stream(inventory.getContents())

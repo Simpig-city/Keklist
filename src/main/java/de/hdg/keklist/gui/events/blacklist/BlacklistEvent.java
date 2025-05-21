@@ -129,17 +129,22 @@ public class BlacklistEvent implements Listener {
             Sign sign = (Sign) event.getBlock().getWorld().getBlockState(event.getBlock().getLocation());
 
             if (sign.getPersistentDataContainer().has(new NamespacedKey(Keklist.getInstance(), "blacklistMode"), PersistentDataType.STRING)) {
-                switch (sign.getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "blacklistMode"), PersistentDataType.STRING)) {
-                    case "add" -> {
-                        if (event.lines().get(2).equals(Component.text("motd"))) {
-                            Bukkit.dispatchCommand(event.getPlayer(), "blacklist motd " + PlainTextComponentSerializer.plainText().serialize(event.lines().get(1)));
-                        } else {
-                            Bukkit.dispatchCommand(event.getPlayer(), "blacklist add " + PlainTextComponentSerializer.plainText().serialize(event.lines().get(1)));
+                String entry = PlainTextComponentSerializer.plainText().serialize(event.lines().get(1));
+
+                if (!entry.isBlank())
+                    switch (sign.getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "blacklistMode"), PersistentDataType.STRING)) {
+                        case "add" -> {
+                            if (event.lines().get(2).equals(Component.text("motd"))) {
+                                Bukkit.dispatchCommand(event.getPlayer(), "blacklist motd " + entry);
+                            } else {
+                                Bukkit.dispatchCommand(event.getPlayer(), "blacklist add " + entry);
+                            }
                         }
+                        case "remove" -> Bukkit.dispatchCommand(event.getPlayer(), "blacklist remove " + entry);
                     }
-                    case "remove" ->
-                            Bukkit.dispatchCommand(event.getPlayer(), "blacklist remove " + PlainTextComponentSerializer.plainText().serialize(event.lines().get(1)));
-                }
+                else
+                    event.getPlayer().sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.sign.empty")));
+
 
                 sign.getWorld().setBlockData(sign.getLocation(), signMap.get(sign.getLocation()));
                 signMap.remove(sign.getLocation());
@@ -290,12 +295,12 @@ public class BlacklistEvent implements Listener {
         return blacklistInv;
     }
 
-     /**
+    /**
      * Replaces the head of the player in the inventory with the given profile
      *
-     * @param inventory The blacklist page inventory
+     * @param inventory  The blacklist page inventory
      * @param playerName The name of the player
-     * @param profile The profile of the player provided by the future
+     * @param profile    The profile of the player provided by the future
      */
     private static void replaceHead(@NotNull Inventory inventory, @NotNull String playerName, @NotNull PlayerProfile profile) {
         Arrays.stream(inventory.getContents())
