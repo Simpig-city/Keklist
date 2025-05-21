@@ -39,6 +39,9 @@ public class BlacklistEntryEvent implements Listener {
 
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
+            if (event.getCurrentItem().getType() != Material.PLAYER_HEAD
+                    && event.getCurrentItem().getType() != Material.BOOK
+                    && event.getCurrentItem().getType() != Material.WRITABLE_BOOK) return;
 
             if (!player.hasPermission("keklist.blacklist.info")) {
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));

@@ -42,6 +42,9 @@ public class WhitelistEntryEvent implements Listener {
 
             if (event.getCurrentItem() == null) return;
             if (!(event.getWhoClicked() instanceof Player player)) return;
+            if (event.getCurrentItem().getType() != Material.PLAYER_HEAD
+                    && event.getCurrentItem().getType() != Material.BOOK
+                    && event.getCurrentItem().getType() != Material.PAPER) return;
 
             if (!player.hasPermission("keklist.whitelist.info")) {
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
@@ -158,7 +161,7 @@ public class WhitelistEntryEvent implements Listener {
                             String byPlayer = rs.getResultSet().getString("byPlayer");
                             int level = rs.resultSet().getInt("level");
 
-                            ItemStack infoItem = new ItemStack(Material.PAPER);
+                            ItemStack infoItem = new ItemStack(Material.PRISMARINE_SHARD);
                             infoItem.editMeta(meta -> {
                                 meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.whitelist.entry.infoitem")));
                                 meta.lore(List.of(

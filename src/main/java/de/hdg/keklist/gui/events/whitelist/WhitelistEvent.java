@@ -1,5 +1,6 @@
 package de.hdg.keklist.gui.events.whitelist;
 
+import com.destroystokyo.paper.profile.PlayerProfile;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
 import de.hdg.keklist.gui.GuiManager;
@@ -185,7 +186,7 @@ public class WhitelistEvent implements Listener {
         );
 
         ItemStack mainMenu = new ItemStack(Material.BARRIER);
-        previousPage.editMeta(meta ->
+        mainMenu.editMeta(meta ->
                 meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.back")))
         );
 
@@ -208,7 +209,27 @@ public class WhitelistEvent implements Listener {
                         meta.lore(Collections.singletonList(
                                 Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.list.entry"))
                         ));
-                        meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString(entries.resultSet().getString("entry"))));
+
+                        UUID playerUuid = UUID.fromString(entries.resultSet().getString("entry"));
+
+                        // Its intended behavior that only steve is displayed as head until the future finishes. They will get replaced as soon as their textures are loaded. Without the load option enabled, the different variants of default skins will be used, as they get randomly selected when using an offline player
+                        if (Keklist.getInstance().getConfig().getBoolean("general.load-heads-in-gui", true)) {
+                            boolean isFloodgatePlayer = false;
+                            if (Keklist.getInstance().getFloodgateApi() != null)
+                                isFloodgatePlayer = Keklist.getInstance().getFloodgateApi().isFloodgateId(playerUuid);
+
+                            if (isFloodgatePlayer) {
+                                meta.setOwningPlayer(Bukkit.getOfflinePlayer(playerUuid));
+                            } else {
+                                String playerName = entries.resultSet().getString("name");
+
+                                Bukkit.createProfile(playerUuid, playerName).update().thenAcceptAsync(
+                                        playerProfile -> replaceHead(whitelistInv, playerName, playerProfile),
+                                        runnable -> Bukkit.getScheduler().runTask(Keklist.getInstance(), runnable)
+                                );
+                            }
+                        } else
+                            meta.setOwningPlayer(Bukkit.getOfflinePlayer(playerUuid));
 
                         skull.setItemMeta(meta);
                         pageEntryItems.add(skull);
@@ -262,5 +283,23 @@ public class WhitelistEvent implements Listener {
         pageEntryItems.forEach(whitelistInv::addItem);
 
         return whitelistInv;
+    }
+
+    /**
+     * Replaces the head of the player in the inventory with the given profile
+     *
+     * @param inventory The whitelist page inventory
+     * @param playerName The name of the player
+     * @param profile The profile of the player provided by the future
+     */
+    private static void replaceHead(@NotNull Inventory inventory, @NotNull String playerName, @NotNull PlayerProfile profile) {
+        Arrays.stream(inventory.getContents())
+                .filter(Objects::nonNull)
+                .filter(itemStack -> itemStack.getType().equals(Material.PLAYER_HEAD))
+                .filter(ItemStack::hasItemMeta)
+                .filter(itemStack -> PlainTextComponentSerializer.plainText().serialize(itemStack.getItemMeta().displayName()).equals(playerName))
+                .findFirst().ifPresent(itemStack ->
+                        itemStack.editMeta(SkullMeta.class, meta -> meta.setPlayerProfile(profile))
+                );
     }
 }

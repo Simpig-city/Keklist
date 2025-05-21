@@ -8,6 +8,7 @@ chat-notify: false # Notify the player if someone joins the server which is blac
 general:
   enable-default-motd: false # Keklist will now display the default motd. NOTE: This will override other motd plugins so it's false by default ; Same as for blacklisted/whitelisted motd
   require-server-list-before-join: false # Require the player to add this server to the server list before joining
+  load-heads-in-gui: true # Load the heads in the GUI. NOTE: Disable this if you experience lag on the server while using the GUI
 
 ip:
   send-message-on-join: false # Send a message about a player's ip on join
