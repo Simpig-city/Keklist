@@ -8,12 +8,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
 public class MainGUIEvent implements Listener {
 
     @EventHandler
-    public void onClick(InventoryClickEvent event) {
+    public void onClick(@NotNull InventoryClickEvent event) {
         if (event.getCurrentItem() == null) return;
         if (event.getClickedInventory() == null) return;
         if(!(event.getWhoClicked() instanceof Player player)) return;
@@ -24,10 +24,7 @@ public class MainGUIEvent implements Listener {
             if(!player.hasPermission("keklist.gui.use"))
                 player.closeInventory(InventoryCloseEvent.Reason.CANT_USE);
 
-            ItemMeta meta = event.getCurrentItem().getItemMeta();
-            PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
-
-            GuiManager.handleMainGUICLick(serializer.serialize(meta.displayName()), player);
+            GuiManager.handleMainGUICLick(GuiManager.GuiPage.valueOf(PlainTextComponentSerializer.plainText().serialize(event.getCurrentItem().getItemMeta().displayName()).toUpperCase()), player);
         }
     }
 }
