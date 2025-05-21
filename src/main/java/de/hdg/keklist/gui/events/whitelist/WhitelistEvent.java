@@ -176,12 +176,12 @@ public class WhitelistEvent implements Listener {
 
         ItemStack nextPage = new ItemStack(Material.ARROW);
         nextPage.editMeta(meta ->
-                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.next")))
+                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.list.next")))
         );
 
         ItemStack previousPage = new ItemStack(Material.ARROW);
         previousPage.editMeta(meta ->
-                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.previous")))
+                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.list.previous")))
         );
 
         ItemStack mainMenu = new ItemStack(Material.BARRIER);
@@ -192,7 +192,7 @@ public class WhitelistEvent implements Listener {
         ItemStack pageInfo = new ItemStack(Material.GRAY_DYE);
         pageInfo.editMeta(meta -> {
                     meta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, pageIndex);
-                    meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.index", pageIndex + 1)));
+                    meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.list.index", pageIndex + 1)));
                 }
         );
 
@@ -206,7 +206,7 @@ public class WhitelistEvent implements Listener {
                                 Keklist.getInstance().getMiniMessage().deserialize(entries.resultSet().getString("name"))
                         );
                         meta.lore(Collections.singletonList(
-                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.list.entry"))
                         ));
                         meta.setOwningPlayer(Bukkit.getOfflinePlayer(UUID.fromString(entries.resultSet().getString("entry"))));
 
@@ -221,7 +221,7 @@ public class WhitelistEvent implements Listener {
                                 Keklist.getInstance().getMiniMessage().deserialize(entries.resultSet().getString("entry"))
                         );
                         ipMeta.lore(Collections.singletonList(
-                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.list.entry"))
                         ));
                         ip.setItemMeta(ipMeta);
                         pageEntryItems.add(ip);
@@ -234,7 +234,7 @@ public class WhitelistEvent implements Listener {
                                 Keklist.getInstance().getMiniMessage().deserialize(entries.resultSet().getString("entry"))
                         );
                         domainMeta.lore(Collections.singletonList(
-                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.list.entry"))
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.list.entry"))
                         ));
                         domain.setItemMeta(domainMeta);
                         pageEntryItems.add(domain);

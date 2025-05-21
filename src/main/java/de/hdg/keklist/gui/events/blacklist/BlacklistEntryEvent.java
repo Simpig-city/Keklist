@@ -3,6 +3,7 @@ package de.hdg.keklist.gui.events.blacklist;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
 import de.hdg.keklist.util.LanguageUtil;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -13,18 +14,25 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+/**
+ * Handles the events related to the blacklist entry GUI.
+ */
 public class BlacklistEntryEvent implements Listener {
 
+    /**
+     * Handles the click on an entry in the main blacklist GUI.
+     *
+     * @param event The InventoryClickEvent
+     */
     @EventHandler
-    public void onEntryClick(InventoryClickEvent event) {
+    public void onEntryClick(@NotNull InventoryClickEvent event) {
         if (event.getClickedInventory() == null) return;
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<white><b>Blacklist Players"))) {
             event.setCancelled(true);
@@ -37,185 +45,159 @@ public class BlacklistEntryEvent implements Listener {
                 return;
             }
 
-
             PlainTextComponentSerializer serializer = PlainTextComponentSerializer.plainText();
             LanguageUtil translations = Keklist.getTranslations();
+            SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
+
+            ItemStack item = event.getCurrentItem();
+            String displayName = serializer.serialize(item.getItemMeta().displayName());
+            item.lore(Collections.singletonList(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.info"))
+            ));
+
+            int currentPageIndex = event.getClickedInventory().getItem(22).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
+            ItemStack backArrow = new ItemStack(Material.ARROW);
+            backArrow.editMeta(meta -> {
+                        meta.getPersistentDataContainer().set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, currentPageIndex);
+                        meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.back")));
+                        meta.lore(Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.back.lore"))));
+                    }
+            );
+
+            ItemStack removeItem = new ItemStack(Material.BARRIER);
+            removeItem.editMeta(meta -> {
+                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.removeitem")));
+                meta.lore(Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.remove"))));
+            });
 
             switch (event.getCurrentItem().getType()) {
                 case PLAYER_HEAD -> {
                     Inventory overview = Bukkit.createInventory(player, 27, Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted Player"));
-                    ItemStack item = event.getCurrentItem();
 
-                    String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
-
-                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", username)
+                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE name = ?", displayName)
                     ) {
-                        if (rs.getResultSet().next()) {
-                            long unix = rs.getResultSet().getLong("unix");
-                            String byPlayer = rs.getResultSet().getString("byPlayer");
-                            UUID uuid = UUID.fromString(rs.getResultSet().getString("uuid"));
-                            String reason = Objects.equals(rs.getResultSet().getString("reason") == null ? "No reason given" : "Some reason", "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
-
-                            SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
-
-                            item.lore(Collections.singletonList(
-                                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.info"))
-                            ));
-                            overview.setItem(4, item);
+                        if (rs.resultSet().next()) {
+                            long unix = rs.resultSet().getLong("unix");
+                            String byPlayer = rs.resultSet().getString("byPlayer");
+                            UUID uuid = UUID.fromString(rs.resultSet().getString("uuid"));
+                            String reason = Objects.equals(rs.resultSet().getString("reason") == null ? "No reason given" : "Some reason", "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
 
                             ItemStack infoItem = new ItemStack(Material.BOOK);
-                            infoItem.editMeta(meta -> {
-                                meta.displayName(
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.infoitem"))
-                                );
-                                meta.lore(List.of(
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.name", username)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.uuid")),
-                                        Keklist.getInstance().getMiniMessage().deserialize("<white>" + uuid),
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.by", byPlayer)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.date", sdf.format(new Date(unix)))),
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.reason", reason))
-                                ));
-                            });
+                            infoItem.editMeta(meta ->
+                                    meta.displayName(
+                                            Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.infoitem"))
+                                    )
+                            );
 
+                            infoItem.lore(List.of(
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.name", displayName)),
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.uuid")),
+                                    Keklist.getInstance().getMiniMessage().deserialize("<white>" + uuid),
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.by", byPlayer)),
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.date", sdf.format(new Date(unix)))),
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.reason", reason))
+                            ));
+
+                            overview.setItem(4, item);
                             overview.setItem(11, infoItem);
-
-                            ItemStack removeItem = new ItemStack(Material.BARRIER);
-                            removeItem.editMeta(meta -> {
-                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.removeitem")));
-                                meta.lore(List.of(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.remove"))));
-                            });
-
                             overview.setItem(15, removeItem);
-                            overview.setItem(18, getBackArrow(event.getClickedInventory()));
+                            overview.setItem(18, backArrow);
 
                             player.openInventory(overview);
                         } else {
-                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.notfound")));
+                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.notfound")));
                             player.closeInventory();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
                     }
                 }
 
                 case BOOK -> {
                     Inventory overview = Bukkit.createInventory(player, 27, Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted IP"));
-                    ItemStack item = event.getCurrentItem();
 
-                    String ip = serializer.serialize(item.getItemMeta().displayName());
-
-                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", ip)) {
-                        if (rs.getResultSet().next()) {
-                            long unix = rs.getResultSet().getLong("unix");
-                            String byPlayer = rs.getResultSet().getString("byPlayer");
+                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", displayName)) {
+                        if (rs.resultSet().next()) {
+                            long unix = rs.resultSet().getLong("unix");
+                            String byPlayer = rs.resultSet().getString("byPlayer");
                             String reason = Objects.equals(rs.getResultSet().getString("reason") == null ? "No reason given" : "Some reason", "No reason given") ? translations.get("gui.blacklist.entry.reason.none") : translations.get("gui.blacklist.entry.reason.found");
 
-                            SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
-
-                            item.lore(Collections.singletonList(
-                                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.info"))
-                            ));
-                            overview.setItem(4, item);
-
                             ItemStack infoItem = new ItemStack(Material.PAPER);
-                            infoItem.editMeta(meta -> {
-                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.infoitem")));
-                                meta.lore(List.of(
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.name", ip)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.by", byPlayer)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.date", sdf.format(new Date(unix)))),
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.reason", reason))
-                                ));
-                            });
+                            infoItem.editMeta(meta ->
+                                    meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.infoitem")))
+                            );
 
+                            infoItem.lore(List.of(
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.name", displayName)),
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.by", byPlayer)),
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.date", sdf.format(new Date(unix)))),
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.reason", reason))
+                            ));
+
+                            overview.setItem(4, item);
                             overview.setItem(11, infoItem);
-
-                            ItemStack removeItem = new ItemStack(Material.BARRIER);
-                            removeItem.editMeta(meta -> {
-                                meta.displayName(
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.removeitem"))
-                                );
-                                meta.lore(Collections.singletonList(
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.remove"))
-                                ));
-                            });
-
                             overview.setItem(15, removeItem);
-                            overview.setItem(18, getBackArrow(event.getClickedInventory()));
+                            overview.setItem(18, backArrow);
 
                             player.openInventory(overview);
                         } else {
-                            player.sendMessage(
-                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.notfound"))
-                            );
+                            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.notfound")));
                             player.closeInventory();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
                     }
                 }
 
                 case WRITABLE_BOOK -> {
                     Inventory overview = Bukkit.createInventory(player, 27, Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted MOTD-IP"));
-                    ItemStack item = event.getCurrentItem();
 
-                    String ip = serializer.serialize(item.getItemMeta().displayName()).replace("(MOTD)", "");
+                    displayName = displayName.replace("(MOTD)", "");
 
-                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", ip)) {
-                        if (rs.getResultSet().next()) {
-                            long unix = rs.getResultSet().getLong("unix");
-                            String byPlayer = rs.getResultSet().getString("byPlayer");
-
-                            SimpleDateFormat sdf = new SimpleDateFormat(Keklist.getInstance().getConfig().getString("date-format"));
-
-                            item.lore(Collections.singletonList(
-                                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.info"))
-                            ));
-                            overview.setItem(4, item);
+                    try (DB.QueryResult rs = Keklist.getDatabase().onQuery("SELECT * FROM blacklistMotd WHERE ip = ?", displayName)) {
+                        if (rs.resultSet().next()) {
+                            long unix = rs.resultSet().getLong("unix");
+                            String byPlayer = rs.resultSet().getString("byPlayer");
 
                             ItemStack infoItem = new ItemStack(Material.PRISMARINE_SHARD);
-                            infoItem.editMeta(meta -> {
-                                meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.infoitem")));
-                                meta.lore(List.of(
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.motd.name", ip)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.motd.by", byPlayer)),
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.motd.date", sdf.format(new Date(unix))))
-                                ));
-                            });
+                            infoItem.editMeta(meta ->
+                                    meta.displayName(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.infoitem")))
+                            );
 
+                            infoItem.lore(List.of(
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.name", displayName)),
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.by", byPlayer)),
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.date", sdf.format(new Date(unix))))
+                            ));
+
+                            overview.setItem(4, item);
                             overview.setItem(11, infoItem);
-
-                            ItemStack removeItem = new ItemStack(Material.BARRIER);
-                            removeItem.editMeta(meta -> {
-                                meta.displayName(
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.motd.removeitem"))
-                                );
-                                meta.lore(Collections.singletonList(
-                                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.motd.remove"))
-                                ));
-                            });
-
                             overview.setItem(15, removeItem);
-                            overview.setItem(18, getBackArrow(event.getClickedInventory()));
+                            overview.setItem(18, backArrow);
 
                             player.openInventory(overview);
                         } else {
                             player.sendMessage(
-                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.motd.notfound"))
+                                    Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.notfound"))
                             );
                             player.closeInventory();
                         }
-                    } catch (Exception e) {
-                        e.printStackTrace();
+                    } catch (SQLException ex) {
+                        ex.printStackTrace();
                     }
                 }
             }
         }
     }
 
+    /**
+     * Handles the click on the back button in the blacklist entry GUI.
+     *
+     * @param event The InventoryClickEvent
+     * @throws SQLException If there is an error while accessing the database.
+     */
     @EventHandler
-    public void onBackClick(InventoryClickEvent event) throws SQLException {
+    public void onBackClick(@NotNull InventoryClickEvent event) throws SQLException {
         if (event.getClickedInventory() == null) return;
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted Player"))
                 || event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted IP"))
@@ -232,115 +214,86 @@ public class BlacklistEntryEvent implements Listener {
 
             if (event.getCurrentItem().getType() == Material.ARROW) {
                 int pageIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                int skipIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER);
-                boolean onlyPlayer = false;
-                boolean onlyIp = false;
-                boolean onlyMotd = false;
-                try {
-                    onlyPlayer = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER);
-                } catch (Exception ignored) {
-                }
-
-                try {
-                    onlyIp = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER);
-                } catch (Exception ignored) {
-                }
-
-                try {
-                    onlyMotd = 0 != event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "onlyMOTD"), PersistentDataType.INTEGER);
-                } catch (Exception ignored) {
-                }
-
-                player.openInventory(BlacklistEvent.getPage(pageIndex, skipIndex, onlyPlayer, onlyIp, onlyMotd));
+                player.openInventory(BlacklistEvent.getPage(pageIndex));
             }
         }
     }
 
+    /**
+     * Handles the click on the remove button in the blacklist entry GUI.
+     *
+     * @param event The InventoryClickEvent
+     * @throws SQLException If there is an error while accessing the database.
+     */
     @EventHandler
-    public void onRemoveClick(InventoryClickEvent event) throws SQLException {
+    public void onRemoveClick(@NotNull InventoryClickEvent event) throws SQLException {
         if (event.getClickedInventory() == null) return;
-        if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted Player"))) {
-            event.setCancelled(true);
+        if (event.getCurrentItem() == null) return;
+        if (!(event.getWhoClicked() instanceof Player player)) return;
+        if (event.getCurrentItem().getType() != Material.BARRIER) return;
 
-            if (event.getCurrentItem() == null) return;
-            if (!(event.getWhoClicked() instanceof Player player)) return;
+        switch (event.getView().title()) {
+            case Component c when c.equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted Player")) -> {
+                event.setCancelled(true);
 
-            if (!player.hasPermission("keklist.blacklist.remove")) {
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
-                return;
-            }
+                if (!player.hasPermission("keklist.blacklist.remove")) {
+                    player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                    return;
+                }
 
-            LanguageUtil translations = Keklist.getTranslations();
-
-            if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
                 String username = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
 
                 Keklist.getDatabase().onUpdate("DELETE FROM blacklist WHERE name = ?", username);
                 player.sendMessage(
-                        Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.player.removed", username))
+                        Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.removed", username))
                 );
 
-                player.openInventory(BlacklistEvent.getPage(0, 0, false, false, false)); // We can't use the back arrow here because the player is not in the inventory anymore and values may change
+                int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
+                player.openInventory(BlacklistEvent.getPage(pageIndex));
             }
-        } else if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted IP"))) {
-            event.setCancelled(true);
 
-            if (event.getCurrentItem() == null) return;
-            if (!(event.getWhoClicked() instanceof Player player)) return;
+            case Component c when c.equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted IP")) -> {
+                event.setCancelled(true);
 
-            LanguageUtil translations = Keklist.getTranslations();
+                if (!player.hasPermission("keklist.blacklist.remove")) {
+                    player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                    return;
+                }
 
-            if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
                 String ip = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
 
                 Keklist.getDatabase().onUpdate("DELETE FROM blacklistIp WHERE ip = ?", ip);
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.ip.removed", ip)));
+                Keklist.getDatabase().onUpdate("DELETE FROM blacklistMotd WHERE ip = ?", ip);
 
-                player.openInventory(BlacklistEvent.getPage(0, 0, false, false, false)); // We can't use the back arrow here because the player is not in the inventory anymore and values may change
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.removed", ip)));
+
+                int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
+                player.openInventory(BlacklistEvent.getPage(pageIndex));
             }
-        } else if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted MOTD-IP"))) {
-            event.setCancelled(true);
 
-            if (event.getCurrentItem() == null) return;
-            if (!(event.getWhoClicked() instanceof Player player)) return;
+            case Component c when c.equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted MOTD-IP")) -> {
+                event.setCancelled(true);
 
-            LanguageUtil translations = Keklist.getTranslations();
+                if (!player.hasPermission("keklist.blacklist.remove")) {
+                    player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+                    return;
+                }
 
-            if (event.getCurrentItem().getType() == Material.BARRIER) {
                 ItemStack item = event.getClickedInventory().getItem(4);
-                String ip = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName()).replace("(MOTD)", "");
+                String ip = PlainTextComponentSerializer.plainText().serialize(item.getItemMeta().displayName());
 
                 Keklist.getDatabase().onUpdate("DELETE FROM blacklistMotd WHERE ip = ?", ip);
-                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(translations.get("gui.blacklist.entry.motd.removed", ip)));
 
-                player.openInventory(BlacklistEvent.getPage(0, 0, false, false, false)); // We can't use the back arrow here because the player is not in the inventory anymore and values may change
+                player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.removed", ip)));
+
+                int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
+                player.openInventory(BlacklistEvent.getPage(pageIndex));
+            }
+
+            default -> {
             }
         }
-    }
-
-    private ItemStack getBackArrow(Inventory inventory) {
-        ItemStack item = new ItemStack(Material.ARROW);
-        item.editMeta(meta -> {
-            meta.displayName(
-                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.back"))
-            );
-            meta.lore(Collections.singletonList(
-                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.back.lore"))
-            ));
-        });
-
-        ItemMeta meta = item.getItemMeta();
-        PersistentDataContainer container = meta.getPersistentDataContainer();
-        container.set(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER, 0);
-        container.set(new NamespacedKey(Keklist.getInstance(), "skipIndex"), PersistentDataType.INTEGER, 0);
-        container.set(new NamespacedKey(Keklist.getInstance(), "onlyPlayer"), PersistentDataType.INTEGER, 0); // boolean workaround
-        container.set(new NamespacedKey(Keklist.getInstance(), "onlyIP"), PersistentDataType.INTEGER, 0); // boolean workaround
-        container.set(new NamespacedKey(Keklist.getInstance(), "onlyMOTD"), PersistentDataType.INTEGER, 0); // boolean workaround
-
-
-        item.setItemMeta(meta);
-        return item;
     }
 }

@@ -24,8 +24,16 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+/**
+ * Handles the events for the whitelist entry GUI.
+ */
 public class WhitelistEntryEvent implements Listener {
 
+    /**
+     * Handles the click event for the main whitelist entry GUI.
+     *
+     * @param event The InventoryClickEvent
+     */
     @EventHandler
     public void onEntryClick(@NotNull InventoryClickEvent event) {
         if (event.getClickedInventory() == null) return;
@@ -179,6 +187,12 @@ public class WhitelistEntryEvent implements Listener {
         }
     }
 
+    /**
+     * Handles the click event for the back button in the whitelist entry GUI.
+     *
+     * @param event The InventoryClickEvent
+     * @throws SQLException If a database error occurs
+     */
     @EventHandler
     public void onBackClick(@NotNull InventoryClickEvent event) throws SQLException {
         if (event.getClickedInventory() == null) return;
@@ -202,6 +216,12 @@ public class WhitelistEntryEvent implements Listener {
         }
     }
 
+    /**
+     * Handles the click event for the remove button in the whitelist entry GUI.
+     *
+     * @param event The InventoryClickEvent
+     * @throws SQLException If a database error occurs
+     */
     @EventHandler
     public void onRemoveClick(@NotNull InventoryClickEvent event) throws SQLException {
         if (event.getClickedInventory() == null) return;
@@ -227,7 +247,6 @@ public class WhitelistEntryEvent implements Listener {
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.entry.removed", username)));
 
                 int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-
                 player.openInventory(WhitelistEvent.getPage(pageIndex));
             }
 
