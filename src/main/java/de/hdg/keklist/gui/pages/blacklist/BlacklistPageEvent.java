@@ -1,4 +1,4 @@
-package de.hdg.keklist.gui.events.blacklist;
+package de.hdg.keklist.gui.pages.blacklist;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import de.hdg.keklist.Keklist;
@@ -33,7 +33,7 @@ import java.util.*;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class BlacklistEvent implements Listener {
+public class BlacklistPageEvent implements Listener {
 
     private final HashMap<Location, BlockData> signMap = new HashMap<>();
     private final ScheduledThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(1);

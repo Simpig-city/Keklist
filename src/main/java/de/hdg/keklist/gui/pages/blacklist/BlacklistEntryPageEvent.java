@@ -1,4 +1,4 @@
-package de.hdg.keklist.gui.events.blacklist;
+package de.hdg.keklist.gui.pages.blacklist;
 
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
@@ -24,7 +24,7 @@ import java.util.*;
 /**
  * Handles the events related to the blacklist entry GUI.
  */
-public class BlacklistEntryEvent implements Listener {
+public class BlacklistEntryPageEvent implements Listener {
 
     /**
      * Handles the click on an entry in the main blacklist GUI.
@@ -217,7 +217,7 @@ public class BlacklistEntryEvent implements Listener {
 
             if (event.getCurrentItem().getType() == Material.ARROW) {
                 int pageIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                player.openInventory(BlacklistEvent.getPage(pageIndex));
+                player.openInventory(BlacklistPageEvent.getPage(pageIndex));
             }
         }
     }
@@ -253,7 +253,7 @@ public class BlacklistEntryEvent implements Listener {
                 );
 
                 int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                player.openInventory(BlacklistEvent.getPage(pageIndex));
+                player.openInventory(BlacklistPageEvent.getPage(pageIndex));
             }
 
             case Component c when c.equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted IP")) -> {
@@ -273,7 +273,7 @@ public class BlacklistEntryEvent implements Listener {
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.removed", ip)));
 
                 int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                player.openInventory(BlacklistEvent.getPage(pageIndex));
+                player.openInventory(BlacklistPageEvent.getPage(pageIndex));
             }
 
             case Component c when c.equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Blacklisted MOTD-IP")) -> {
@@ -292,7 +292,7 @@ public class BlacklistEntryEvent implements Listener {
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.blacklist.entry.removed", ip)));
 
                 int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                player.openInventory(BlacklistEvent.getPage(pageIndex));
+                player.openInventory(BlacklistPageEvent.getPage(pageIndex));
             }
 
             default -> {

@@ -161,7 +161,6 @@ public class GuiManager {
     }
 
     public enum GuiPage {
-        MAIN,
         WHITELIST,
         BLACKLIST,
         SETTINGS

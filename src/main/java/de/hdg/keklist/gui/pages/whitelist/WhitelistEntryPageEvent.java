@@ -1,4 +1,4 @@
-package de.hdg.keklist.gui.events.whitelist;
+package de.hdg.keklist.gui.pages.whitelist;
 
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
@@ -27,7 +27,7 @@ import java.util.UUID;
 /**
  * Handles the events for the whitelist entry GUI.
  */
-public class WhitelistEntryEvent implements Listener {
+public class WhitelistEntryPageEvent implements Listener {
 
     /**
      * Handles the click event for the main whitelist entry GUI.
@@ -214,7 +214,7 @@ public class WhitelistEntryEvent implements Listener {
 
             if (event.getCurrentItem().getType() == Material.ARROW) {
                 int pageIndex = event.getCurrentItem().getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                player.openInventory(WhitelistEvent.getPage(pageIndex));
+                player.openInventory(WhitelistPageEvent.getPage(pageIndex));
             }
         }
     }
@@ -250,7 +250,7 @@ public class WhitelistEntryEvent implements Listener {
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.entry.removed", username)));
 
                 int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                player.openInventory(WhitelistEvent.getPage(pageIndex));
+                player.openInventory(WhitelistPageEvent.getPage(pageIndex));
             }
 
             case Component c when c.equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Whitelisted IP")) -> {
@@ -270,7 +270,7 @@ public class WhitelistEntryEvent implements Listener {
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.entry.removed", ip)));
 
                 int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                player.openInventory(WhitelistEvent.getPage(pageIndex));
+                player.openInventory(WhitelistPageEvent.getPage(pageIndex));
             }
 
             case Component c when c.equals(Keklist.getInstance().getMiniMessage().deserialize("<blue><b>Whitelisted Domain")) -> {
@@ -290,7 +290,7 @@ public class WhitelistEntryEvent implements Listener {
                 player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.whitelist.entry.removed", domain)));
 
                 int pageIndex = event.getClickedInventory().getItem(18).getItemMeta().getPersistentDataContainer().get(new NamespacedKey(Keklist.getInstance(), "pageIndex"), PersistentDataType.INTEGER);
-                player.openInventory(WhitelistEvent.getPage(pageIndex));
+                player.openInventory(WhitelistPageEvent.getPage(pageIndex));
             }
 
             default -> {

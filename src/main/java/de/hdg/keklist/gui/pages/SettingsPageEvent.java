@@ -1,4 +1,4 @@
-package de.hdg.keklist.gui.events;
+package de.hdg.keklist.gui.pages;
 
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
@@ -18,7 +18,7 @@ import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-public class SettingsEvent implements Listener {
+public class SettingsPageEvent implements Listener {
 
     @EventHandler
     public void onSettingsClick(@NotNull InventoryClickEvent event) {
