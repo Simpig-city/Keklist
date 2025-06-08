@@ -7,7 +7,7 @@ import io.papermc.paper.plugin.bootstrap.PluginBootstrap;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
-import org.reflections.scanners.SubTypesScanner;
+import org.reflections.scanners.Scanners;
 import org.reflections.util.ClasspathHelper;
 import org.reflections.util.ConfigurationBuilder;
 
@@ -22,7 +22,7 @@ public class KeklistBootstrap implements PluginBootstrap {
         // Initialize Reflections with an explicit classloader
         Reflections reflections = new Reflections(new ConfigurationBuilder()
                 .setUrls(ClasspathHelper.forPackage("de.hdg.keklist", Keklist.class.getClassLoader()))  // Manually set the plugin's location
-                .setScanners(new SubTypesScanner(false))  // Scan for subclasses
+                .setScanners(Scanners.SubTypes)  // Scan for subclasses
                 .addClassLoaders(Keklist.class.getClassLoader()));  // Use the correct classloader
 
 
