@@ -20,12 +20,12 @@ import de.hdg.keklist.extentions.GeyserEventRegistrar;
 import de.hdg.keklist.extentions.PlaceholderAPIExtension;
 import de.hdg.keklist.extentions.context.BlacklistedCalculator;
 import de.hdg.keklist.extentions.context.WhitelistedCalculator;
-import de.hdg.keklist.gui.events.MainGUIEvent;
-import de.hdg.keklist.gui.events.SettingsEvent;
-import de.hdg.keklist.gui.events.blacklist.BlacklistEntryEvent;
-import de.hdg.keklist.gui.events.blacklist.BlacklistEvent;
-import de.hdg.keklist.gui.events.whitelist.WhitelistEntryEvent;
-import de.hdg.keklist.gui.events.whitelist.WhitelistEvent;
+import de.hdg.keklist.gui.pages.MainPageEvent;
+import de.hdg.keklist.gui.pages.SettingsPageEvent;
+import de.hdg.keklist.gui.pages.blacklist.BlacklistEntryPageEvent;
+import de.hdg.keklist.gui.pages.blacklist.BlacklistPageEvent;
+import de.hdg.keklist.gui.pages.whitelist.WhitelistEntryPageEvent;
+import de.hdg.keklist.gui.pages.whitelist.WhitelistPageEvent;
 import de.hdg.keklist.util.KeklistConfigUtil;
 import de.hdg.keklist.util.LanguageUtil;
 import de.hdg.keklist.extentions.PlanHook;
@@ -166,14 +166,14 @@ public final class Keklist extends JavaPlugin {
         pm.registerEvents(new ServerWhitelistChangeEvent(), this);
 
         // GUI Listener
-        pm.registerEvents(new MainGUIEvent(), this);
-        pm.registerEvents(new SettingsEvent(), this);
+        pm.registerEvents(new MainPageEvent(), this);
+        pm.registerEvents(new SettingsPageEvent(), this);
 
-        pm.registerEvents(new WhitelistEvent(), this);
-        pm.registerEvents(new WhitelistEntryEvent(), this);
+        pm.registerEvents(new WhitelistPageEvent(), this);
+        pm.registerEvents(new WhitelistEntryPageEvent(), this);
 
-        pm.registerEvents(new BlacklistEvent(), this);
-        pm.registerEvents(new BlacklistEntryEvent(), this);
+        pm.registerEvents(new BlacklistPageEvent(), this);
+        pm.registerEvents(new BlacklistEntryPageEvent(), this);
 
 
         // Register plugin channel for API usage
