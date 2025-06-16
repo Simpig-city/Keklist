@@ -12,7 +12,7 @@ plugins {
     id("io.freefair.lombok") version "8.13.1"
     id("com.gradleup.shadow") version "8.3.6"
     id("com.modrinth.minotaur") version "2.+"
-    id("org.ajoberstar.grgit") version "5.3.0"
+    id("org.ajoberstar.grgit") version "5.3.2"
     id("io.papermc.hangar-publish-plugin") version "0.1.3"
 }
 
