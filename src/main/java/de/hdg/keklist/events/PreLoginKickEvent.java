@@ -19,7 +19,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerPreLoginEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -222,62 +221,6 @@ public class PreLoginKickEvent implements Listener {
         }
     }
 
-    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
-    public void onLogin(PlayerLoginEvent event) {
-        // May add a hidden config option for this to explicitly enable it.
-        if (config.getBoolean("blacklist.enabled")) { // Backup check
-            try (DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT * FROM blacklist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
-                 DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT * FROM blacklistIp WHERE ip = ?", event.getAddress().getHostAddress())) {
-
-                boolean isIpBanned = rsIp.getResultSet().next();
-                boolean isUserBanned = rsUser.getResultSet().next();
-
-                if (isIpBanned || isUserBanned) {
-                    if (config.getBoolean("blacklist.allow-join-with-admin")) {
-                        for (Player player : Keklist.getInstance().getServer().getOnlinePlayers()) {
-                            if (player.hasPermission(config.getString("blacklist.admin-permission"))) {
-                                return;
-                            }
-                        }
-                    }
-
-                    if (config.getBoolean("blacklist.limbo")) {
-                        Keklist.getInstance().sendUserToLimbo(event.getPlayer()); //Might fail, so we need to handle this the last time in the join event
-                        return;
-                    }
-
-                    if (isIpBanned && Keklist.getWebhookManager() != null)
-                        Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getAddress().getHostName(), rsIp.getResultSet().getString("byPlayer"), null, System.currentTimeMillis());
-
-                    if (isUserBanned && Keklist.getWebhookManager() != null)
-                        Keklist.getWebhookManager().fireBlacklistEvent(WebhookManager.EVENT_TYPE.BLACKLIST_KICK, event.getPlayer().getName(), rsIp.getResultSet().getString("byPlayer"), null, System.currentTimeMillis());
-
-                    event.disallow(PlayerLoginEvent.Result.KICK_BANNED, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)));
-                    return;
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        // Backup check
-        if (config.getBoolean("whitelist.enabled")) {
-            try (DB.QueryResult rsUser = Keklist.getDatabase().onQuery("SELECT * FROM whitelist WHERE uuid = ?", event.getPlayer().getUniqueId().toString());
-                 DB.QueryResult rsIp = Keklist.getDatabase().onQuery("SELECT * FROM whitelistIp WHERE ip = ?", event.getAddress().getHostAddress())) {
-
-                if (rsIp.getResultSet().next()) return;
-                if (rsUser.getResultSet().next()) return;
-
-                if (Keklist.getWebhookManager() != null)
-                    Keklist.getWebhookManager().fireWhitelistEvent(WebhookManager.EVENT_TYPE.WHITELIST_KICK, event.getPlayer().getName() + "/" + event.getAddress().getHostAddress(), null, System.currentTimeMillis());
-
-                event.disallow(PlayerLoginEvent.Result.KICK_WHITELIST, Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.WHITELISTED)));
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
     @EventHandler(priority = EventPriority.HIGHEST)
     public void onJoin(@NotNull PlayerJoinEvent event) {
         // No need to check for the lastSeenIp table, because we already did this in the prelogin event
@@ -291,9 +234,7 @@ public class PreLoginKickEvent implements Listener {
                     event.joinMessage(Component.empty());
                     Keklist.getInstance().sendUserToLimbo(event.getPlayer());
 
-                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> {
-                        event.getPlayer().kick(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)), PlayerKickEvent.Cause.BANNED);
-                    }, 10L);
+                    Bukkit.getScheduler().runTaskLater(Keklist.getInstance(), () -> event.getPlayer().kick(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getInstance().getRandomizedKickMessage(Keklist.RandomType.BLACKLISTED)), PlayerKickEvent.Cause.BANNED), 10L);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
