@@ -6,8 +6,9 @@ date-format: "dd-MM-yyyy HH:mm" # Date format for the blacklist/whitelist GUI
 chat-notify: false # Notify the player if someone joins the server which is blacklisted/whitelisted
 
 general:
-  enable-default-motd: false # Keklist will now display the default motd. NOTE: This will override other motd plugins so it's false by default ; Same as for blacklisted/whitelisted motd
+  enable-default-motd: false # Keklist will now display the default motd. NOTE: This will override other motd plugins, so it's false by default; Same as for blacklisted/whitelisted motd
   require-server-list-before-join: false # Require the player to add this server to the server list before joining
+  load-heads-in-gui: true # Load the heads in the GUI. NOTE: Disable this if you experience lag on the server while using the GUI
 
 ip:
   send-message-on-join: false # Send a message about a player's ip on join
@@ -32,9 +33,9 @@ blacklist:
   allow-join-with-admin: false # Allows blacklisted player to join if a player with the admin-permission is online
   admin-permission: "blacklist.admin"
   change-motd: true # Change the motd for players (ips) on the (modt-) blacklist if the server is in blacklist mode. NOTE: Change this to false if you want to use the default motd or any other motd plugin
-  limbo: false # May let the player join if nobody is online but fallback kicked; Needs velocity plugin
-  icon-file: "default" # The icon for the server if player is blacklisted. Put the file in the same folder as the config. Use default for the default icon
-  countries: [ ] # List of countries in ISO 3166-1 A2 that are blacklisted. NOTE: Can be empty ; There won't be an option for blocking cities as this data is not inaccurate enough
+  limbo: false # May let the player join if nobody is online, but fallback kicked; Needs velocity plugin
+  icon-file: "default" # The icon for the server if the player is blacklisted. Put the file in the same folder as the config. Use default for the default icon
+  countries: [ ] # List of countries in ISO 3166-1 A2 that are blacklisted. NOTE: Can be empty; There won't be an option for blocking cities as this data is not inaccurate enough
   continents: [ ] # List of continents in 2-digit code that are blacklisted. NOTE: Can be empty
 
 # Settings for the whitelist feature
@@ -49,13 +50,13 @@ whitelist:
     - LPTP1
   fake-max-range: 20-40 # Please use the format: INTEGER-INTEGER
   fake-online-range: 0-10 # Please use the format: INTEGER-INTEGER
-  level: 0 # Sets the level for the whitelist. Higher level means only level >= entries can join. Leave 0 for default behavior
+  level: 0 # Sets the level for the whitelist. Higher level means only level >= entries can join. Leave 0 for the default behavior
 
 # Extensions for the plugin
 placeholderapi: false # Enable PlaceholderAPI support
 plan-support: false # Enable support for the Plan plugin
 
-# Note: If you use a proxy you need to enable 'send-floodgate-data' on the proxy's config
+# Note: If you use a proxy, you need to enable 'send-floodgate-data' on the proxy's config
 # More: https://wiki.geysermc.org/floodgate/setup/
 floodgate:
   prefix: "." # Prefix for the floodgate player. Gets automatically set if geyser is installed
@@ -67,7 +68,7 @@ discord:
   username: "Keklist"  # Username for the webhook
   avatar-url: https://cdn.discordapp.com/attachments/1056727727991959673/1102655035290157176/keklist.png # This is the default avatar from keklist
   events: [ "blacklist_add", "blacklist_remove", "blacklist_kick", "whitelist_add", "whitelist_remove", "whitelist_kick", "limbo" ] # List of events which trigger a message
-  ping-roles: [ "214809157574983681" ] # Pings this role on any event. NOTE: Can be empty
+  ping-roles: [ "214809157574983681" ] # Pings this role in any event. NOTE: Can be empty
 
 # Settings for the database
 # This is useful to share the blacklist and whitelist between multiple servers
@@ -85,7 +86,7 @@ database:
 # Messages for the plugin
 # This fully supports minimessage
 messages:
-  motd: # NOTE: Will be ignored unless you enable motd feature explicitly ; motd will also be ignored
+  motd: # NOTE: Will be ignored unless you enable motd feature explicitly; motd will also be ignored
     blacklisted:
       - "<red><bold>Your IP is blacklisted on this server!"
       - "<red><bold>You are not allowed to join this server!"

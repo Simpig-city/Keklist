@@ -1,4 +1,4 @@
-package de.hdg.keklist.gui.events;
+package de.hdg.keklist.gui.pages;
 
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.database.DB;
@@ -12,14 +12,16 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.NotNull;
 
+import java.sql.SQLException;
 import java.util.Collections;
 import java.util.List;
 
-public class SettingsEvent implements Listener {
+public class SettingsPageEvent implements Listener {
 
     @EventHandler
-    public void onSettingsClick(InventoryClickEvent event) {
+    public void onSettingsClick(@NotNull InventoryClickEvent event) {
         if (event.getClickedInventory() == null) return;
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Settings"))) {
             event.setCancelled(true);
@@ -39,7 +41,7 @@ public class SettingsEvent implements Listener {
     }
 
     @EventHandler
-    public void onWhitelistClick(InventoryClickEvent event) {
+    public void onWhitelistClick(@NotNull InventoryClickEvent event) {
         if (event.getClickedInventory() == null) return;
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Whitelist Settings"))) {
             event.setCancelled(true);
@@ -73,20 +75,20 @@ public class SettingsEvent implements Listener {
                         Keklist.getInstance().saveConfig();
 
                         player.sendMessage(
-                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.disabled")));
+                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.disabled"))
+                        );
 
                         openWhitelistGUI(player);
                     } else
-                        player.sendMessage(
-                                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-disabled")));
+                        player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("whitelist.already-disabled")));
                 }
 
-                case ARROW -> GuiManager.handleMainGUICLick("settings", player);
+                case ARROW -> GuiManager.handleMainGUICLick(GuiManager.GuiPage.SETTINGS, player);
             }
         }
     }
 
-    private void openWhitelistGUI(Player player) {
+    private void openWhitelistGUI(@NotNull Player player) {
         Inventory whitelist = Keklist.getInstance().getServer().createInventory(player, 9 * 3, Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Whitelist Settings"));
 
         int whitelistedPlayers = 0;
@@ -95,38 +97,36 @@ public class SettingsEvent implements Listener {
         try (DB.QueryResult rsPlayers = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelist");
              DB.QueryResult rsIPs = Keklist.getDatabase().onQuery("SELECT COUNT(*) FROM whitelistIp")
         ) {
-            if (rsPlayers.getResultSet().next()) whitelistedPlayers = rsPlayers.getResultSet().getInt(1);
-            if (rsIPs.getResultSet().next()) whitelistedIPs = rsIPs.getResultSet().getInt(1);
-        } catch (Exception e) {
-            e.printStackTrace();
+            if (rsPlayers.resultSet().next()) whitelistedPlayers = rsPlayers.resultSet().getInt(1);
+            if (rsIPs.resultSet().next()) whitelistedIPs = rsIPs.resultSet().getInt(1);
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
 
         ItemStack enable = new ItemStack(Material.LIME_DYE);
-        ItemMeta enableMeta = enable.getItemMeta();
-        enableMeta.displayName(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.enable.title"))
-        );
-        enableMeta.lore(
-                Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.enable.description"))
-                ));
-        enable.setItemMeta(enableMeta);
+        enable.editMeta(meta -> {
+            meta.displayName(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.enable.title"))
+            );
+            meta.lore(
+                    Collections.singletonList(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.enable.description"))
+                    ));
+        });
 
         ItemStack disable = new ItemStack(Material.RED_DYE);
-        ItemMeta disableMeta = disable.getItemMeta();
-        disableMeta.displayName(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.disable.title"))
-        );
-        disableMeta.lore(Collections.singletonList(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.disable.description"))
-        ));
-        disable.setItemMeta(disableMeta);
+        disable.editMeta(meta -> {
+            meta.displayName(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.disable.title"))
+            );
+            meta.lore(Collections.singletonList(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.whitelist.disable.description"))
+            ));
+        });
 
         ItemStack arrow = new ItemStack(Material.ARROW);
-        ItemMeta arrowMeta = arrow.getItemMeta();
-        arrowMeta.displayName(
+        arrow.editMeta(meta -> meta.displayName(
                 Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.back"))
-        );
-        arrow.setItemMeta(arrowMeta);
+        ));
 
         ItemStack info = new ItemStack(Material.PAPER);
         ItemMeta infoMeta = info.getItemMeta();
@@ -150,7 +150,7 @@ public class SettingsEvent implements Listener {
     }
 
     @EventHandler
-    public void onBlacklistClick(InventoryClickEvent event) {
+    public void onBlacklistClick(@NotNull InventoryClickEvent event) {
         if (event.getClickedInventory() == null) return;
         if (event.getView().title().equals(Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Blacklist Settings"))) {
             event.setCancelled(true);
@@ -194,12 +194,12 @@ public class SettingsEvent implements Listener {
                         );
                 }
 
-                case ARROW -> GuiManager.handleMainGUICLick("settings", player);
+                case ARROW -> GuiManager.handleMainGUICLick(GuiManager.GuiPage.SETTINGS, player);
             }
         }
     }
 
-    private void openBlacklistGUI(Player player) {
+    private void openBlacklistGUI(@NotNull Player player) {
         Inventory blacklist = Keklist.getInstance().getServer().createInventory(player, 9 * 3, Keklist.getInstance().getMiniMessage().deserialize("<gold><b>Blacklist Settings"));
 
         int blacklistedPlayers = 0;
@@ -213,36 +213,34 @@ public class SettingsEvent implements Listener {
             if (rsPlayers.getResultSet().next()) blacklistedPlayers = rsPlayers.getResultSet().getInt(1);
             if (rsIPs.getResultSet().next()) blacklistedIPS = rsIPs.getResultSet().getInt(1);
             if (rsMOTD.getResultSet().next()) blacklistedMotd = rsMOTD.getResultSet().getInt(1);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
 
         ItemStack enable = new ItemStack(Material.LIME_DYE);
-        ItemMeta enableMeta = enable.getItemMeta();
-        enableMeta.displayName(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.enable.title"))
-        );
-        enableMeta.lore(Collections.singletonList(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.enable.description"))
-        ));
-        enable.setItemMeta(enableMeta);
+        enable.editMeta(meta -> {
+            meta.displayName(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.enable.title"))
+            );
+            meta.lore(Collections.singletonList(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.enable.description"))
+            ));
+        });
 
         ItemStack disable = new ItemStack(Material.RED_DYE);
-        ItemMeta disableMeta = disable.getItemMeta();
-        disableMeta.displayName(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.disable.title"))
-        );
-        disableMeta.lore(Collections.singletonList(
-                Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.disable.description"))
-        ));
-        disable.setItemMeta(disableMeta);
+        disable.editMeta(meta -> {
+            meta.displayName(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.disable.title"))
+            );
+            meta.lore(Collections.singletonList(
+                    Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.settings.blacklist.disable.description"))
+            ));
+        });
 
         ItemStack arrow = new ItemStack(Material.ARROW);
-        ItemMeta arrowMeta = arrow.getItemMeta();
-        arrowMeta.displayName(
+        arrow.editMeta(meta -> meta.displayName(
                 Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("gui.back"))
-        );
-        arrow.setItemMeta(arrowMeta);
+        ));
 
         ItemStack info = new ItemStack(Material.PAPER);
         ItemMeta infoMeta = info.getItemMeta();
