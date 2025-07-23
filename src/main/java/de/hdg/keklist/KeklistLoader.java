@@ -13,7 +13,7 @@ public class KeklistLoader implements PluginLoader {
     public void classloader(@NotNull PluginClasspathBuilder pluginClasspathBuilder) {
         MavenLibraryResolver resolver = new MavenLibraryResolver();
 
-        resolver.addRepository(new RemoteRepository.Builder("maven", "default", "https://repo.maven.apache.org/maven2").build());
+        resolver.addRepository(new RemoteRepository.Builder("maven", "default", MavenLibraryResolver.MAVEN_CENTRAL_DEFAULT_MIRROR).build());
         resolver.addRepository(new RemoteRepository.Builder("jitpack", "default", "https://jitpack.io").build());
         //resolver.addRepository(new RemoteRepository.Builder("sage-snap", "default", "https://repo.sageee.xyz/snapshots").build());
         //resolver.addRepository(new RemoteRepository.Builder("sage-release", "default", "https://repo.sageee.xyz/releases").build());
