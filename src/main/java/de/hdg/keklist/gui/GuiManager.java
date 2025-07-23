@@ -1,5 +1,6 @@
 package de.hdg.keklist.gui;
 
+import com.mojang.brigadier.Command;
 import de.hdg.keklist.Keklist;
 import de.hdg.keklist.util.LanguageUtil;
 import org.bukkit.Bukkit;
@@ -18,6 +19,11 @@ public class GuiManager {
     private static final LanguageUtil translations = Keklist.getTranslations();
 
     public static void openMainGUI(@NotNull Player player) {
+        if (!player.hasPermission("keklist.gui.use")) {
+            player.sendMessage(Keklist.getInstance().getMiniMessage().deserialize(Keklist.getTranslations().get("no-permission")));
+            return;
+        }
+
         Inventory mainMenu = Bukkit.createInventory(player, 9 * 3, plugin.getMiniMessage().deserialize("<gold><b>Keklist"));
 
         ItemStack whitelist = new ItemStack(Material.PAPER);

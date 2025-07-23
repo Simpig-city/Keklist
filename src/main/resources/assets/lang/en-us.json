@@ -152,7 +152,7 @@
   "gui.blacklist.list.title": "<blue>List Entries",
   "gui.blacklist.list.description": "<gray><i>List all entries on the blacklist",
   "gui.blacklist.list.next": "<gray><i>Click to see the next page",
-  "gui.blacklist.entry.reason": "<blue><b>Reason: ",
+  "gui.blacklist.entry.reason": "<blue><b>Reason: <white>%s",
   "gui.blacklist.entry.reason.found": "<white><b>Reason given; too long to display",
   "gui.blacklist.entry.reason.none": "<white><b>No reason given",
   "gui.blacklist.list.previous": "<gray><i>Click to see the previous page",
