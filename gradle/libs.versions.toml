@@ -3,7 +3,7 @@
 [versions]
 io-papermc-paper-paper-api = "1.21.8-R0.1-SNAPSHOT"
 com-velocitypowered-velocity-api = "3.4.0-SNAPSHOT"
-net-kyori-adventure-text-minimessage = "4.23.0"
+net-kyori-adventure-text-minimessage = "4.24.0"
 com-google-code-gson-gson = "2.13.1"
 
 org-geysermc-floodgate-api = "2.2.4-SNAPSHOT"
