@@ -1,6 +1,5 @@
 import java.net.URI
 import java.nio.file.Files
-import org.ajoberstar.grgit.Grgit
 import io.papermc.hangarpublishplugin.model.Platforms
 
 defaultTasks("build")
@@ -12,7 +11,6 @@ plugins {
     id("io.freefair.lombok") version "8.14"
     id("com.gradleup.shadow") version "8.3.8"
     id("com.modrinth.minotaur") version "2.+"
-    id("org.ajoberstar.grgit") version "5.3.2"
     id("io.papermc.hangar-publish-plugin") version "0.1.3"
 }
 
@@ -242,12 +240,20 @@ tasks {
     }
 
     processResources {
+        val projectName = project.name
+        val projectVersion = project.version.toString()
+        val projectDescription = project.description.orEmpty()
+
+        inputs.property("projectName", projectName)
+        inputs.property("projectVersion", projectVersion)
+        inputs.property("projectDescription", projectDescription)
+
         filesMatching("*.yml") {
             expand(
                 mapOf(
-                    "name" to project.name,
-                    "version" to project.version,
-                    "description" to project.description
+                    "name" to projectName,
+                    "version" to projectVersion,
+                    "description" to projectDescription
                 )
             )
         }
@@ -345,20 +351,14 @@ tasks {
 }
 
 
-fun getBranch(): String {
-    Grgit.open(mapOf("currentDir" to project.rootDir)).use { git ->
-        return git.branch.current().name
-    }
-}
-
 fun getLatestCommitHash(): String {
-    Grgit.open(mapOf("currentDir" to project.rootDir)).use { git ->
-        return git.head().id
-    }
+    return providers.exec {
+        commandLine("git", "rev-parse", "--verify", "HEAD")
+    }.standardOutput.asText.get()
 }
 
 fun getLatestCommitMessage(): String {
-    Grgit.open(mapOf("currentDir" to project.rootDir)).use { git ->
-        return git.log().first().fullMessage
-    }
+    return providers.exec {
+        commandLine("git", "log", "-1", "--pretty=%B")
+    }.standardOutput.asText.get()
 }
