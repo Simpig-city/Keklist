@@ -14,7 +14,7 @@ me-clip-placeholderapi = "2.11.6"
 net-luckperms-api = "5.5"
 
 org-xerial-sqlite-jdbc = "3.50.3.0"
-org-mariadb-jdbc-mariadb-java-client = "3.5.4"
+org-mariadb-jdbc-mariadb-java-client = "3.5.5"
 com-squareup-okhttp3-okhttp = "5.1.0"
 club-minnced-discord-webhooks = "0.8.4"
 de-sage-util-updatechecker = "1.0.3-SNAPSHOT"
