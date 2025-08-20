@@ -18,7 +18,7 @@ public class KeklistLoader implements PluginLoader {
         //resolver.addRepository(new RemoteRepository.Builder("sage-snap", "default", "https://repo.sageee.xyz/snapshots").build());
         //resolver.addRepository(new RemoteRepository.Builder("sage-release", "default", "https://repo.sageee.xyz/releases").build());
 
-        resolver.addDependency(new Dependency(new DefaultArtifact("com.squareup.okhttp3:okhttp:5.1.0"), "compile"));
+        resolver.addDependency(new Dependency(new DefaultArtifact("com.squareup.okhttp3:okhttp:5.0.0-alpha.14"), "compile"));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.xerial:sqlite-jdbc:3.50.3.0"), "compile"));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.mariadb.jdbc:mariadb-java-client:3.5.5"), "compile"));
         resolver.addDependency(new Dependency(new DefaultArtifact("club.minnced:discord-webhooks:0.8.4"), "compile"));

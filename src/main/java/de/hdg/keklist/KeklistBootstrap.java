@@ -31,6 +31,7 @@ public class KeklistBootstrap implements PluginBootstrap {
         context.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, commands -> {
             subTypes.forEach(clazz -> {
                 try {
+                    System.out.println(clazz.getName());
                     BrigadierCommand command = clazz.getDeclaredConstructor().newInstance();
                     Method getCommandMethod = clazz.getDeclaredMethod("getCommand");
 
