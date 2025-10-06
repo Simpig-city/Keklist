@@ -26,7 +26,7 @@ jobs:
       run: git config --global user.email "no-reply@github.com" && git config --global user.name "Github Actions"
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v4
+      uses: gradle/actions/setup-gradle@v5
       
     - name: Publish to GitHub Packages
       run: ./gradlew publishNewRelease
