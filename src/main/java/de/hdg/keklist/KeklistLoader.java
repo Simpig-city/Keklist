@@ -19,12 +19,12 @@ public class KeklistLoader implements PluginLoader {
         //resolver.addRepository(new RemoteRepository.Builder("sage-release", "default", "https://repo.sageee.xyz/releases").build());
 
         resolver.addDependency(new Dependency(new DefaultArtifact("com.squareup.okhttp3:okhttp:5.0.0-alpha.14"), "compile"));
-        resolver.addDependency(new Dependency(new DefaultArtifact("org.xerial:sqlite-jdbc:3.50.3.0"), "compile"));
-        resolver.addDependency(new Dependency(new DefaultArtifact("org.mariadb.jdbc:mariadb-java-client:3.5.6"), "compile"));
+        resolver.addDependency(new Dependency(new DefaultArtifact("org.xerial:sqlite-jdbc:3.53.1.0"), "compile"));
+        resolver.addDependency(new Dependency(new DefaultArtifact("org.mariadb.jdbc:mariadb-java-client:3.5.8"), "compile"));
         resolver.addDependency(new Dependency(new DefaultArtifact("club.minnced:discord-webhooks:0.8.4"), "compile"));
         resolver.addDependency(new Dependency(new DefaultArtifact("com.github.TominoLP:2FA-API:1.3.2"), "compile"));
         resolver.addDependency(new Dependency(new DefaultArtifact("com.zaxxer:HikariCP:7.0.2"), "compile"));
-        resolver.addDependency(new Dependency(new DefaultArtifact("com.h2database:h2:2.3.232"), "compile"));
+        resolver.addDependency(new Dependency(new DefaultArtifact("com.h2database:h2:2.4.240"), "compile"));
         resolver.addDependency(new Dependency(new DefaultArtifact("org.reflections:reflections:0.10.2"), "compile"));
         //resolver.addDependency(new Dependency(new DefaultArtifact("de.sage.util:updatechecker:1.0.3-SNAPSHOT"), "compile"));
 

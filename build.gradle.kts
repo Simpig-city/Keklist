@@ -8,17 +8,17 @@ plugins {
     `java-library`
     `maven-publish`
 
-    id("io.freefair.lombok") version "8.14.2"
-    id("com.gradleup.shadow") version "9.0.2"
+    id("io.freefair.lombok") version "9.5.0"
+    id("com.gradleup.shadow") version "9.4.1"
     id("com.modrinth.minotaur") version "2.+"
-    id("io.papermc.hangar-publish-plugin") version "0.1.3"
+    id("io.papermc.hangar-publish-plugin") version "0.1.4"
 }
 
 group = "de.sage.minecraft"
 version = "1.0.0-SNAPSHOT"
 description = "Custom made black and whitelist with many different features"
-java.sourceCompatibility = JavaVersion.VERSION_21
-java.targetCompatibility = JavaVersion.VERSION_21
+java.sourceCompatibility = JavaVersion.VERSION_25
+java.targetCompatibility = JavaVersion.VERSION_25
 
 repositories {
     // mavenLocal()
@@ -86,7 +86,7 @@ java {
     withSourcesJar()
     withJavadocJar()
 
-    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    toolchain.languageVersion = JavaLanguageVersion.of(25)
 }
 
 publishing {
@@ -144,7 +144,7 @@ modrinth {
     versionType.set(if (version.toString().endsWith("SNAPSHOT")) "beta" else "release")
     //uploadFile.set(tasks.jar)
     uploadFile.set(tasks.getByPath("shadowJar"))
-    gameVersions.addAll("1.21.3", "1.21.4", "1.12.5", "1.21.6", "1.21.7", "1.21.8")
+    gameVersions.addAll("26.1.2")
     loaders.addAll("paper", "purpur", "velocity")
     syncBodyFrom.set(rootProject.file("README.md").readText())
     changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
@@ -172,7 +172,7 @@ hangarPublish {
         platforms {
             register(Platforms.PAPER) {
                 jar.set(tasks.jar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("1.21.x"))
+                platformVersions.set(listOf("26.1.x"))
                 dependencies {
                     hangar("Geyser") {
                         required.set(false)
@@ -196,7 +196,7 @@ hangarPublish {
             }
             register(Platforms.VELOCITY) {
                 jar.set(tasks.jar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("3.4"))
+                platformVersions.set(listOf("3.5"))
                 dependencies {
                     url("LimboAPI", "https://github.com/Elytrium/LimboAPI") {
                         required.set(false)
@@ -216,7 +216,7 @@ val pluginDir: File = serverDir.resolve("plugins")
 tasks {
     compileJava {
         options.encoding = Charsets.UTF_8.name()
-        options.release = 21
+        options.release = 25
     }
 
     javadoc {
@@ -264,7 +264,7 @@ tasks {
         doFirst {
             serverDir.mkdirs()
             pluginDir.mkdirs()
-            URI.create("https://api.purpurmc.org/v2/purpur/1.21.8/latest/download").toURL().openStream().use {
+            URI.create("https://api.purpurmc.org/v2/purpur/26.1.2/latest/download").toURL().openStream().use {
                 if (serverDir.resolve("server.jar").exists()) {
                     Files.delete(serverDir.resolve("server.jar").toPath())
                         .also { _ -> Files.copy(it, serverDir.resolve("server.jar").toPath()) }
