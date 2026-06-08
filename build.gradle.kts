@@ -9,7 +9,7 @@ plugins {
     `maven-publish`
 
     id("io.freefair.lombok") version "9.5.0"
-    id("com.gradleup.shadow") version "9.4.1"
+    id("com.gradleup.shadow") version "9.4.2"
     id("com.modrinth.minotaur") version "2.+"
     id("io.papermc.hangar-publish-plugin") version "0.1.4"
 }
