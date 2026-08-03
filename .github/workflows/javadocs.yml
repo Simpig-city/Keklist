@@ -18,7 +18,7 @@ jobs:
         distribution: 'termium'
 
     - name: Setup Gradle
-      uses: gradle/actions/setup-gradle@v6
+      uses: gradle/actions/setup-gradle@v6.2.0
         
     - name: Build Javadocs with Gradle ⚙
       run: ./gradlew javadoc
