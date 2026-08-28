@@ -12,7 +12,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Extract branch name
         shell: bash
@@ -22,7 +22,7 @@ jobs:
         id: gh_branch
 
       - name: Crowdin Upload
-        uses: crowdin/github-action@v2
+        uses: crowdin/github-action@v3
         with:
           command: 'branch delete ${{ steps.gh_branch.outputs.branch }}'
           command_args: '-l uk --method tm --branch main'

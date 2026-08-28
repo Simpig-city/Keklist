@@ -9,7 +9,7 @@ plugins {
     `maven-publish`
 
     id("io.freefair.lombok") version "9.5.0"
-    id("com.gradleup.shadow") version "9.4.1"
+    id("com.gradleup.shadow") version "9.6.1"
     id("com.modrinth.minotaur") version "2.+"
     id("io.papermc.hangar-publish-plugin") version "0.1.4"
 }
@@ -144,7 +144,7 @@ modrinth {
     versionType.set(if (version.toString().endsWith("SNAPSHOT")) "beta" else "release")
     //uploadFile.set(tasks.jar)
     uploadFile.set(tasks.getByPath("shadowJar"))
-    gameVersions.addAll("26.1.2")
+    gameVersions.addAll("26.2")
     loaders.addAll("paper", "purpur", "velocity")
     syncBodyFrom.set(rootProject.file("README.md").readText())
     changelog.set("[${getLatestCommitHash()}](https://github.com/Simpig-city/Keklist/commit/${getLatestCommitHash()}) ${getLatestCommitMessage()}")
@@ -172,7 +172,7 @@ hangarPublish {
         platforms {
             register(Platforms.PAPER) {
                 jar.set(tasks.jar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("26.1.x"))
+                platformVersions.set(listOf("26.2"))
                 dependencies {
                     hangar("Geyser") {
                         required.set(false)
@@ -196,7 +196,7 @@ hangarPublish {
             }
             register(Platforms.VELOCITY) {
                 jar.set(tasks.jar.flatMap { it.archiveFile })
-                platformVersions.set(listOf("3.5"))
+                platformVersions.set(listOf("4.1.1"))
                 dependencies {
                     url("LimboAPI", "https://github.com/Elytrium/LimboAPI") {
                         required.set(false)
@@ -264,7 +264,7 @@ tasks {
         doFirst {
             serverDir.mkdirs()
             pluginDir.mkdirs()
-            URI.create("https://api.purpurmc.org/v2/purpur/26.1.2/latest/download").toURL().openStream().use {
+            URI.create("https://api.purpurmc.org/v2/purpur/26.2/latest/download").toURL().openStream().use {
                 if (serverDir.resolve("server.jar").exists()) {
                     Files.delete(serverDir.resolve("server.jar").toPath())
                         .also { _ -> Files.copy(it, serverDir.resolve("server.jar").toPath()) }

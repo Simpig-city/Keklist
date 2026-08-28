@@ -10,12 +10,6 @@ updates:
       prefix: "gradle"
     labels:
       - "gradle"
-    ignore:
-      - dependency-name: "com.velocitypowered:velocity-api" # Ignore this due to velocity 4.0 not being released yet
-        versions:
-          - "4.x"
-      - dependency-name: "com.squareup.okhttp3:okhttp" # Ignore this due to okhttp not working anymore after aplpha 14 somehow?
-
   - package-ecosystem: "github-actions" 
     directory: "/"
     schedule:
